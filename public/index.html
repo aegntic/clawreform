@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>anyre.quest | Autonomous Swarm Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="ambient"></div>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">anyre.quest</p>
+        <h1>ZeroClaw Swarm Orchestrator</h1>
+      </div>
+      <div class="topbar-actions">
+        <span class="chip" id="repo-status">Connecting...</span>
+        <button id="refresh-button" class="btn ghost" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="panel metrics" id="metrics-grid">
+        <article>
+          <p class="metric-label">Live swarms</p>
+          <p class="metric-value" id="metric-live-swarms">0</p>
+        </article>
+        <article>
+          <p class="metric-label">Active agents</p>
+          <p class="metric-value" id="metric-active-agents">0</p>
+        </article>
+        <article>
+          <p class="metric-label">Blocked agents</p>
+          <p class="metric-value" id="metric-blocked-agents">0</p>
+        </article>
+        <article>
+          <p class="metric-label">Provider adapters</p>
+          <p class="metric-value" id="metric-provider-count">0</p>
+        </article>
+      </section>
+
+      <section class="panel span-2">
+        <div class="panel-head">
+          <h2>Orchestrator Identity</h2>
+          <p>Rename the primary control node at runtime.</p>
+        </div>
+        <form id="orchestrator-form" class="inline-form">
+          <input id="orchestrator-name" name="name" maxlength="80" placeholder="Prime Orchestrator" required />
+          <button class="btn" type="submit">Rename</button>
+        </form>
+      </section>
+
+      <section class="panel span-2">
+        <div class="panel-head">
+          <h2>Deploy New Swarm</h2>
+          <p>Create a ZeroClaw swarm with Automaton heartbeat modules and optional auto-adaptation.</p>
+        </div>
+        <form id="swarm-form" class="swarm-form">
+          <label>
+            Swarm name
+            <input name="name" maxlength="80" placeholder="Revenue Ops Squad" required />
+          </label>
+          <label>
+            Objective
+            <input name="objective" maxlength="180" placeholder="Ship release notes, deploy docs, answer support queue" required />
+          </label>
+          <label>
+            Provider
+            <input name="provider" list="provider-suggestions" placeholder="openrouter" required />
+          </label>
+          <label>
+            Model
+            <input name="model" placeholder="openai/gpt-5-mini" required />
+          </label>
+          <label>
+            Agents
+            <input name="agentCount" type="number" min="1" max="24" value="4" required />
+          </label>
+          <label>
+            Heartbeat (ms)
+            <input name="heartbeatMs" type="number" min="2000" max="60000" value="8000" required />
+          </label>
+          <label>
+            Deploy target
+            <input name="deployTarget" placeholder="local / cloud / edge" value="local" />
+          </label>
+          <label class="checkbox-field">
+            <input name="autoAdapt" type="checkbox" checked />
+            Enable self-adaptation fallback path
+          </label>
+          <fieldset>
+            <legend>Automaton modules</legend>
+            <div id="module-options" class="module-options"></div>
+          </fieldset>
+          <button class="btn" type="submit">Create swarm</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Credential Profiles</h2>
+          <p>Store references only (for example env var names). Never raw secrets.</p>
+        </div>
+        <form id="credential-form" class="stack-form">
+          <label>
+            Label
+            <input name="label" maxlength="80" placeholder="Twitter Bot A" required />
+          </label>
+          <label>
+            Platform
+            <input name="platform" maxlength="80" placeholder="twitter" required />
+          </label>
+          <label>
+            Username
+            <input name="username" maxlength="80" placeholder="@agent_handle" required />
+          </label>
+          <label>
+            Secret ref
+            <input name="secretRef" maxlength="120" placeholder="TWITTER_AGENT_A_TOKEN" required />
+          </label>
+          <button class="btn" type="submit">Add profile</button>
+        </form>
+        <div id="credential-list" class="list"></div>
+      </section>
+
+      <section class="panel span-2">
+        <div class="panel-head">
+          <h2>Swarms</h2>
+          <p>Deploy, pause, and broadcast ideas to every agent in a swarm.</p>
+        </div>
+        <div id="swarm-list" class="list"></div>
+      </section>
+
+      <section class="panel span-2">
+        <div class="panel-head">
+          <h2>Agents & Heartbeats</h2>
+          <p>Live agent pulse, obstacle recovery state, and credential binding.</p>
+        </div>
+        <div id="agent-list" class="list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>ZeroClaw Providers</h2>
+          <p id="provider-count-text">0 discovered</p>
+        </div>
+        <datalist id="provider-suggestions"></datalist>
+        <div id="provider-grid" class="chip-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Automaton Modules</h2>
+          <p>Sourced from local <code>automaton/src</code>.</p>
+        </div>
+        <div id="module-grid" class="module-grid"></div>
+      </section>
+
+      <section class="panel span-3">
+        <div class="panel-head">
+          <h2>Activity Log</h2>
+          <p>Swarm events, heartbeat outcomes, obstacle mitigation, and idea relay.</p>
+        </div>
+        <div id="activity-list" class="log"></div>
+      </section>
+    </main>
+
+    <template id="empty-template">
+      <p class="empty">Nothing here yet.</p>
+    </template>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
