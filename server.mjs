@@ -276,7 +276,7 @@ const validModuleSet = new Set(automatonModules.map((module) => module.id));
 
 const savedState = readJsonSafe(STATE_FILE, null);
 const state = {
-  projectName: "clawreform",
+  projectName: "ClawReform",
   orchestratorName: "Prime Orchestrator",
   swarms: [],
   agents: [],
@@ -325,7 +325,7 @@ function addActivity(level, message, context = {}) {
 
 function normalizeStateShape() {
   if (!state.projectName || state.projectName === "anyre.quest") {
-    state.projectName = "clawreform";
+    state.projectName = "ClawReform";
   }
 
   state.swarms = Array.isArray(state.swarms) ? state.swarms : [];
@@ -1069,7 +1069,7 @@ function toViewModel() {
 }
 
 if (state.activity.length === 0) {
-  addActivity("info", "clawreform runtime online. Queue engine + adapters active.");
+  addActivity("info", "ClawReform runtime online. Queue engine + adapters active.");
 } else {
   persistState();
 }
@@ -1669,7 +1669,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`clawreform running at http://localhost:${PORT}`);
+  console.log(`ClawReform running at http://localhost:${PORT}`);
   console.log(`ZeroClaw repo: ${ZEROCLAW_ROOT}`);
   console.log(`Automaton repo: ${AUTOMATON_ROOT}`);
 });

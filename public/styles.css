@@ -460,6 +460,14 @@ select:focus {
   margin: 0;
 }
 
+.easter-inline {
+  margin-left: 0.6rem;
+  opacity: 0.42;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
 .page-credit a {
   color: var(--primary);
   text-decoration: none;

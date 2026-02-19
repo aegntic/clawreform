@@ -551,8 +551,25 @@ section {
   font-size: 0.86rem;
 }
 
+.site-attribution p + p {
+  margin-top: 0.38rem;
+}
+
 .site-attribution a {
   color: #96eeff;
+}
+
+.easter-ink {
+  opacity: 0.34;
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.04em;
+  font-size: 0.69rem;
+  text-transform: lowercase;
+  transition: opacity 160ms ease;
+}
+
+.easter-ink:hover {
+  opacity: 0.74;
 }
 
 .reveal {

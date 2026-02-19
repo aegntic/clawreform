@@ -158,7 +158,7 @@ async function serveAsset(request, env, url) {
 
 function defaultState() {
   return {
-    projectName: "clawreform",
+    projectName: "ClawReform",
     orchestratorName: "Prime Orchestrator",
     swarms: [],
     agents: [],
@@ -169,7 +169,7 @@ function defaultState() {
         id: makeId("evt"),
         timestamp: nowIso(),
         level: "info",
-        message: "clawreform runtime online on Cloudflare edge.",
+        message: "ClawReform runtime online on Cloudflare edge.",
         context: {}
       }
     ],
@@ -251,7 +251,7 @@ function normalizeNullableString(value) {
 function normalizeStateShape(rawState) {
   const state = rawState && typeof rawState === "object" ? rawState : defaultState();
 
-  state.projectName = sanitizeText(state.projectName || "clawreform") || "clawreform";
+  state.projectName = sanitizeText(state.projectName || "ClawReform") || "ClawReform";
   state.orchestratorName = sanitizeText(state.orchestratorName || "Prime Orchestrator") || "Prime Orchestrator";
   state.swarms = Array.isArray(state.swarms) ? state.swarms : [];
   state.agents = Array.isArray(state.agents) ? state.agents : [];
@@ -366,7 +366,7 @@ function normalizeStateShape(rawState) {
   state.updatedAt = normalizeIsoOrNow(state.updatedAt);
 
   if (state.activity.length === 0) {
-    addActivity(state, "info", "clawreform runtime online on Cloudflare edge.", {});
+    addActivity(state, "info", "ClawReform runtime online on Cloudflare edge.", {});
   }
 
   return state;
