@@ -1,0 +1,17 @@
+name = "clawreform"
+main = "worker.mjs"
+compatibility_date = "2026-02-19"
+workers_dev = true
+routes = [
+  { pattern = "clawreform.com/*", zone_name = "clawreform.com" },
+  { pattern = "www.clawreform.com/*", zone_name = "clawreform.com" }
+]
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "CLAW_STATE"
+id = "f30217295cf244ecb97de4983d710895"
+preview_id = "d52b41be2fe044178c874f86e8a049f9"

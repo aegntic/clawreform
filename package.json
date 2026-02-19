@@ -6,7 +6,9 @@
   "description": "clawreform dashboard for orchestrating ZeroClaw swarms with Automaton-style heartbeat autonomy",
   "scripts": {
     "start": "node server.mjs",
-    "dev": "node --watch server.mjs"
+    "dev": "node --watch server.mjs",
+    "dev:cloudflare": "wrangler dev",
+    "deploy:cloudflare": "wrangler deploy"
   },
   "engines": {
     "node": ">=20"

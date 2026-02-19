@@ -59,15 +59,27 @@ Then open:
 - Shell task execution runs commands from your local machine context; use carefully.
 - For waitlist forwarding, set `WAITLIST_WEBHOOK_URL` in your environment.
 
-## Deploy (Render)
+## Deploy (Cloudflare)
 
-- Blueprint file: `render.yaml`
-- One-click deploy:
-  - `https://render.com/deploy?repo=https://github.com/aegntic/clawreform&branch=main`
-- After service is live, add custom domain in Render:
-  - `clawreform.com`
-  - `www.clawreform.com`
-- Apply the DNS records shown by Render in your domain provider.
+1. Authenticate Wrangler:
+   - `npx wrangler login`
+2. Create KV namespaces for runtime state:
+   - `npx wrangler kv namespace create CLAW_STATE`
+   - `npx wrangler kv namespace create CLAW_STATE --preview`
+3. Copy both returned IDs into `wrangler.toml` for:
+   - `id`
+   - `preview_id`
+4. Optional webhook forwarding for waitlist:
+   - `npx wrangler secret put WAITLIST_WEBHOOK_URL`
+5. Deploy:
+   - `npm run deploy:cloudflare`
+6. In Cloudflare dashboard, attach custom domains to the Worker:
+   - `clawreform.com`
+   - `www.clawreform.com`
+
+Notes:
+- Cloudflare edge runtime cannot execute local shell commands; `shell` tasks are accepted but fail fast by design.
+- Runtime state and waitlist entries persist in Cloudflare KV (`CLAW_STATE`).
 
 ## Attribution
 

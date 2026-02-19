@@ -2,3 +2,4 @@ node_modules
 runtime-state.json
 waitlist-data.json
 .DS_Store
+.wrangler
