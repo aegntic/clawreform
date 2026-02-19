@@ -1,6 +1,6 @@
 # Credits and Upstream Acknowledgements
 
-`anyre.quest` is a new, standalone project that draws inspiration from prior open-source work.
+`clawreform` is a new, standalone project that draws inspiration from prior open-source work.
 
 ## Referenced projects
 

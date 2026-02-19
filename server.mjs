@@ -9,9 +9,11 @@ const __dirname = path.dirname(__filename);
 const WORKSPACE_ROOT = path.resolve(__dirname, "..");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const STATE_FILE = path.join(__dirname, "runtime-state.json");
+const WAITLIST_FILE = path.join(__dirname, "waitlist-data.json");
 const ZEROCLAW_ROOT = path.join(WORKSPACE_ROOT, "zeroclaw");
 const AUTOMATON_ROOT = path.join(WORKSPACE_ROOT, "automaton");
 const PORT = Number(process.env.PORT || 4545);
+const WAITLIST_WEBHOOK_URL = process.env.WAITLIST_WEBHOOK_URL || "";
 
 const PROVIDER_MODEL_DEFAULTS = {
   openrouter: "openai/gpt-5-mini",
@@ -116,6 +118,67 @@ function writeJsonSafe(filePath, payload) {
   fs.writeFileSync(filePath, JSON.stringify(payload, null, 2));
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function normalizeWaitlistEmail(value) {
+  return sanitizeText(value || "").toLowerCase();
+}
+
+const waitlist = readJsonSafe(WAITLIST_FILE, {
+  entries: [],
+  updatedAt: null
+});
+
+function normalizeWaitlistShape() {
+  if (!waitlist || typeof waitlist !== "object") return;
+  waitlist.entries = Array.isArray(waitlist.entries) ? waitlist.entries : [];
+  waitlist.updatedAt = waitlist.updatedAt || null;
+
+  waitlist.entries = waitlist.entries
+    .map((entry) => ({
+      id: sanitizeText(entry.id || makeId("wait")),
+      email: normalizeWaitlistEmail(entry.email),
+      name: sanitizeText(entry.name || ""),
+      company: sanitizeText(entry.company || ""),
+      useCase: sanitizeText(entry.useCase || ""),
+      source: sanitizeText(entry.source || "landing"),
+      createdAt: sanitizeText(entry.createdAt || nowIso()),
+      updatedAt: sanitizeText(entry.updatedAt || "")
+    }))
+    .filter((entry) => isValidEmail(entry.email));
+}
+
+function persistWaitlist() {
+  waitlist.updatedAt = nowIso();
+  writeJsonSafe(WAITLIST_FILE, waitlist);
+}
+
+async function sendWaitlistWebhook(payload) {
+  if (!WAITLIST_WEBHOOK_URL) {
+    return { sent: false, reason: "disabled" };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const response = await fetch(WAITLIST_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    return {
+      sent: response.ok,
+      status: response.status
+    };
+  } catch {
+    return { sent: false, reason: "failed" };
+  }
+}
+
 function runGit(repoPath, args) {
   try {
     const out = spawnSync("git", args, {
@@ -213,7 +276,7 @@ const validModuleSet = new Set(automatonModules.map((module) => module.id));
 
 const savedState = readJsonSafe(STATE_FILE, null);
 const state = {
-  projectName: "anyre.quest",
+  projectName: "clawreform",
   orchestratorName: "Prime Orchestrator",
   swarms: [],
   agents: [],
@@ -261,6 +324,10 @@ function addActivity(level, message, context = {}) {
 }
 
 function normalizeStateShape() {
+  if (!state.projectName || state.projectName === "anyre.quest") {
+    state.projectName = "clawreform";
+  }
+
   state.swarms = Array.isArray(state.swarms) ? state.swarms : [];
   state.agents = Array.isArray(state.agents) ? state.agents : [];
   state.tasks = Array.isArray(state.tasks) ? state.tasks : [];
@@ -335,6 +402,7 @@ function normalizeStateShape() {
 }
 
 normalizeStateShape();
+normalizeWaitlistShape();
 
 function getIntegrations() {
   return {
@@ -1001,7 +1069,7 @@ function toViewModel() {
 }
 
 if (state.activity.length === 0) {
-  addActivity("info", "anyre.quest runtime online. Queue engine + adapters active.");
+  addActivity("info", "clawreform runtime online. Queue engine + adapters active.");
 } else {
   persistState();
 }
@@ -1057,7 +1125,10 @@ async function readBody(req) {
 }
 
 function serveStatic(res, pathname) {
-  const targetPath = pathname === "/" ? "/index.html" : pathname;
+  let targetPath = pathname;
+  if (pathname === "/") targetPath = "/index.html";
+  if (pathname === "/dashboard") targetPath = "/dashboard.html";
+  if (pathname === "/control") targetPath = "/dashboard.html";
   const normalized = path.normalize(targetPath).replace(/^\/+/, "");
   const filePath = path.join(PUBLIC_DIR, normalized);
 
@@ -1102,6 +1173,90 @@ async function handleApi(req, res, pathname) {
       uptimeSeconds: Math.round(process.uptime()),
       activeRuns: activeRuns.size,
       time: nowIso()
+    });
+    return;
+  }
+
+  if (method === "GET" && pathname === "/api/waitlist/stats") {
+    sendJson(res, 200, {
+      count: waitlist.entries.length,
+      updatedAt: waitlist.updatedAt
+    });
+    return;
+  }
+
+  if (method === "POST" && pathname === "/api/waitlist/register") {
+    const body = await readBody(req);
+    const email = normalizeWaitlistEmail(body.email);
+    const name = sanitizeText(body.name || "");
+    const company = sanitizeText(body.company || "");
+    const useCase = sanitizeText(body.useCase || "");
+    const source = sanitizeText(body.source || "landing");
+    const ip = sanitizeText((req.headers["x-forwarded-for"] || "").toString().split(",")[0] || "");
+    const userAgent = sanitizeText(req.headers["user-agent"] || "");
+
+    if (!isValidEmail(email)) {
+      sendJson(res, 400, { error: "Valid email is required." });
+      return;
+    }
+
+    let entry = waitlist.entries.find((item) => item.email === email) || null;
+    let alreadyRegistered = Boolean(entry);
+
+    if (!entry) {
+      entry = {
+        id: makeId("wait"),
+        email,
+        name,
+        company,
+        useCase,
+        source,
+        ip,
+        userAgent,
+        createdAt: nowIso(),
+        updatedAt: ""
+      };
+      waitlist.entries.unshift(entry);
+    } else {
+      entry.name = name || entry.name;
+      entry.company = company || entry.company;
+      entry.useCase = useCase || entry.useCase;
+      entry.source = source || entry.source;
+      entry.ip = ip || entry.ip || "";
+      entry.userAgent = userAgent || entry.userAgent || "";
+      entry.updatedAt = nowIso();
+    }
+
+    waitlist.entries = waitlist.entries.slice(0, 25_000);
+    persistWaitlist();
+
+    const webhook = await sendWaitlistWebhook({
+      type: alreadyRegistered ? "waitlist.updated" : "waitlist.registered",
+      registeredAt: nowIso(),
+      count: waitlist.entries.length,
+      entry: {
+        id: entry.id,
+        email: entry.email,
+        name: entry.name,
+        company: entry.company,
+        useCase: entry.useCase,
+        source: entry.source
+      }
+    });
+
+    addActivity(
+      "info",
+      alreadyRegistered
+        ? `Waitlist profile refreshed for ${email}.`
+        : `New waitlist registration: ${email}.`,
+      { email, source }
+    );
+
+    sendJson(res, alreadyRegistered ? 200 : 201, {
+      ok: true,
+      alreadyRegistered,
+      count: waitlist.entries.length,
+      webhook
     });
     return;
   }
@@ -1514,7 +1669,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`anyre.quest running at http://localhost:${PORT}`);
+  console.log(`clawreform running at http://localhost:${PORT}`);
   console.log(`ZeroClaw repo: ${ZEROCLAW_ROOT}`);
   console.log(`Automaton repo: ${AUTOMATON_ROOT}`);
 });

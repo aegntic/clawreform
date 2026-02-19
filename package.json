@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "anyre.quest dashboard for orchestrating ZeroClaw swarms with Automaton-style heartbeat autonomy",
+  "description": "clawreform dashboard for orchestrating ZeroClaw swarms with Automaton-style heartbeat autonomy",
   "scripts": {
     "start": "node server.mjs",
     "dev": "node --watch server.mjs"

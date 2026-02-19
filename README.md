@@ -1,10 +1,10 @@
-# anyre.quest
+# clawreform
 
 Local dashboard + control-plane API for orchestrating **ZeroClaw swarms** with **Automaton-inspired autonomy** (heartbeat, replication-oriented modules, and adaptive fallback behavior).
 
 ## Project identity
 
-`anyre.quest` is an independent project with its own repository and roadmap.
+`clawreform` is an independent project with its own repository and roadmap.
 It is not a fork of ZeroClaw or Conway Automaton.
 
 ## What this prototype does
@@ -30,10 +30,14 @@ It is not a fork of ZeroClaw or Conway Automaton.
 ## Project layout
 
 - `server.mjs`: local API + runtime heartbeat/adaptation engine.
-- `public/index.html`: dashboard shell.
+- `public/index.html`: animated teaser landing page.
+- `public/dashboard.html`: mission control dashboard shell.
 - `public/styles.css`: responsive UI styles.
 - `public/app.js`: data fetching + interaction handlers.
+- `public/teaser.css`: full-screen teaser visuals.
+- `public/teaser.js`: waitlist registration + background animation.
 - `runtime-state.json`: generated state snapshot (ignored by git).
+- `waitlist-data.json`: waitlist registrations (ignored by git).
 
 ## Run
 
@@ -45,6 +49,7 @@ npm start
 Then open:
 
 - `http://localhost:4545`
+- `http://localhost:4545/dashboard`
 
 ## Notes
 
@@ -52,6 +57,7 @@ Then open:
 - It reads both repositories for capability discovery and repo metadata.
 - For production, move credential refs to a secret manager and enforce authn/authz on API routes.
 - Shell task execution runs commands from your local machine context; use carefully.
+- For waitlist forwarding, set `WAITLIST_WEBHOOK_URL` in your environment.
 
 ## Attribution
 
