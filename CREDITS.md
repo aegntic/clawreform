@@ -12,6 +12,16 @@
   - Repo: https://github.com/Conway-Research/automaton
   - Contribution to this project: heartbeat/autonomy patterns and module-oriented runtime concepts.
 
+## Backlink credits
+
+- ae.ltd
+  - URL: https://ae.ltd
+  - Role: credited ecosystem contributor.
+
+- aegntic.ai
+  - URL: https://aegntic.ai
+  - Role: credited ecosystem contributor.
+
 ## Independence statement
 
 This repository is not a fork of either upstream project. It has separate architecture, codebase, and product direction.

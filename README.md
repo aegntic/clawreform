@@ -73,4 +73,5 @@ Then open:
 
 - Inspired by [openagen/zeroclaw](https://github.com/openagen/zeroclaw)
 - Inspired by [Conway-Research/automaton](https://github.com/Conway-Research/automaton)
+- Backlink credits: [ae.ltd](https://ae.ltd), [aegntic.ai](https://aegntic.ai)
 - See `CREDITS.md` for attribution details.
