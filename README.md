@@ -59,6 +59,16 @@ Then open:
 - Shell task execution runs commands from your local machine context; use carefully.
 - For waitlist forwarding, set `WAITLIST_WEBHOOK_URL` in your environment.
 
+## Deploy (Render)
+
+- Blueprint file: `render.yaml`
+- One-click deploy:
+  - `https://render.com/deploy?repo=https://github.com/aegntic/clawreform&branch=main`
+- After service is live, add custom domain in Render:
+  - `clawreform.com`
+  - `www.clawreform.com`
+- Apply the DNS records shown by Render in your domain provider.
+
 ## Attribution
 
 - Inspired by [openagen/zeroclaw](https://github.com/openagen/zeroclaw)
