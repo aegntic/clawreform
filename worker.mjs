@@ -1,5 +1,5 @@
-const STATE_KEY = "state:v1";
-const WAITLIST_KEY = "waitlist:v1";
+const STATE_KEY = "state:v2";
+const WAITLIST_KEY = "waitlist:v2";
 
 const PROVIDER_MODEL_DEFAULTS = {
   openrouter: "openai/gpt-5-mini",
