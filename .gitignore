@@ -3,3 +3,5 @@ runtime-state.json
 waitlist-data.json
 .DS_Store
 .wrangler
+.playwright-cli
+output/playwright

@@ -3,86 +3,248 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>clawreform | Autonomous Swarm Operations</title>
+    <title>clawreform | Edge Swarm Command</title>
     <meta
       name="description"
-      content="clawreform is the autonomous swarm operating layer for high-velocity execution across providers, models, and infrastructure."
+      content="clawreform is the edge-native command experience for autonomous swarms. Build faster loops, adaptive heartbeats, and mission control that feels alive."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/teaser.css" />
   </head>
   <body>
-    <canvas id="star-canvas" aria-hidden="true"></canvas>
-    <div class="ambient-glow glow-a" aria-hidden="true"></div>
-    <div class="ambient-glow glow-b" aria-hidden="true"></div>
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="ambient-grid" aria-hidden="true"></div>
+    <div class="ambient-vignette" aria-hidden="true"></div>
 
     <header class="top-nav">
-      <div class="brand-mark">
-        <span class="logo-dot"></span>
-        <span>clawreform</span>
-      </div>
+      <a class="brand-mark" href="#top" aria-label="clawreform home">
+        <span class="logo-mark" aria-hidden="true"></span>
+        <span class="brand-text">clawreform</span>
+      </a>
       <nav class="top-links">
+        <a href="#command-model">Command Model</a>
+        <a href="#comparison">Comparison</a>
         <a href="#waitlist">Waitlist</a>
-        <a href="#vision">Vision</a>
         <a href="/dashboard">Dashboard</a>
       </nav>
     </header>
 
     <main>
       <section class="hero" id="top">
-        <div class="hero-panel">
-          <p class="eyebrow">autonomous swarm operating system</p>
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Edge-Native Autonomous Swarm Operations</p>
+          <p class="signal-strip">#PostOAuth Agent Ops</p>
           <h1>
-            Reform execution.
-            <span>Deploy focused AI swarms at operational speed.</span>
+            When AI rules change overnight, your team still ships.
+            <span>Policy volatility becomes market momentum.</span>
           </h1>
-          <p class="hero-copy">
-            Run multi-agent missions across any model and any provider, adapt to obstacles in real time,
-            and ship outcomes continuously with heartbeat-driven autonomy.
+          <p>
+            clawreform is built for the new reality: provider policy shifts, token constraints, and fragile single-path
+            stacks. Heartbeat-aware swarms adapt across models and providers while mission loops stay live.
           </p>
           <div class="cta-row">
-            <a href="#waitlist" class="btn primary">Join Early Access</a>
-            <a href="/dashboard" class="btn ghost">Open Mission Control</a>
+            <a class="btn primary" href="#waitlist">Join Early Access</a>
+            <a class="btn ghost" href="/dashboard">Open Mission Control</a>
           </div>
-          <div class="ticker" aria-hidden="true">
-            <span>dynamic provider routing</span>
-            <span>live heartbeat orchestration</span>
-            <span>adaptive fallback execution</span>
-            <span>credential-scoped autonomy</span>
+          <div class="live-metrics">
+            <article>
+              <p>Runtime</p>
+              <strong id="runtime-health">checking</strong>
+            </article>
+            <article>
+              <p>Waitlist</p>
+              <strong id="waitlist-count">0</strong>
+            </article>
+            <article>
+              <p>Control Plane</p>
+              <strong>Cloudflare Edge</strong>
+            </article>
           </div>
         </div>
-        <aside class="hero-stats">
-          <article>
-            <p class="stat-label">waitlist</p>
-            <p class="stat-value" id="waitlist-count">0</p>
-          </article>
-          <article>
-            <p class="stat-label">runtime</p>
-            <p class="stat-value" id="runtime-health">checking</p>
-          </article>
-          <article>
-            <p class="stat-label">focus</p>
-            <p class="stat-value">speed + accuracy</p>
-          </article>
+
+        <aside class="hero-side reveal delay-1">
+          <div class="mission-card card-tilt">
+            <p class="kicker">Mission Loop</p>
+            <h2>Observe -> Decide -> Execute -> Recover</h2>
+            <p>
+              Every swarm cycle is visible: heartbeat drift, policy-induced obstacles, model failover, and task
+              completion, all in one operator-first interface.
+            </p>
+            <ul>
+              <li>Agent heartbeat + recovery states</li>
+              <li>Provider/model fallback routing</li>
+              <li>Credential-scoped operation profiles</li>
+            </ul>
+          </div>
         </aside>
       </section>
 
-      <section class="waitlist" id="waitlist">
-        <div class="section-heading">
-          <p class="eyebrow">early access</p>
-          <h2>Get on the clawreform waitlist</h2>
-          <p>
-            Reserve your access to the first production rollout and get onboarding details as soon as
-            private environments open.
+      <section class="difference" id="command-model">
+        <div class="section-head reveal">
+          <p class="eyebrow">Command Model</p>
+          <h2>clawreform sets the operating standard for live swarm command</h2>
+        </div>
+        <div class="difference-grid reveal delay-1">
+          <article class="delta-card card-tilt">
+            <h3>Visual Ops as Core Discipline</h3>
+            <p>
+              OpenClaw and ZeroClaw proved the category. clawreform formalizes the command layer so teams can
+              orchestrate, steer, and audit swarm behavior continuously.
+            </p>
+          </article>
+          <article class="delta-card card-tilt">
+            <h3>Edge-Native Runtime</h3>
+            <p>
+              The teaser, waitlist, and orchestration control APIs run on Cloudflare edge infrastructure with low
+              operational overhead and global reach from day one.
+            </p>
+          </article>
+          <article class="delta-card card-tilt">
+            <h3>Heartbeat Intelligence</h3>
+            <p>
+              Agents continuously self-check, detect obstacles, and adapt provider/model choices to keep missions
+              flowing instead of stalling on single-path failures.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="comparison" id="comparison">
+        <div class="section-head reveal">
+          <p class="eyebrow">Reality Check</p>
+          <h2>How clawreform compares to OpenClaw and ZeroClaw</h2>
+          <p class="section-sub">
+            Live repository metrics are fetched from GitHub on page load for transparent context.
           </p>
         </div>
 
-        <form id="waitlist-form" class="waitlist-form">
+        <div class="table-wrap reveal delay-1">
+          <table class="compare-table" aria-label="OpenClaw ZeroClaw clawreform comparison">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>
+                  OpenClaw
+                  <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener">source</a>
+                </th>
+                <th>
+                  ZeroClaw
+                  <a href="https://github.com/openagen/zeroclaw" target="_blank" rel="noopener">source</a>
+                </th>
+                <th>
+                  clawreform
+                  <a href="https://github.com/aegntic/clawreform" target="_blank" rel="noopener">source</a>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th>GitHub Stars</th>
+                <td data-repo="openclaw" data-field="stargazers_count" data-type="number" data-fallback="210185">-</td>
+                <td data-repo="zeroclaw" data-field="stargazers_count" data-type="number" data-fallback="608">-</td>
+                <td data-repo="clawreform" data-field="stargazers_count" data-type="number" data-fallback="0">-</td>
+              </tr>
+              <tr>
+                <th>GitHub Forks</th>
+                <td data-repo="openclaw" data-field="forks_count" data-type="number" data-fallback="38842">-</td>
+                <td data-repo="zeroclaw" data-field="forks_count" data-type="number" data-fallback="88">-</td>
+                <td data-repo="clawreform" data-field="forks_count" data-type="number" data-fallback="0">-</td>
+              </tr>
+              <tr>
+                <th>Open Issues</th>
+                <td data-repo="openclaw" data-field="open_issues_count" data-type="number" data-fallback="7978">-</td>
+                <td data-repo="zeroclaw" data-field="open_issues_count" data-type="number" data-fallback="0">-</td>
+                <td data-repo="clawreform" data-field="open_issues_count" data-type="number" data-fallback="0">-</td>
+              </tr>
+              <tr>
+                <th>Watchers</th>
+                <td data-repo="openclaw" data-field="subscribers_count" data-type="number" data-fallback="1147">-</td>
+                <td data-repo="zeroclaw" data-field="subscribers_count" data-type="number" data-fallback="8">-</td>
+                <td data-repo="clawreform" data-field="subscribers_count" data-type="number" data-fallback="0">-</td>
+              </tr>
+              <tr>
+                <th>Primary Language</th>
+                <td data-repo="openclaw" data-field="language" data-fallback="TypeScript">-</td>
+                <td data-repo="zeroclaw" data-field="language" data-fallback="Rust">-</td>
+                <td data-repo="clawreform" data-field="language" data-fallback="JavaScript">-</td>
+              </tr>
+              <tr>
+                <th>Latest Push</th>
+                <td data-repo="openclaw" data-field="pushed_at" data-type="date" data-fallback="2026-02-19T11:20:52Z">-</td>
+                <td data-repo="zeroclaw" data-field="pushed_at" data-type="date" data-fallback="2026-02-19T11:04:36Z">-</td>
+                <td data-repo="clawreform" data-field="pushed_at" data-type="date" data-fallback="2026-02-19T08:44:34Z">-</td>
+              </tr>
+              <tr>
+                <th>Operator Surface</th>
+                <td>CLI + docs</td>
+                <td>CLI + templates</td>
+                <td>Visual control plane + dashboard</td>
+              </tr>
+              <tr>
+                <th>Live Heartbeat Telemetry</th>
+                <td>Not primary focus</td>
+                <td>Partial runtime focus</td>
+                <td>Core interface primitive</td>
+              </tr>
+              <tr>
+                <th>Edge-hosted launch layer</th>
+                <td>No</td>
+                <td>No</td>
+                <td>Yes (Cloudflare)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="table-note">
+            Data refresh:
+            <span id="comparison-updated">loading...</span>
+            <span class="dot" aria-hidden="true">•</span>
+            Sources: GitHub REST API for the repositories above.
+          </p>
+          <p class="table-note">
+            Positioning note: public documentation indicates OpenClaw still supports Anthropic via API key/setup-token.
+            The pressure point is token policy volatility in third-party workflows, which clawreform is designed to absorb.
+          </p>
+        </div>
+      </section>
+
+      <section class="roots" id="roots">
+        <div class="section-head reveal">
+          <p class="eyebrow">Echoes of the Roots</p>
+          <h2>Built with respect for the heroes who laid the tracks</h2>
+        </div>
+
+        <div class="roots-grid reveal delay-1">
+          <a class="root-card card-tilt" href="https://openclawdoc.com" target="_blank" rel="noopener">
+            <h3>OpenClaw</h3>
+            <p>Autonomous coding baseline and the momentum that mainstreamed this category.</p>
+          </a>
+          <a class="root-card card-tilt" href="https://zeroclaw.org" target="_blank" rel="noopener">
+            <h3>ZeroClaw</h3>
+            <p>Lean systems language implementation and speed-focused architecture choices.</p>
+          </a>
+          <a class="root-card card-tilt" href="https://github.com/Conway-Research/automaton" target="_blank" rel="noopener">
+            <h3>Conway Automaton</h3>
+            <p>Modular agent runtime ideas that informed heartbeat and coordination framing.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="waitlist" id="waitlist">
+        <div class="section-head reveal">
+          <p class="eyebrow">Early Access</p>
+          <h2>Get on the clawreform launch list</h2>
+          <p class="section-sub">
+            We are rolling out private operator cohorts first. Share your use case and we will prioritize invites.
+          </p>
+        </div>
+
+        <form id="waitlist-form" class="waitlist-form reveal delay-1">
           <label>
             Email
             <input type="email" name="email" autocomplete="email" placeholder="you@company.com" required />
@@ -101,41 +263,25 @@
               name="useCase"
               rows="3"
               maxlength="220"
-              placeholder="What should your first autonomous swarm handle?"
+              placeholder="What mission should your first autonomous swarm run?"
             ></textarea>
           </label>
-          <button class="btn primary" type="submit">Request invite</button>
+          <button class="btn primary" type="submit">Request Invite</button>
           <p id="waitlist-feedback" class="feedback" aria-live="polite"></p>
         </form>
       </section>
 
-      <section class="vision" id="vision">
-        <div class="section-heading">
-          <p class="eyebrow">platform direction</p>
-          <h2>Built to turn ideas into outcomes</h2>
-        </div>
-        <div class="vision-grid">
-          <article>
-            <h3>Provider freedom</h3>
-            <p>Route tasks across any provider/model pair without architecture lock-in.</p>
-          </article>
-          <article>
-            <h3>Autonomous resilience</h3>
-            <p>Heartbeat loops detect drift, recover from failures, and continue mission flow.</p>
-          </article>
-          <article>
-            <h3>Operational clarity</h3>
-            <p>Every agent action, fallback switch, and output is visible in one control plane.</p>
-          </article>
-        </div>
-      </section>
-
       <footer class="site-attribution">
         <p>
-          Credits:
+          Built by
           <a href="https://ae.ltd" target="_blank" rel="noopener">ae.ltd</a>
           and
           <a href="https://aegntic.ai" target="_blank" rel="noopener">aegntic.ai</a>
+          with direct respect to
+          <a href="https://openclawdoc.com" target="_blank" rel="noopener">OpenClaw</a>,
+          <a href="https://zeroclaw.org" target="_blank" rel="noopener">ZeroClaw</a>,
+          and
+          <a href="https://github.com/Conway-Research/automaton" target="_blank" rel="noopener">Conway Automaton</a>.
         </p>
       </footer>
     </main>
