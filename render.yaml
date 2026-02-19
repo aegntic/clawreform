@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: clawreform
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: WAITLIST_WEBHOOK_URL
+        sync: false
