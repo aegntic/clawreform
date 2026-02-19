@@ -130,7 +130,7 @@ body {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(136px, 1fr));
   gap: 12px;
 }
 
@@ -277,6 +277,10 @@ select:focus {
   gap: 10px;
 }
 
+#task-command-row {
+  display: none;
+}
+
 .list {
   margin-top: 12px;
   display: grid;
@@ -338,18 +342,24 @@ select:focus {
 }
 
 .status.paused,
-.status.idle {
+.status.idle,
+.status.queued,
+.status.draft {
   color: var(--warning);
   border-color: rgba(255, 178, 74, 0.5);
 }
 
 .status.blocked,
-.status.error {
+.status.error,
+.status.failed,
+.status.canceled {
   color: var(--danger);
   border-color: rgba(255, 110, 94, 0.5);
 }
 
-.status.recovering {
+.status.recovering,
+.status.executing,
+.status.succeeded {
   color: var(--primary);
   border-color: rgba(93, 226, 210, 0.5);
 }

@@ -2,7 +2,7 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +39,8 @@ const PROVIDER_MODEL_DEFAULTS = {
   zai: "zai-glm-4.6"
 };
 
+const TASK_STATUS_SET = new Set(["queued", "running", "succeeded", "failed", "canceled"]);
+const TASK_MODE_SET = new Set(["simulate", "shell"]);
 const OBSTACLES = [
   "provider timeout",
   "rate limit burst",
@@ -70,6 +72,8 @@ const MODULE_DESCRIPTIONS = {
   state: "Persistence layer for tasks, events, and lineage"
 };
 
+const activeRuns = new Map();
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -88,7 +92,7 @@ function titleCase(text) {
 
 function sanitizeText(value, fallback = "") {
   if (typeof value !== "string") return fallback;
-  return value.trim().slice(0, 180);
+  return value.trim().slice(0, 240);
 }
 
 function clamp(value, min, max) {
@@ -213,41 +217,31 @@ const state = {
   orchestratorName: "Prime Orchestrator",
   swarms: [],
   agents: [],
+  tasks: [],
   credentials: [],
   activity: [],
   updatedAt: nowIso(),
   ...(savedState && typeof savedState === "object" ? savedState : {})
 };
 
-function normalizeStateShape() {
-  state.swarms = Array.isArray(state.swarms) ? state.swarms : [];
-  state.agents = Array.isArray(state.agents) ? state.agents : [];
-  state.credentials = Array.isArray(state.credentials) ? state.credentials : [];
-  state.activity = Array.isArray(state.activity) ? state.activity : [];
-
-  for (const swarm of state.swarms) {
-    swarm.agentIds = Array.isArray(swarm.agentIds) ? swarm.agentIds : [];
-    swarm.status = swarm.status || "draft";
-    swarm.autoAdapt = swarm.autoAdapt !== false;
-    swarm.automationModules = Array.isArray(swarm.automationModules)
-      ? swarm.automationModules.filter((id) => validModuleSet.has(id))
-      : [];
-    swarm.completedTasks = Number.isFinite(swarm.completedTasks) ? swarm.completedTasks : 0;
-    swarm.obstaclesResolved = Number.isFinite(swarm.obstaclesResolved) ? swarm.obstaclesResolved : 0;
-    swarm.ideaCount = Number.isFinite(swarm.ideaCount) ? swarm.ideaCount : 0;
-    swarm.deployTarget = swarm.deployTarget || "local";
-  }
-
-  for (const agent of state.agents) {
-    agent.status = agent.status || "idle";
-    agent.obstacles = Number.isFinite(agent.obstacles) ? agent.obstacles : 0;
-    agent.recoveries = Number.isFinite(agent.recoveries) ? agent.recoveries : 0;
-    agent.messageCount = Number.isFinite(agent.messageCount) ? agent.messageCount : 0;
-    agent.heartbeatMs = Number.isFinite(agent.heartbeatMs) ? agent.heartbeatMs : 8000;
-  }
+function defaultModelForProvider(provider) {
+  return PROVIDER_MODEL_DEFAULTS[provider] || "auto-reasoning";
 }
 
-normalizeStateShape();
+function getProviderId(rawProvider) {
+  const normalized = sanitizeText(rawProvider, "openrouter").toLowerCase();
+  if (!normalized) return "openrouter";
+  return normalized.replace(/\s+/g, "-");
+}
+
+function chooseFallbackProvider(currentProvider) {
+  const candidates = providerCatalog.map((item) => item.id).filter((id) => id !== currentProvider);
+  const provider = candidates.length ? pick(candidates) : currentProvider;
+  return {
+    provider,
+    model: defaultModelForProvider(provider)
+  };
+}
 
 function persistState() {
   state.updatedAt = nowIso();
@@ -262,19 +256,85 @@ function addActivity(level, message, context = {}) {
     message,
     context
   });
-  state.activity = state.activity.slice(0, 250);
+  state.activity = state.activity.slice(0, 300);
   persistState();
 }
 
-function defaultModelForProvider(provider) {
-  return PROVIDER_MODEL_DEFAULTS[provider] || "auto-reasoning";
+function normalizeStateShape() {
+  state.swarms = Array.isArray(state.swarms) ? state.swarms : [];
+  state.agents = Array.isArray(state.agents) ? state.agents : [];
+  state.tasks = Array.isArray(state.tasks) ? state.tasks : [];
+  state.credentials = Array.isArray(state.credentials) ? state.credentials : [];
+  state.activity = Array.isArray(state.activity) ? state.activity : [];
+
+  for (const swarm of state.swarms) {
+    swarm.agentIds = Array.isArray(swarm.agentIds) ? swarm.agentIds : [];
+    swarm.status = swarm.status || "draft";
+    swarm.autoAdapt = swarm.autoAdapt !== false;
+    swarm.automationModules = Array.isArray(swarm.automationModules)
+      ? swarm.automationModules.filter((id) => validModuleSet.has(id))
+      : [];
+    swarm.completedTasks = Number.isFinite(swarm.completedTasks) ? swarm.completedTasks : 0;
+    swarm.obstaclesResolved = Number.isFinite(swarm.obstaclesResolved) ? swarm.obstaclesResolved : 0;
+    swarm.ideaCount = Number.isFinite(swarm.ideaCount) ? swarm.ideaCount : 0;
+    swarm.deployTarget = swarm.deployTarget || "local";
+    swarm.deployCommand = sanitizeText(swarm.deployCommand || "");
+    swarm.lastDeployedAt = swarm.lastDeployedAt || null;
+  }
+
+  const swarmIds = new Set(state.swarms.map((swarm) => swarm.id));
+
+  state.agents = state.agents.filter((agent) => swarmIds.has(agent.swarmId));
+  for (const agent of state.agents) {
+    agent.status = agent.status || "idle";
+    agent.obstacles = Number.isFinite(agent.obstacles) ? agent.obstacles : 0;
+    agent.recoveries = Number.isFinite(agent.recoveries) ? agent.recoveries : 0;
+    agent.messageCount = Number.isFinite(agent.messageCount) ? agent.messageCount : 0;
+    agent.heartbeatMs = Number.isFinite(agent.heartbeatMs) ? agent.heartbeatMs : 8000;
+    agent.currentTaskId = sanitizeText(agent.currentTaskId || "") || null;
+  }
+
+  const agentIds = new Set(state.agents.map((agent) => agent.id));
+  state.tasks = state.tasks.filter((task) => swarmIds.has(task.swarmId));
+
+  for (const task of state.tasks) {
+    task.title = sanitizeText(task.title, "Untitled task");
+    task.details = sanitizeText(task.details || "");
+    task.executionMode = TASK_MODE_SET.has(task.executionMode) ? task.executionMode : "simulate";
+    task.command = sanitizeText(task.command || "");
+    task.execCwd = sanitizeText(task.execCwd || "");
+    task.priority = clamp(Number(task.priority) || 3, 1, 5);
+    task.maxAttempts = clamp(Number(task.maxAttempts) || 3, 1, 10);
+    task.timeoutMs = clamp(Number(task.timeoutMs) || 90_000, 5_000, 600_000);
+    task.attempts = Number.isFinite(task.attempts) ? task.attempts : 0;
+    task.status = TASK_STATUS_SET.has(task.status) ? task.status : "queued";
+    task.assignedAgentId = agentIds.has(task.assignedAgentId) ? task.assignedAgentId : null;
+    task.createdAt = task.createdAt || nowIso();
+    task.queuedAt = task.queuedAt || task.createdAt;
+    task.outputPreview = sanitizeText(task.outputPreview || "");
+    task.lastError = sanitizeText(task.lastError || "");
+    task.provider = sanitizeText(task.provider || "") || null;
+    task.model = sanitizeText(task.model || "") || null;
+
+    if (task.status === "running") {
+      task.status = "queued";
+      task.assignedAgentId = null;
+      task.startedAt = null;
+      task.queuedAt = nowIso();
+    }
+  }
+
+  for (const agent of state.agents) {
+    if (agent.currentTaskId && !state.tasks.some((task) => task.id === agent.currentTaskId)) {
+      agent.currentTaskId = null;
+      if (agent.status === "executing") {
+        agent.status = "running";
+      }
+    }
+  }
 }
 
-function getProviderId(rawProvider) {
-  const normalized = sanitizeText(rawProvider, "openrouter").toLowerCase();
-  if (!normalized) return "openrouter";
-  return normalized.replace(/\s+/g, "-");
-}
+normalizeStateShape();
 
 function getIntegrations() {
   return {
@@ -283,66 +343,62 @@ function getIntegrations() {
   };
 }
 
+function findSwarmById(id) {
+  return state.swarms.find((swarm) => swarm.id === id) || null;
+}
+
+function findAgentById(id) {
+  return state.agents.find((agent) => agent.id === id) || null;
+}
+
+function findTaskById(id) {
+  return state.tasks.find((task) => task.id === id) || null;
+}
+
+function findCredentialById(id) {
+  return state.credentials.find((credential) => credential.id === id) || null;
+}
+
 function listAgentsForSwarm(swarmId) {
   return state.agents.filter((agent) => agent.swarmId === swarmId);
 }
 
-function chooseFallbackProvider(currentProvider) {
-  const candidates = providerCatalog.map((item) => item.id).filter((id) => id !== currentProvider);
-  const provider = candidates.length ? pick(candidates) : currentProvider;
-  return {
-    provider,
-    model: defaultModelForProvider(provider)
-  };
+function listTasksForSwarm(swarmId) {
+  return state.tasks.filter((task) => task.swarmId === swarmId);
 }
 
-function computeMetrics() {
-  const now = Date.now();
-  const liveSwarms = state.swarms.filter((swarm) => swarm.status === "live").length;
-  const blockedAgents = state.agents.filter((agent) => agent.status === "blocked").length;
-  const activeAgents = state.agents.filter((agent) => agent.status === "running" || agent.status === "recovering").length;
+function countTaskStatsForSwarm(swarmId) {
+  const stats = {
+    queued: 0,
+    running: 0,
+    succeeded: 0,
+    failed: 0,
+    canceled: 0
+  };
 
-  let staleHeartbeats = 0;
-  for (const agent of state.agents) {
-    if (!agent.lastHeartbeat) {
-      staleHeartbeats += 1;
-      continue;
+  for (const task of state.tasks) {
+    if (task.swarmId !== swarmId) continue;
+    if (stats[task.status] !== undefined) {
+      stats[task.status] += 1;
     }
-    const lagMs = now - new Date(agent.lastHeartbeat).getTime();
-    if (lagMs > Math.max(agent.heartbeatMs * 2, 18000)) staleHeartbeats += 1;
   }
 
-  return {
-    totalSwarms: state.swarms.length,
-    liveSwarms,
-    totalAgents: state.agents.length,
-    activeAgents,
-    blockedAgents,
-    staleHeartbeats,
-    credentialProfiles: state.credentials.length,
-    providerCount: providerCatalog.length,
-    automatonModuleCount: automatonModules.length
-  };
+  return stats;
 }
 
-function toViewModel() {
-  return {
-    projectName: state.projectName,
-    orchestratorName: state.orchestratorName,
-    swarms: state.swarms,
-    agents: state.agents,
-    credentials: state.credentials,
-    activity: state.activity,
-    integrations: getIntegrations(),
-    providerCatalog,
-    automatonModules,
-    metrics: computeMetrics(),
-    updatedAt: state.updatedAt
-  };
+function getAvailableAgentsForSwarm(swarm) {
+  return listAgentsForSwarm(swarm.id).filter((agent) => {
+    if (agent.currentTaskId) return false;
+    if (agent.status === "paused") return false;
+    if (agent.status === "blocked") return false;
+    if (swarm.status !== "live") return false;
+    return true;
+  });
 }
 
 function createAgents(swarm, count) {
   const newAgents = [];
+
   for (let i = 0; i < count; i += 1) {
     const agentId = makeId("agent");
     const agent = {
@@ -354,12 +410,14 @@ function createAgents(swarm, count) {
       provider: swarm.provider,
       model: swarm.model,
       heartbeatMs: swarm.heartbeatMs,
-      nextBeatAt: Date.now() + 2000 + Math.floor(Math.random() * 5000),
+      nextBeatAt: Date.now() + 2_000 + Math.floor(Math.random() * 5_000),
       lastHeartbeat: null,
+      currentTaskId: null,
       obstacles: 0,
       recoveries: 0,
       messageCount: 0,
-      credentialId: null
+      credentialId: null,
+      lastTaskAt: null
     };
 
     newAgents.push(agent);
@@ -369,12 +427,51 @@ function createAgents(swarm, count) {
   state.agents.push(...newAgents);
 }
 
+function createTask(swarm, input = {}) {
+  const executionMode = TASK_MODE_SET.has(input.executionMode) ? input.executionMode : "simulate";
+  const task = {
+    id: makeId("task"),
+    swarmId: swarm.id,
+    title: sanitizeText(input.title, "Untitled task"),
+    details: sanitizeText(input.details || ""),
+    status: "queued",
+    priority: clamp(Number(input.priority) || 3, 1, 5),
+    executionMode,
+    command: executionMode === "shell" ? sanitizeText(input.command || "") : "",
+    execCwd: sanitizeText(input.execCwd || ""),
+    timeoutMs: clamp(Number(input.timeoutMs) || 90_000, 5_000, 600_000),
+    attempts: 0,
+    maxAttempts: clamp(Number(input.maxAttempts) || 3, 1, 10),
+    assignedAgentId: null,
+    provider: sanitizeText(input.provider || swarm.provider || "") || null,
+    model: sanitizeText(input.model || swarm.model || "") || null,
+    outputPreview: "",
+    lastError: "",
+    createdAt: nowIso(),
+    queuedAt: nowIso(),
+    startedAt: null,
+    endedAt: null
+  };
+
+  state.tasks.unshift(task);
+  return task;
+}
+
 function startSwarm(swarm) {
   swarm.status = "live";
   swarm.lastDeployedAt = nowIso();
 
   const swarmAgents = listAgentsForSwarm(swarm.id);
   for (const agent of swarmAgents) {
+    if (agent.currentTaskId) {
+      agent.status = "executing";
+      continue;
+    }
+
+    if (agent.status === "blocked" && !swarm.autoAdapt) {
+      continue;
+    }
+
     agent.status = "running";
     agent.nextBeatAt = Date.now() + 400 + Math.floor(Math.random() * 1200);
   }
@@ -385,7 +482,352 @@ function pauseSwarm(swarm) {
 
   const swarmAgents = listAgentsForSwarm(swarm.id);
   for (const agent of swarmAgents) {
+    if (agent.currentTaskId) continue;
     agent.status = "paused";
+  }
+}
+
+function boundedOutput(text, max = 2200) {
+  if (!text) return "";
+  return String(text).slice(0, max);
+}
+
+function resolveExecCwd(raw) {
+  const value = sanitizeText(raw || "");
+  if (!value) return WORKSPACE_ROOT;
+
+  const candidate = path.isAbsolute(value) ? value : path.join(WORKSPACE_ROOT, value);
+  const resolved = path.resolve(candidate);
+
+  if (!resolved.startsWith(WORKSPACE_ROOT)) {
+    return WORKSPACE_ROOT;
+  }
+
+  try {
+    if (fs.statSync(resolved).isDirectory()) {
+      return resolved;
+    }
+  } catch {
+    return WORKSPACE_ROOT;
+  }
+
+  return WORKSPACE_ROOT;
+}
+
+function runShellCommand(command, options = {}) {
+  const cwd = resolveExecCwd(options.cwd);
+  const timeoutMs = clamp(Number(options.timeoutMs) || 90_000, 5_000, 600_000);
+
+  return new Promise((resolve) => {
+    const startedMs = Date.now();
+    const child = spawn("bash", ["-lc", command], {
+      cwd,
+      env: process.env,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    if (typeof options.onSpawn === "function") {
+      options.onSpawn(child);
+    }
+
+    let stdout = "";
+    let stderr = "";
+    let timedOut = false;
+
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString("utf8");
+      if (stdout.length > 24_000) {
+        stdout = stdout.slice(-24_000);
+      }
+    });
+
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString("utf8");
+      if (stderr.length > 24_000) {
+        stderr = stderr.slice(-24_000);
+      }
+    });
+
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill("SIGTERM");
+    }, timeoutMs);
+
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      resolve({
+        ok: code === 0 && !timedOut,
+        exitCode: code,
+        timedOut,
+        durationMs: Date.now() - startedMs,
+        stdout: boundedOutput(stdout, 4000),
+        stderr: boundedOutput(stderr, 4000),
+        cwd
+      });
+    });
+
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      resolve({
+        ok: false,
+        exitCode: null,
+        timedOut: false,
+        durationMs: Date.now() - startedMs,
+        stdout: boundedOutput(stdout, 4000),
+        stderr: boundedOutput(`${stderr}\n${error.message}`, 4000),
+        cwd
+      });
+    });
+  });
+}
+
+function releaseAgentFromTask(task, swarm) {
+  const agent = task.assignedAgentId ? findAgentById(task.assignedAgentId) : null;
+  if (!agent) return;
+
+  agent.currentTaskId = null;
+  if (swarm?.status === "paused") {
+    agent.status = "paused";
+  } else if (agent.status === "blocked" && swarm?.autoAdapt === false) {
+    agent.status = "blocked";
+  } else {
+    agent.status = "running";
+  }
+
+  agent.lastTaskAt = nowIso();
+}
+
+function finalizeTaskSuccess(taskId, summary, outputPreview = "") {
+  const task = findTaskById(taskId);
+  if (!task) return;
+  if (task.status === "canceled") {
+    activeRuns.delete(taskId);
+    return;
+  }
+
+  const swarm = findSwarmById(task.swarmId);
+  task.status = "succeeded";
+  task.endedAt = nowIso();
+  task.lastError = "";
+  task.outputPreview = boundedOutput(outputPreview || summary, 2200);
+
+  if (swarm) {
+    swarm.completedTasks += 1;
+  }
+
+  releaseAgentFromTask(task, swarm);
+  activeRuns.delete(taskId);
+
+  addActivity("info", `Task ${task.title} succeeded. ${summary}`, {
+    taskId: task.id,
+    swarmId: task.swarmId,
+    agentId: task.assignedAgentId
+  });
+}
+
+function finalizeTaskFailure(taskId, reason, outputPreview = "", obstacleHint = null) {
+  const task = findTaskById(taskId);
+  if (!task) return;
+  if (task.status === "canceled") {
+    activeRuns.delete(taskId);
+    return;
+  }
+
+  const swarm = findSwarmById(task.swarmId);
+  const agent = task.assignedAgentId ? findAgentById(task.assignedAgentId) : null;
+
+  task.lastError = sanitizeText(reason, "Unknown failure");
+  task.outputPreview = boundedOutput(outputPreview || reason, 2200);
+  activeRuns.delete(taskId);
+
+  if (agent) {
+    agent.obstacles += 1;
+  }
+
+  const canRetry = Boolean(swarm && swarm.autoAdapt && task.attempts < task.maxAttempts);
+  if (canRetry) {
+    const currentProvider = agent?.provider || task.provider || swarm.provider;
+    const fallback = chooseFallbackProvider(currentProvider);
+
+    if (agent) {
+      agent.provider = fallback.provider;
+      agent.model = fallback.model;
+      agent.recoveries += 1;
+      agent.status = "recovering";
+      agent.currentTaskId = null;
+    }
+
+    task.status = "queued";
+    task.assignedAgentId = null;
+    task.provider = fallback.provider;
+    task.model = fallback.model;
+    task.queuedAt = nowIso();
+    task.startedAt = null;
+    task.endedAt = null;
+
+    if (swarm) {
+      swarm.obstaclesResolved += 1;
+    }
+
+    addActivity(
+      "warn",
+      `Task ${task.title} hit ${obstacleHint || "an obstacle"}; retry queued (${task.attempts}/${task.maxAttempts}) with ${fallback.provider}/${fallback.model}.`,
+      {
+        taskId: task.id,
+        swarmId: task.swarmId,
+        agentId: agent?.id || null
+      }
+    );
+
+    persistState();
+    return;
+  }
+
+  task.status = "failed";
+  task.endedAt = nowIso();
+  releaseAgentFromTask(task, swarm);
+
+  addActivity("error", `Task ${task.title} failed: ${reason}`, {
+    taskId: task.id,
+    swarmId: task.swarmId,
+    agentId: agent?.id || null
+  });
+}
+
+function simulateRunDurationMs(task) {
+  const base = 2_800;
+  const priorityWeight = (6 - task.priority) * 550;
+  const jitter = Math.floor(Math.random() * 2_400);
+  return base + priorityWeight + jitter;
+}
+
+function computeSimulatedSuccessChance(task, swarm) {
+  const base = 0.84;
+  const priorityPenalty = (task.priority - 3) * 0.04;
+  const adaptBoost = swarm.autoAdapt ? 0.07 : 0;
+  return clamp(base - priorityPenalty + adaptBoost, 0.2, 0.97);
+}
+
+function startTaskRun(agent, task, swarm) {
+  task.status = "running";
+  task.startedAt = nowIso();
+  task.endedAt = null;
+  task.assignedAgentId = agent.id;
+  task.attempts += 1;
+
+  agent.currentTaskId = task.id;
+  agent.status = "executing";
+  agent.lastHeartbeat = nowIso();
+
+  const run = {
+    id: makeId("run"),
+    taskId: task.id,
+    swarmId: swarm.id,
+    agentId: agent.id,
+    mode: task.executionMode,
+    startedAt: nowIso(),
+    startedMs: Date.now(),
+    completeAtMs: null,
+    successChance: null,
+    obstacle: pick(OBSTACLES),
+    child: null
+  };
+
+  if (task.executionMode === "shell" && task.command) {
+    activeRuns.set(task.id, run);
+
+    runShellCommand(task.command, {
+      cwd: task.execCwd,
+      timeoutMs: task.timeoutMs,
+      onSpawn: (child) => {
+        run.child = child;
+      }
+    }).then((result) => {
+      const summary = result.ok
+        ? `shell exit ${result.exitCode ?? 0} in ${Math.round(result.durationMs / 100) / 10}s`
+        : result.timedOut
+          ? `shell timeout after ${Math.round(result.durationMs / 100) / 10}s`
+          : `shell failed with exit ${result.exitCode ?? "unknown"}`;
+
+      const preview = [result.stdout, result.stderr].filter(Boolean).join("\n");
+
+      if (result.ok) {
+        finalizeTaskSuccess(task.id, summary, preview || summary);
+      } else {
+        finalizeTaskFailure(task.id, summary, preview || summary, "shell command error");
+      }
+    });
+  } else {
+    run.mode = "simulate";
+    run.completeAtMs = Date.now() + simulateRunDurationMs(task);
+    run.successChance = computeSimulatedSuccessChance(task, swarm);
+    activeRuns.set(task.id, run);
+  }
+
+  addActivity(
+    "info",
+    `Task ${task.title} assigned to ${agent.name} (${task.executionMode}).`,
+    { taskId: task.id, swarmId: swarm.id, agentId: agent.id }
+  );
+}
+
+function processSimulatedRuns() {
+  const now = Date.now();
+
+  for (const run of activeRuns.values()) {
+    if (run.mode !== "simulate") continue;
+    if (!run.completeAtMs || now < run.completeAtMs) continue;
+
+    const task = findTaskById(run.taskId);
+    if (!task) {
+      activeRuns.delete(run.taskId);
+      continue;
+    }
+
+    const swarm = findSwarmById(task.swarmId);
+    const successChance = run.successChance ?? 0.8;
+
+    if (Math.random() < successChance) {
+      const summary = `completed with ${task.provider || swarm?.provider || "default"}/${task.model || swarm?.model || "default"}`;
+      finalizeTaskSuccess(task.id, summary, summary);
+    } else {
+      finalizeTaskFailure(task.id, run.obstacle || "execution obstacle", run.obstacle || "execution obstacle", run.obstacle);
+    }
+  }
+}
+
+function assignQueuedTasks() {
+  for (const swarm of state.swarms) {
+    if (swarm.status !== "live") continue;
+
+    const queue = listTasksForSwarm(swarm.id)
+      .filter((task) => task.status === "queued")
+      .sort((a, b) => {
+        if (b.priority !== a.priority) return b.priority - a.priority;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+
+    if (queue.length === 0) continue;
+
+    const availableAgents = getAvailableAgentsForSwarm(swarm);
+    if (availableAgents.length === 0) continue;
+
+    while (queue.length > 0 && availableAgents.length > 0) {
+      const task = queue.shift();
+      const agent = availableAgents.shift();
+      if (!task || !agent) break;
+
+      if (agent.status === "recovering") {
+        agent.status = "running";
+      }
+
+      if (!task.provider) task.provider = agent.provider || swarm.provider;
+      if (!task.model) task.model = agent.model || swarm.model;
+
+      startTaskRun(agent, task, swarm);
+    }
+
+    persistState();
   }
 }
 
@@ -404,13 +846,14 @@ function tickHeartbeats() {
       if (typeof agent.nextBeatAt === "number" && now < agent.nextBeatAt) continue;
 
       agent.lastHeartbeat = nowIso();
-      agent.nextBeatAt = now + agent.heartbeatMs + Math.floor(Math.random() * 1200);
+      agent.nextBeatAt = now + agent.heartbeatMs + Math.floor(Math.random() * 1_200);
 
-      if (agent.status !== "blocked") {
+      if (agent.status === "recovering") {
         agent.status = "running";
+        changed = true;
       }
 
-      if (Math.random() < 0.11) {
+      if (agent.status === "running" && Math.random() < 0.06 && !agent.currentTaskId) {
         const obstacle = pick(OBSTACLES);
         agent.obstacles += 1;
         changed = true;
@@ -425,25 +868,15 @@ function tickHeartbeats() {
 
           addActivity(
             "warn",
-            `${agent.name} encountered ${obstacle} and switched to ${fallback.provider}/${fallback.model}.`,
+            `${agent.name} heartbeat obstacle: ${obstacle}. Switched to ${fallback.provider}/${fallback.model}.`,
             { swarmId: swarm.id, agentId: agent.id }
           );
         } else {
           agent.status = "blocked";
-          addActivity("error", `${agent.name} blocked by ${obstacle}. Manual action required.`, {
+          addActivity("error", `${agent.name} blocked by heartbeat obstacle: ${obstacle}.`, {
             swarmId: swarm.id,
             agentId: agent.id
           });
-        }
-      } else {
-        if (agent.status === "recovering") {
-          agent.status = "running";
-          changed = true;
-        }
-
-        if (Math.random() < 0.18) {
-          swarm.completedTasks += 1;
-          changed = true;
         }
       }
     }
@@ -454,13 +887,129 @@ function tickHeartbeats() {
   }
 }
 
+function tickRuntime() {
+  processSimulatedRuns();
+  assignQueuedTasks();
+}
+
+function killRunProcess(taskId) {
+  const run = activeRuns.get(taskId);
+  if (!run || !run.child) return;
+
+  try {
+    run.child.kill("SIGTERM");
+  } catch {
+    // ignore
+  }
+}
+
+function buildTaskFromSeed(swarm, index) {
+  const objective = sanitizeText(swarm.objective || "");
+  const fragments = objective
+    .split(/[.,;]/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const title = fragments[index] || `Milestone ${index + 1}`;
+  return {
+    title: `Plan ${index + 1}: ${title}`,
+    details: `Autogenerated objective track for ${swarm.name}`,
+    priority: clamp(5 - index, 2, 5),
+    executionMode: "simulate",
+    maxAttempts: 3,
+    timeoutMs: 90_000
+  };
+}
+
+function computeMetrics() {
+  const now = Date.now();
+  const liveSwarms = state.swarms.filter((swarm) => swarm.status === "live").length;
+  const blockedAgents = state.agents.filter((agent) => agent.status === "blocked").length;
+  const activeAgents = state.agents.filter((agent) => {
+    return agent.status === "running" || agent.status === "recovering" || agent.status === "executing";
+  }).length;
+
+  let staleHeartbeats = 0;
+  for (const agent of state.agents) {
+    if (!agent.lastHeartbeat) {
+      staleHeartbeats += 1;
+      continue;
+    }
+    const lagMs = now - new Date(agent.lastHeartbeat).getTime();
+    if (lagMs > Math.max(agent.heartbeatMs * 2, 18_000)) staleHeartbeats += 1;
+  }
+
+  let queuedTasks = 0;
+  let runningTasks = 0;
+  let succeededTasks = 0;
+  let failedTasks = 0;
+
+  for (const task of state.tasks) {
+    if (task.status === "queued") queuedTasks += 1;
+    if (task.status === "running") runningTasks += 1;
+    if (task.status === "succeeded") succeededTasks += 1;
+    if (task.status === "failed") failedTasks += 1;
+  }
+
+  return {
+    totalSwarms: state.swarms.length,
+    liveSwarms,
+    totalAgents: state.agents.length,
+    activeAgents,
+    blockedAgents,
+    staleHeartbeats,
+    credentialProfiles: state.credentials.length,
+    providerCount: providerCatalog.length,
+    automatonModuleCount: automatonModules.length,
+    totalTasks: state.tasks.length,
+    queuedTasks,
+    runningTasks,
+    succeededTasks,
+    failedTasks
+  };
+}
+
+function toViewModel() {
+  const swarms = state.swarms.map((swarm) => {
+    const taskStats = countTaskStatsForSwarm(swarm.id);
+    return {
+      ...swarm,
+      taskStats
+    };
+  });
+
+  const tasks = [...state.tasks].sort((a, b) => {
+    const aTs = new Date(a.createdAt).getTime();
+    const bTs = new Date(b.createdAt).getTime();
+    return bTs - aTs;
+  });
+
+  return {
+    projectName: state.projectName,
+    orchestratorName: state.orchestratorName,
+    swarms,
+    agents: state.agents,
+    tasks,
+    credentials: state.credentials,
+    activity: state.activity,
+    integrations: getIntegrations(),
+    providerCatalog,
+    automatonModules,
+    metrics: computeMetrics(),
+    updatedAt: state.updatedAt
+  };
+}
+
 if (state.activity.length === 0) {
-  addActivity("info", "anyre.quest control plane online. ZeroClaw + Automaton adapters active.");
+  addActivity("info", "anyre.quest runtime online. Queue engine + adapters active.");
 } else {
   persistState();
 }
 
-setInterval(tickHeartbeats, 1500);
+setInterval(() => {
+  tickHeartbeats();
+  tickRuntime();
+}, 1200);
 
 function sendJson(res, statusCode, payload) {
   const body = JSON.stringify(payload);
@@ -479,10 +1028,12 @@ function notFound(res, message = "Not found") {
 async function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
+    let total = 0;
 
     req.on("data", (chunk) => {
       chunks.push(chunk);
-      if (Buffer.concat(chunks).length > 1_000_000) {
+      total += chunk.length;
+      if (total > 1_000_000) {
         reject(new Error("Request body too large"));
       }
     });
@@ -542,18 +1093,6 @@ function serveStatic(res, pathname) {
   fs.createReadStream(filePath).pipe(res);
 }
 
-function findSwarmById(id) {
-  return state.swarms.find((swarm) => swarm.id === id) || null;
-}
-
-function findAgentById(id) {
-  return state.agents.find((agent) => agent.id === id) || null;
-}
-
-function findCredentialById(id) {
-  return state.credentials.find((credential) => credential.id === id) || null;
-}
-
 async function handleApi(req, res, pathname) {
   const method = req.method || "GET";
 
@@ -561,6 +1100,7 @@ async function handleApi(req, res, pathname) {
     sendJson(res, 200, {
       status: "ok",
       uptimeSeconds: Math.round(process.uptime()),
+      activeRuns: activeRuns.size,
       time: nowIso()
     });
     return;
@@ -628,6 +1168,7 @@ async function handleApi(req, res, pathname) {
     const provider = getProviderId(body.provider || "openrouter");
     const model = sanitizeText(body.model, defaultModelForProvider(provider));
     const deployTarget = sanitizeText(body.deployTarget, "local") || "local";
+    const deployCommand = sanitizeText(body.deployCommand || "");
     const autoAdapt = body.autoAdapt !== false;
     const heartbeatMs = clamp(Number(body.heartbeatMs) || 8000, 2000, 60000);
     const agentCount = clamp(Number(body.agentCount) || 4, 1, 24);
@@ -644,6 +1185,7 @@ async function handleApi(req, res, pathname) {
       provider,
       model,
       deployTarget,
+      deployCommand,
       autoAdapt,
       heartbeatMs,
       status: "draft",
@@ -679,6 +1221,26 @@ async function handleApi(req, res, pathname) {
 
     startSwarm(swarm);
     addActivity("info", `Swarm ${swarm.name} deployed to ${swarm.deployTarget}.`, { swarmId: swarm.id });
+
+    if (swarm.deployCommand) {
+      const deployTask = createTask(swarm, {
+        title: `Deploy ${swarm.name}`,
+        details: `Deployment pipeline for ${swarm.deployTarget}`,
+        executionMode: "shell",
+        command: swarm.deployCommand,
+        priority: 5,
+        maxAttempts: 2,
+        timeoutMs: 180_000,
+        execCwd: ""
+      });
+
+      addActivity("info", `Deployment command queued as task ${deployTask.title}.`, {
+        swarmId: swarm.id,
+        taskId: deployTask.id
+      });
+    }
+
+    persistState();
     sendJson(res, 200, toViewModel());
     return;
   }
@@ -733,6 +1295,146 @@ async function handleApi(req, res, pathname) {
     return;
   }
 
+  const seedMatch = pathname.match(/^\/api\/swarms\/([^/]+)\/tasks\/seed$/);
+  if (method === "POST" && seedMatch) {
+    const swarmId = decodeURIComponent(seedMatch[1]);
+    const swarm = findSwarmById(swarmId);
+
+    if (!swarm) {
+      notFound(res, "Swarm not found.");
+      return;
+    }
+
+    const body = await readBody(req);
+    const count = clamp(Number(body.count) || 4, 1, 12);
+
+    const created = [];
+    for (let i = 0; i < count; i += 1) {
+      created.push(createTask(swarm, buildTaskFromSeed(swarm, i)));
+    }
+
+    addActivity("info", `${created.length} objective tasks seeded for ${swarm.name}.`, {
+      swarmId: swarm.id
+    });
+
+    persistState();
+    sendJson(res, 201, { created, state: toViewModel() });
+    return;
+  }
+
+  const addTaskMatch = pathname.match(/^\/api\/swarms\/([^/]+)\/tasks$/);
+  if (method === "POST" && addTaskMatch) {
+    const swarmId = decodeURIComponent(addTaskMatch[1]);
+    const swarm = findSwarmById(swarmId);
+
+    if (!swarm) {
+      notFound(res, "Swarm not found.");
+      return;
+    }
+
+    const body = await readBody(req);
+    const title = sanitizeText(body.title);
+    if (!title) {
+      sendJson(res, 400, { error: "Task title is required." });
+      return;
+    }
+
+    const executionMode = TASK_MODE_SET.has(body.executionMode) ? body.executionMode : "simulate";
+    if (executionMode === "shell" && !sanitizeText(body.command)) {
+      sendJson(res, 400, { error: "Shell tasks require a command." });
+      return;
+    }
+
+    const task = createTask(swarm, {
+      title,
+      details: body.details,
+      priority: body.priority,
+      executionMode,
+      command: body.command,
+      execCwd: body.execCwd,
+      timeoutMs: body.timeoutMs,
+      maxAttempts: body.maxAttempts,
+      provider: body.provider,
+      model: body.model
+    });
+
+    addActivity("info", `Task queued for ${swarm.name}: ${task.title}`, {
+      swarmId: swarm.id,
+      taskId: task.id
+    });
+
+    sendJson(res, 201, { task, state: toViewModel() });
+    return;
+  }
+
+  const retryTaskMatch = pathname.match(/^\/api\/tasks\/([^/]+)\/retry$/);
+  if (method === "POST" && retryTaskMatch) {
+    const taskId = decodeURIComponent(retryTaskMatch[1]);
+    const task = findTaskById(taskId);
+
+    if (!task) {
+      notFound(res, "Task not found.");
+      return;
+    }
+
+    const swarm = findSwarmById(task.swarmId);
+    if (!swarm) {
+      notFound(res, "Swarm not found.");
+      return;
+    }
+
+    if (task.status === "running") {
+      sendJson(res, 400, { error: "Task is currently running." });
+      return;
+    }
+
+    task.status = "queued";
+    task.assignedAgentId = null;
+    task.startedAt = null;
+    task.endedAt = null;
+    task.queuedAt = nowIso();
+    task.lastError = "";
+
+    addActivity("info", `Task ${task.title} re-queued manually.`, {
+      taskId: task.id,
+      swarmId: task.swarmId
+    });
+
+    sendJson(res, 200, toViewModel());
+    return;
+  }
+
+  const cancelTaskMatch = pathname.match(/^\/api\/tasks\/([^/]+)\/cancel$/);
+  if (method === "POST" && cancelTaskMatch) {
+    const taskId = decodeURIComponent(cancelTaskMatch[1]);
+    const task = findTaskById(taskId);
+
+    if (!task) {
+      notFound(res, "Task not found.");
+      return;
+    }
+
+    if (task.status === "running") {
+      killRunProcess(task.id);
+      activeRuns.delete(task.id);
+    }
+
+    const swarm = findSwarmById(task.swarmId);
+    releaseAgentFromTask(task, swarm);
+
+    task.status = "canceled";
+    task.endedAt = nowIso();
+    task.lastError = "Canceled by operator";
+
+    addActivity("warn", `Task ${task.title} canceled by operator.`, {
+      taskId: task.id,
+      swarmId: task.swarmId
+    });
+
+    sendJson(res, 200, toViewModel());
+    return;
+  }
+
   const reviveMatch = pathname.match(/^\/api\/agents\/([^/]+)\/revive$/);
   if (method === "POST" && reviveMatch) {
     const agentId = decodeURIComponent(reviveMatch[1]);
@@ -749,7 +1451,9 @@ async function handleApi(req, res, pathname) {
       return;
     }
 
-    agent.status = "running";
+    if (!agent.currentTaskId) {
+      agent.status = "running";
+    }
     agent.nextBeatAt = Date.now() + 400;
     addActivity("info", `${agent.name} manually revived.`);
     sendJson(res, 200, toViewModel());

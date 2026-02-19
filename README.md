@@ -13,10 +13,16 @@ It is not a fork of ZeroClaw or Conway Automaton.
 - Swarm builder with:
   - Any provider + any model fields.
   - Agent count, heartbeat interval, deploy target.
+  - Optional deploy command (queued as an executable task on deploy).
   - Module toggles sourced from local `automaton/src`.
 - Deploy/pause swarms.
-- Continuous heartbeat simulation per agent.
-- Obstacle simulation with automatic provider/model failover.
+- Continuous heartbeat and scheduler runtime per agent.
+- Real task queue with lifecycle states: `queued`, `running`, `succeeded`, `failed`, `canceled`.
+- Task execution modes:
+  - `simulate` (autonomous runtime simulation)
+  - `shell` (real command execution with timeout + output capture)
+- Retry/cancel controls and objective-based task seeding.
+- Obstacle handling with automatic provider/model failover when auto-adapt is enabled.
 - Inter-agent idea broadcast.
 - Credential profile mapping by reference (`secretRef`, never raw secrets).
 - Live provider catalog sourced from local `zeroclaw/src/providers/mod.rs`.
@@ -45,6 +51,7 @@ Then open:
 - This is a local orchestration layer; it does not mutate `zeroclaw` or `automaton` code.
 - It reads both repositories for capability discovery and repo metadata.
 - For production, move credential refs to a secret manager and enforce authn/authz on API routes.
+- Shell task execution runs commands from your local machine context; use carefully.
 
 ## Attribution
 
