@@ -7,7 +7,7 @@
 
 <p align="center">
   <strong>ClawReform fork with autonomous self-modification capabilities</strong><br/>
-  Built in Rust • 14 crates • 1,767+ tests • Zero clippy warnings
+  Built in Rust • 14 crates • 1,369+ tests • Zero clippy warnings
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 ---
 
-## 🦾 What is ClawReform?
+## What is ClawReform?
 
 ClawReform is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/clawreform) with **autonomous self-modification capabilities**. It can:
 
@@ -35,7 +35,7 @@ ClawReform is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/cl
 - **Validate changes** with automatic build/test/clippy checks
 - **Rollback safely** when modifications fail
 
-## ✨ Key Features
+## Key Features
 
 | Feature               | Description                                                     |
 | --------------------- | --------------------------------------------------------------- |
@@ -45,7 +45,7 @@ ClawReform is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/cl
 | **60 Bundled Skills** | Pre-built skills for common tasks                               |
 | **7 Hands**           | Browser, Clip, Lead, Collector, Predictor, Researcher, Twitter  |
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```text
 .
@@ -58,7 +58,7 @@ ClawReform is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/cl
 └── xtask/              # Custom build and automation tasks
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Install ClawReform
@@ -71,25 +71,25 @@ clawreform daemon
 clawreform chat "Add a /api/health endpoint"
 ```
 
-## 📚 Documentation
+## Documentation
 
 - [Getting Started](https://clawreform.com/docs/getting-started)
 - [Self-Modification Guide](https://clawreform.com/docs/self-modify)
 - [MCP Configuration](https://clawreform.com/docs/mcp)
 - [API Reference](https://clawreform.com/docs/api)
 
-## 🤝 Community
+## Community
 
 - [Skool Community](https://skool.com/autoclaw) - Learn and share
 - [Twitter/X](https://x.com/clawreform) - Latest updates
 - [GitHub Discussions](https://github.com/aegntic/clawreform/discussions)
 
-## 📜 License
+## License
 
 MIT or Apache-2.0 - your choice.
 
 ---
 
 <p align="center">
-  <strong>Built with 🦀 by the ClawReform Team at AE.ltd</strong>
+  <strong>Built with earlier versions of ClawReform by the ClawReform Team at AE.ltd</strong>
 </p>
