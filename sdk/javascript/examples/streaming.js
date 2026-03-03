@@ -5,10 +5,10 @@
  *   node streaming.js
  */
 
-const { OpenFang } = require("../index");
+const { ClawReform } = require("../index");
 
 async function main() {
-  const client = new OpenFang("http://localhost:3000");
+  const client = new ClawReform("http://localhost:4200");
 
   // Create an agent
   const agent = await client.agents.create({ template: "assistant" });
