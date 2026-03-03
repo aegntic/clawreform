@@ -1,10 +1,18 @@
 {
-  "name": "@autoclaw/sdk",
+  "name": "@clawreform/sdk",
   "version": "0.2.1",
   "description": "Official JavaScript/TypeScript client for the ClawReform Agent OS REST API",
   "main": "index.js",
   "types": "index.d.ts",
-  "keywords": ["clawreform", "autoclaw", "agent", "ai", "llm", "sdk", "agent-os"],
+  "keywords": [
+    "clawreform",
+    "autoclaw",
+    "agent",
+    "ai",
+    "llm",
+    "sdk",
+    "agent-os"
+  ],
   "license": "MIT",
   "author": "ClawReform Team",
   "repository": {
@@ -18,5 +26,9 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "files": ["index.js", "index.d.ts", "README.md"]
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ]
 }
