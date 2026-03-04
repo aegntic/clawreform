@@ -46,7 +46,7 @@ pub async fn favicon_ico() -> impl IntoResponse {
     )
 }
 
-/// GET / — Serve the ClawReform Dashboard single-page application.
+/// GET / — Serve the clawREFORM by aegntic.ai Dashboard single-page application.
 ///
 /// Returns the full SPA with ETag header based on package version for caching.
 pub async fn webchat_page() -> impl IntoResponse {
@@ -63,7 +63,7 @@ pub async fn webchat_page() -> impl IntoResponse {
     )
 }
 
-/// The embedded HTML/CSS/JS for the ClawReform Dashboard.
+/// The embedded HTML/CSS/JS for the clawREFORM by aegntic.ai Dashboard.
 ///
 /// Assembled at compile time from organized static files.
 /// All vendor libraries (Alpine.js, marked.js, highlight.js) are bundled

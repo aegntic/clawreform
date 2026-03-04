@@ -1179,7 +1179,7 @@ fn migrate_config_from_json(
     let toml_str = toml::to_string_pretty(&of_config)?;
 
     let config_content = format!(
-        "# ClawReform Agent OS configuration\n\
+        "# clawREFORM by aegntic.ai configuration\n\
          # Migrated from OpenClaw on {}\n\n\
          {toml_str}",
         chrono::Utc::now().format("%Y-%m-%d %H:%M:%S UTC"),
@@ -1822,7 +1822,7 @@ fn convert_agent_from_json(
         .or_else(|| defaults.and_then(|d| d.identity.clone()))
         .unwrap_or_else(|| {
             format!(
-                "You are {display_name}, an AI agent running on the ClawReform Agent OS. You are helpful, concise, and accurate."
+                "You are {display_name}, an AI agent running on the clawREFORM by aegntic.ai. You are helpful, concise, and accurate."
             )
         });
 
@@ -2229,7 +2229,8 @@ fn report_skipped_features(root: &OpenClawRoot, source: &Path, report: &mut Migr
         report.skipped.push(SkippedItem {
             kind: ItemKind::Config,
             name: "hooks".to_string(),
-            reason: "Webhook hooks not supported — use ClawReform's event system instead".to_string(),
+            reason: "Webhook hooks not supported — use ClawReform's event system instead"
+                .to_string(),
         });
     }
 
@@ -2387,7 +2388,7 @@ fn migrate_legacy_config(
     let toml_str = toml::to_string_pretty(&of_config)?;
 
     let config_content = format!(
-        "# ClawReform Agent OS configuration\n\
+        "# clawREFORM by aegntic.ai configuration\n\
          # Migrated from OpenClaw on {}\n\n\
          {toml_str}",
         chrono::Utc::now().format("%Y-%m-%d %H:%M:%S UTC"),
@@ -2780,7 +2781,7 @@ fn convert_legacy_agent(
 
     let system_prompt = oc.system_prompt.unwrap_or_else(|| {
         format!(
-            "You are {}, an AI agent running on the ClawReform Agent OS. {}",
+            "You are {}, an AI agent running on the clawREFORM by aegntic.ai. {}",
             oc.name,
             if oc.description.is_empty() {
                 "You are helpful, concise, and accurate.".to_string()
@@ -2993,8 +2994,9 @@ fn scan_legacy_skills(source: &Path, report: &mut MigrationReport) {
                     report.skipped.push(SkippedItem {
                         kind: ItemKind::Skill,
                         name: name.clone(),
-                        reason: "Node.js skill — run with `clawreform skill install` after migration"
-                            .to_string(),
+                        reason:
+                            "Node.js skill — run with `clawreform skill install` after migration"
+                                .to_string(),
                     });
                 } else {
                     report.skipped.push(SkippedItem {

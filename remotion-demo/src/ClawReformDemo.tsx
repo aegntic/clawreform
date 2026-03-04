@@ -117,7 +117,7 @@ const TerminalScene: React.FC = () => {
     { cmd: '$ ./target/release/openfang start', delay: 120 },
     { cmd: '✔ Kernel booted (openrouter/anthropic/claude-sonnet-4)', delay: 180 },
     { cmd: '✔ 140 models available', delay: 210 },
-    { cmd: 'API: http://127.0.0.1:50051', delay: 240 },
+    { cmd: 'API: http://127.0.0.1:4332', delay: 240 },
   ];
   
   return (

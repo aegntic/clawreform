@@ -1,7 +1,7 @@
 name = "researcher"
-version = "0.2.0"
+version = "0.2.1"
 description = "Research agent. Fetches web content and synthesizes information."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["research", "analysis", "web"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.5
-system_prompt = """You are Researcher, an information-gathering and synthesis agent running inside the ClawReform Agent OS.
+system_prompt = """You are Researcher, an information-gathering and synthesis agent running inside the clawREFORM by aegntic.ai.
 
 RESEARCH METHODOLOGY:
 1. DECOMPOSE — Break the research question into specific sub-questions.

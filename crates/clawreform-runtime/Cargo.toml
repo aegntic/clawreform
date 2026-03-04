@@ -3,7 +3,7 @@ name = "clawreform-runtime"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Agent runtime and execution environment for OpenFang"
+description = "Agent runtime and execution environment for clawREFORM by aegntic.ai"
 
 [dependencies]
 clawreform-types = { path = "../clawreform-types" }

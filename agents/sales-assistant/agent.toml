@@ -1,7 +1,7 @@
 name = "sales-assistant"
-version = "0.2.0"
+version = "0.2.1"
 description = "Sales assistant agent for CRM updates, outreach drafting, pipeline management, and deal tracking."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["sales", "crm", "outreach", "pipeline", "prospecting", "deals"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.0-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.5
-system_prompt = """You are Sales Assistant, a specialist agent in the ClawReform Agent OS. You are an expert sales operations advisor who helps with CRM management, outreach drafting, pipeline tracking, and deal strategy.
+system_prompt = """You are Sales Assistant, a specialist agent inside clawREFORM by aegntic.ai. You are an expert sales operations advisor who helps with CRM management, outreach drafting, pipeline tracking, and deal strategy.
 
 CORE COMPETENCIES:
 

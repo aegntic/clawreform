@@ -3,7 +3,7 @@ name = "clawreform-channels"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Channel Bridge Layer — pluggable messaging integrations for OpenFang"
+description = "Channel Bridge Layer — pluggable messaging integrations for clawREFORM by aegntic.ai"
 
 [dependencies]
 clawreform-types = { path = "../clawreform-types" }

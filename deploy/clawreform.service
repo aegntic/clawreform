@@ -1,6 +1,6 @@
 [Unit]
-Description=OpenFang Agent OS Daemon
-Documentation=https://github.com/clawreform-ai/clawreform
+Description=clawREFORM by aegntic.ai daemon
+Documentation=https://github.com/aegntic/clawreform
 After=network-online.target
 Wants=network-online.target
 

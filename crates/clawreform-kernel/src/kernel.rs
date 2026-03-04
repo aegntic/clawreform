@@ -102,7 +102,8 @@ pub struct ClawReformKernel {
     /// Integration health monitor.
     pub extension_health: clawreform_extensions::health::HealthMonitor,
     /// Effective MCP server list (manual config + extension-installed, merged at boot).
-    pub effective_mcp_servers: std::sync::RwLock<Vec<clawreform_types::config::McpServerConfigEntry>>,
+    pub effective_mcp_servers:
+        std::sync::RwLock<Vec<clawreform_types::config::McpServerConfigEntry>>,
     /// Delivery receipt tracker (bounded LRU, max 10K entries).
     pub delivery_tracker: DeliveryTracker,
     /// Cron job scheduler.
@@ -128,7 +129,8 @@ pub struct ClawReformKernel {
     /// WhatsApp Web gateway child process PID (for shutdown cleanup).
     pub whatsapp_gateway_pid: Arc<std::sync::Mutex<Option<u32>>>,
     /// Channel adapters registered at bridge startup (for proactive `channel_send` tool).
-    pub channel_adapters: dashmap::DashMap<String, Arc<dyn clawreform_channels::types::ChannelAdapter>>,
+    pub channel_adapters:
+        dashmap::DashMap<String, Arc<dyn clawreform_channels::types::ChannelAdapter>>,
     /// Weak self-reference for trigger dispatch (set after Arc wrapping).
     self_handle: OnceLock<Weak<ClawReformKernel>>,
 }
@@ -241,7 +243,17 @@ impl DeliveryTracker {
 
 /// Create workspace directory structure for an agent.
 fn ensure_workspace(workspace: &Path) -> KernelResult<()> {
-    for subdir in &["data", "output", "sessions", "skills", "logs", "memory"] {
+    for subdir in &[
+        "data",
+        "output",
+        "sessions",
+        "skills",
+        "logs",
+        "memory",
+        "memory/working",
+        "memory/dispatches",
+        "memory/summaries",
+    ] {
         std::fs::create_dir_all(workspace.join(subdir)).map_err(|e| {
             KernelError::ClawReform(ClawReformError::Internal(format!(
                 "Failed to create workspace dir {}/{subdir}: {e}",
@@ -258,10 +270,11 @@ fn ensure_workspace(workspace: &Path) -> KernelResult<()> {
         workspace.join("AGENT.json"),
         serde_json::to_string_pretty(&meta).unwrap_or_default(),
     );
+    refresh_memory_views(workspace);
     Ok(())
 }
 
-/// Generate workspace identity files for an agent (SOUL.md, USER.md, TOOLS.md, MEMORY.md).
+/// Generate workspace identity files for an agent (SOUL.md, HANDS.md, USER.md, TOOLS.md, MEMORY.md, SKILLS.md).
 /// Uses `create_new` to never overwrite existing files (preserves user edits).
 fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
     use std::fs::OpenOptions;
@@ -269,7 +282,7 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
 
     let soul_content = format!(
         "# Soul\n\
-         You are {}. {}\n\
+         You are {}, a clawREFORM by aegntic.ai agent. {}\n\
          Be genuinely helpful. Have opinions. Be resourceful before asking.\n\
          Treat user data with respect \u{2014} you are a guest in their life.\n",
         manifest.name,
@@ -280,6 +293,19 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
         }
     );
 
+    let hands_content = "# Hands\n\
+         <!-- Embodied action doctrine for this clawREFORM by aegntic.ai agent -->\n\n\
+         ## Default posture\n\
+         - Observe before acting.\n\
+         - Prefer reversible steps before irreversible ones.\n\
+         - Escalate before high-blast-radius, external, or destructive actions.\n\n\
+         ## Action modes\n\
+         - Inspect: read files, logs, configs, and state before making changes.\n\
+         - Draft: sketch plans or patches when the path is unclear.\n\
+         - Modify: make direct edits when the task is well understood and reversible.\n\
+         - Execute: run commands deliberately, and explain risky actions first.\n\
+         - Publish: return durable outcomes to shared memory, ledgers, or docs.\n";
+
     let user_content = "# User\n\
          <!-- Updated by the agent as it learns about the user -->\n\
          - Name:\n\
@@ -287,10 +313,68 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
          - Preferences:\n";
 
     let tools_content = "# Tools & Environment\n\
-         <!-- Agent-specific environment notes (not synced) -->\n";
+         <!-- Agent-specific environment notes and raw interfaces (not synced) -->\n\
+         - Local constraints:\n\
+         - Trusted environments:\n\
+         - High-risk surfaces:\n";
 
-    let memory_content = "# Long-Term Memory\n\
-         <!-- Curated knowledge the agent preserves across sessions -->\n";
+    let memory_content = "# Memory\n\
+         <!-- Memory law for this clawREFORM by aegntic.ai agent -->\n\n\
+         ## Core\n\
+         - Durable truths that should survive across projects and seasons.\n\n\
+         ## Overview\n\
+         - Big-picture situational context across active work.\n\n\
+         ## Projects\n\
+         - Canonical dossiers for each active initiative.\n\n\
+         ## Working Detail\n\
+         - Hot, temporary context that should be compacted aggressively.\n\n\
+         ## Promotion Rules\n\
+         - Promote only what is repeated, relevant, and validated.\n\
+         - Keep the core layer small and hard to change.\n\
+         - Project truth beats local scratch. Core truth beats project fashion.\n";
+
+    let core_content = "# Core Memory\n\
+         <!-- High-friction durable truths. clawREFORM by aegntic.ai does not auto-promote into this file. -->\n\n\
+         ## Durable truths\n\
+         - Capture only truths that should survive across projects and seasons.\n\
+         - Prefer human review over automatic growth here.\n";
+
+    let overview_content = format!(
+        "# Overview Memory\n\
+         <!-- Cross-project map for clawREFORM by aegntic.ai -->\n\n\
+         ## Auto Snapshot\n\
+         {start}\n\
+         _No overview movement yet._\n\
+         {end}\n\n\
+         ## Human Notes\n\
+         - Record strategic shifts, durable priorities, and cross-project tensions here.\n",
+        start = AUTO_SECTION_START,
+        end = AUTO_SECTION_END
+    );
+
+    let project_content = format!(
+        "# Project Memory\n\
+         <!-- Current project ledger for this clawREFORM by aegntic.ai workspace -->\n\n\
+         ## Auto Snapshot\n\
+         {start}\n\
+         _No project movement captured yet._\n\
+         {end}\n\n\
+         ## Human Notes\n\
+         - Keep durable project truths, accepted decisions, and important constraints here.\n",
+        start = AUTO_SECTION_START,
+        end = AUTO_SECTION_END
+    );
+
+    let skills_content = "# Skills\n\
+         <!-- Procedural doctrine for this clawREFORM by aegntic.ai agent -->\n\n\
+         ## Core doctrine\n\
+         - Prefer reusable skills over ad-hoc improvisation.\n\
+         - Turn repeated successful workflows into explicit skills.\n\
+         - Keep skills scoped, testable, and composable.\n\n\
+         ## Active focus\n\
+         - Skills this agent relies on most:\n\
+         - Skills this agent is refining:\n\
+         - Skills this agent should avoid unless necessary:\n";
 
     let agents_content = "# Agent Behavioral Guidelines\n\n\
          ## Core Principles\n\
@@ -298,7 +382,13 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
          - Batch tool calls when possible \u{2014} don't output reasoning between each call.\n\
          - When a task is ambiguous, ask ONE clarifying question, not five.\n\
          - Store important context in memory (memory_store) proactively.\n\
-         - Search memory (memory_recall) before asking the user for context they may have given before.\n\n\
+         - Search memory (memory_recall) before asking the user for context they may have given before.\n\
+         - Publish durable conclusions, not raw scratch. Shared truth belongs in ledgers, not in passing chatter.\n\n\
+         ## Dispatch & Ledger Doctrine\n\
+         - Private thinking is allowed; shared truth must be published deliberately.\n\
+         - Observations, warnings, proposals, and handoffs should be expressed as clean dispatches.\n\
+         - Project memory is the ledger of accepted truth, not a dump of every thought.\n\
+         - Overview memory should summarize direction, not duplicate project detail.\n\n\
          ## Tool Usage Protocols\n\
          - file_read BEFORE file_write \u{2014} always understand what exists.\n\
          - web_search for current info, web_fetch for specific URLs.\n\
@@ -327,6 +417,9 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
          name: {name}\n\
          archetype: assistant\n\
          vibe: helpful\n\
+         platform: clawREFORM by aegntic.ai\n\
+         operator: ae.ltd\n\
+         ecosystem: aegntic.ai\n\
          emoji:\n\
          avatar_url:\n\
          greeting_style: warm\n\
@@ -339,9 +432,14 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
 
     let files: &[(&str, &str)] = &[
         ("SOUL.md", &soul_content),
+        ("HANDS.md", hands_content),
         ("USER.md", user_content),
         ("TOOLS.md", tools_content),
         ("MEMORY.md", memory_content),
+        ("CORE.md", core_content),
+        ("OVERVIEW.md", &overview_content),
+        ("PROJECT.md", &project_content),
+        ("SKILLS.md", skills_content),
         ("AGENTS.md", agents_content),
         ("BOOTSTRAP.md", &bootstrap_content),
         ("IDENTITY.md", &identity_content),
@@ -354,11 +452,14 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
              <!-- Proactive reminders to check during heartbeat cycles -->\n\n\
              ## Every Heartbeat\n\
              - [ ] Check for pending tasks or messages\n\
-             - [ ] Review memory for stale items\n\n\
+             - [ ] Review working detail for compaction candidates\n\
+             - [ ] Publish durable conclusions into project memory\n\n\
              ## Daily\n\
-             - [ ] Summarize today's activity for the user\n\n\
+             - [ ] Summarize project movement and unresolved risks\n\
+             - [ ] Refresh overview memory if priorities shifted\n\n\
              ## Weekly\n\
-             - [ ] Archive old sessions and clean up memory\n"
+             - [ ] Archive stale scratch and compact project ledgers\n\
+             - [ ] Review whether any overview truth should become core\n"
                 .to_string(),
         )
     } else {
@@ -397,16 +498,40 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
     }
 }
 
-/// Append an assistant response summary to the daily memory log (best-effort, append-only).
+const AUTO_SECTION_START: &str = "<!-- clawreform:auto:start -->";
+const AUTO_SECTION_END: &str = "<!-- clawreform:auto:end -->";
+
+#[derive(Debug, Clone)]
+struct NoteSnapshot {
+    stem: String,
+    title: String,
+    preview: String,
+}
+
+/// Append workspace memory artifacts for an assistant response.
+fn append_workspace_memory_artifacts(workspace: &Path, agent_name: &str, response: &str) {
+    let sanitized = clawreform_runtime::response_sanitizer::sanitize_visible_response(response);
+    if sanitized.trim().is_empty() {
+        return;
+    }
+    append_working_detail_log(workspace, &sanitized);
+    write_dispatch_note(workspace, agent_name, &sanitized);
+    refresh_memory_views(workspace);
+}
+
+/// Append an assistant response summary to the working-detail log (best-effort, append-only).
 /// Caps daily log at 1MB to prevent unbounded growth.
-fn append_daily_memory_log(workspace: &Path, response: &str) {
+fn append_working_detail_log(workspace: &Path, response: &str) {
     use std::io::Write;
     let trimmed = response.trim();
     if trimmed.is_empty() {
         return;
     }
     let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
-    let log_path = workspace.join("memory").join(format!("{today}.md"));
+    let log_path = workspace
+        .join("memory")
+        .join("working")
+        .join(format!("{today}.md"));
     // Security: cap total daily log to 1MB
     if let Ok(metadata) = std::fs::metadata(&log_path) {
         if metadata.len() > 1_048_576 {
@@ -427,6 +552,316 @@ fn append_daily_memory_log(workspace: &Path, response: &str) {
     {
         let _ = writeln!(f, "\n## {timestamp}\n{summary}\n");
     }
+}
+
+fn write_dispatch_note(workspace: &Path, agent_name: &str, response: &str) {
+    let trimmed = response.trim();
+    if trimmed.is_empty() {
+        return;
+    }
+
+    let dispatch_dir = workspace.join("memory").join("dispatches");
+    let _ = std::fs::create_dir_all(&dispatch_dir);
+
+    let now = chrono::Utc::now();
+    let timestamp = now.to_rfc3339();
+    let slug = slugify_text(trimmed, 8, 48);
+    let filename = format!(
+        "{}-{}.md",
+        now.format("%Y-%m-%dT%H-%M-%S%.3fZ"),
+        if slug.is_empty() { "dispatch" } else { &slug }
+    );
+    let path = dispatch_dir.join(filename);
+
+    let title = dispatch_title(trimmed);
+    let preview = truncate_chars_preserving_boundary(trimmed, 700);
+    let body = format!(
+        "---\nkind: dispatch\nagent: {agent}\ncreated_at: {created_at}\nvisibility: shared\nstatus: proposed\nsource: assistant_response\nplatform: clawREFORM by aegntic.ai\noperator: ae.ltd\necosystem: aegntic.ai\n---\n# {title}\n\n{preview}\n",
+        agent = agent_name,
+        created_at = timestamp,
+        title = title,
+        preview = preview
+    );
+    let _ = std::fs::write(path, body);
+}
+
+fn write_session_summary_note(workspace: &Path, slug: &str, summary: &str) {
+    let summaries_dir = workspace.join("memory").join("summaries");
+    let _ = std::fs::create_dir_all(&summaries_dir);
+
+    let now = chrono::Utc::now();
+    let safe_slug = if slug.is_empty() { "session" } else { slug };
+    let filename = format!("{}-{}.md", now.format("%Y-%m-%d"), safe_slug);
+    let title = format!("Session Summary — {}", safe_slug.replace('-', " "));
+    let body = format!(
+        "---\nkind: session_summary\ncreated_at: {created_at}\nstatus: accepted\nplatform: clawREFORM by aegntic.ai\noperator: ae.ltd\necosystem: aegntic.ai\n---\n# {title}\n\n{summary}\n",
+        created_at = now.to_rfc3339(),
+        title = title,
+        summary = summary
+    );
+    let _ = std::fs::write(summaries_dir.join(filename), body);
+}
+
+fn refresh_memory_views(workspace: &Path) {
+    let _ = write_or_preserve_default(
+        &workspace.join("CORE.md"),
+        "# Core Memory\n\
+         <!-- High-friction durable truths. clawREFORM by aegntic.ai does not auto-promote into this file. -->\n\n\
+         ## Durable truths\n\
+         - Capture only truths that should survive across projects and seasons.\n\
+         - Prefer human review over automatic growth here.\n",
+    );
+    let _ = write_or_preserve_default(
+        &workspace.join("OVERVIEW.md"),
+        &format!(
+            "# Overview Memory\n\
+             <!-- Cross-project map for clawREFORM by aegntic.ai -->\n\n\
+             ## Auto Snapshot\n\
+             {start}\n\
+             _No overview movement yet._\n\
+             {end}\n\n\
+             ## Human Notes\n\
+             - Record strategic shifts, durable priorities, and cross-project tensions here.\n",
+            start = AUTO_SECTION_START,
+            end = AUTO_SECTION_END
+        ),
+    );
+    let _ = write_or_preserve_default(
+        &workspace.join("PROJECT.md"),
+        &format!(
+            "# Project Memory\n\
+             <!-- Current project ledger for this clawREFORM by aegntic.ai workspace -->\n\n\
+             ## Auto Snapshot\n\
+             {start}\n\
+             _No project movement captured yet._\n\
+             {end}\n\n\
+             ## Human Notes\n\
+             - Keep durable project truths, accepted decisions, and important constraints here.\n",
+            start = AUTO_SECTION_START,
+            end = AUTO_SECTION_END
+        ),
+    );
+
+    let dispatches = collect_recent_note_snapshots(&workspace.join("memory").join("dispatches"), 5);
+    let summaries = collect_recent_note_snapshots(&workspace.join("memory").join("summaries"), 5);
+
+    let project_auto = build_project_auto_snapshot(&dispatches, &summaries);
+    let overview_auto = build_overview_auto_snapshot(&dispatches, &summaries);
+
+    let _ = update_managed_section(&workspace.join("PROJECT.md"), &project_auto);
+    let _ = update_managed_section(&workspace.join("OVERVIEW.md"), &overview_auto);
+}
+
+fn build_project_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSnapshot]) -> String {
+    let mut lines = vec![format!(
+        "_Last updated: {}_",
+        chrono::Utc::now().to_rfc3339()
+    )];
+
+    if dispatches.is_empty() && summaries.is_empty() {
+        lines.push("No recent project movement recorded yet.".to_string());
+        return lines.join("\n");
+    }
+
+    if !dispatches.is_empty() {
+        lines.push("\n### Recent Dispatches".to_string());
+        for item in dispatches {
+            lines.push(format!(
+                "- `{}` — **{}**: {}",
+                item.stem, item.title, item.preview
+            ));
+        }
+    }
+
+    if !summaries.is_empty() {
+        lines.push("\n### Recent Session Summaries".to_string());
+        for item in summaries {
+            lines.push(format!(
+                "- `{}` — **{}**: {}",
+                item.stem, item.title, item.preview
+            ));
+        }
+    }
+
+    lines.join("\n")
+}
+
+fn build_overview_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSnapshot]) -> String {
+    let mut lines = vec![format!(
+        "_Last updated: {}_",
+        chrono::Utc::now().to_rfc3339()
+    )];
+
+    lines.push(format!(
+        "- Recent dispatches captured: {}",
+        dispatches.len()
+    ));
+    lines.push(format!(
+        "- Recent session summaries captured: {}",
+        summaries.len()
+    ));
+
+    if let Some(item) = dispatches.first() {
+        lines.push(format!(
+            "- Latest movement: {} — {}",
+            item.title, item.preview
+        ));
+    } else {
+        lines.push("- Latest movement: none yet".to_string());
+    }
+
+    if let Some(item) = summaries.first() {
+        lines.push(format!(
+            "- Current active arc: {} — {}",
+            item.title, item.preview
+        ));
+    } else {
+        lines.push("- Current active arc: none yet".to_string());
+    }
+
+    lines.join("\n")
+}
+
+fn collect_recent_note_snapshots(dir: &Path, limit: usize) -> Vec<NoteSnapshot> {
+    let mut paths: Vec<std::path::PathBuf> = match std::fs::read_dir(dir) {
+        Ok(entries) => entries
+            .flatten()
+            .map(|entry| entry.path())
+            .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("md"))
+            .collect(),
+        Err(_) => return Vec::new(),
+    };
+    paths.sort();
+    paths.reverse();
+
+    paths
+        .into_iter()
+        .take(limit)
+        .filter_map(|path| read_note_snapshot(&path))
+        .collect()
+}
+
+fn read_note_snapshot(path: &Path) -> Option<NoteSnapshot> {
+    let content = std::fs::read_to_string(path).ok()?;
+    let stem = path.file_stem()?.to_string_lossy().to_string();
+    let stripped = strip_frontmatter(&content);
+
+    let mut title = String::new();
+    let mut preview = String::new();
+    for line in stripped.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if title.is_empty() && trimmed.starts_with('#') {
+            title = trimmed.trim_start_matches('#').trim().to_string();
+            continue;
+        }
+        if !trimmed.starts_with('#') && !trimmed.starts_with("<!--") {
+            preview = truncate_chars_preserving_boundary(trimmed, 160);
+            break;
+        }
+    }
+
+    if title.is_empty() {
+        title = stem.replace('-', " ");
+    }
+    if preview.is_empty() {
+        preview = "No preview available.".to_string();
+    }
+
+    Some(NoteSnapshot {
+        stem,
+        title,
+        preview,
+    })
+}
+
+fn strip_frontmatter(content: &str) -> String {
+    if !content.starts_with("---\n") {
+        return content.to_string();
+    }
+    let mut parts = content.splitn(3, "---\n");
+    let _ = parts.next();
+    let _ = parts.next();
+    parts.next().unwrap_or_default().to_string()
+}
+
+fn update_managed_section(path: &Path, auto_body: &str) -> std::io::Result<()> {
+    let existing = std::fs::read_to_string(path)?;
+    let start = match existing.find(AUTO_SECTION_START) {
+        Some(pos) => pos,
+        None => return Ok(()),
+    };
+    let end = match existing.find(AUTO_SECTION_END) {
+        Some(pos) => pos,
+        None => return Ok(()),
+    };
+
+    let before = &existing[..start + AUTO_SECTION_START.len()];
+    let after = &existing[end..];
+    let updated = format!("{before}\n{auto_body}\n{after}");
+    std::fs::write(path, updated)
+}
+
+fn write_or_preserve_default(path: &Path, content: &str) -> std::io::Result<()> {
+    use std::io::Write;
+    match std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(path)
+    {
+        Ok(mut file) => file.write_all(content.as_bytes()),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Ok(()),
+        Err(e) => Err(e),
+    }
+}
+
+fn dispatch_title(text: &str) -> String {
+    let slug = slugify_text(text, 8, 64);
+    if slug.is_empty() {
+        "Dispatch".to_string()
+    } else {
+        slug.split('-')
+            .map(|part| {
+                let mut chars = part.chars();
+                match chars.next() {
+                    Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                    None => String::new(),
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+}
+
+fn slugify_text(text: &str, words: usize, max_chars: usize) -> String {
+    let mut slug = text
+        .split_whitespace()
+        .take(words)
+        .collect::<Vec<_>>()
+        .join("-")
+        .to_lowercase()
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '-')
+        .take(max_chars)
+        .collect::<String>();
+    while slug.ends_with('-') {
+        slug.pop();
+    }
+    slug
+}
+
+fn truncate_chars_preserving_boundary(text: &str, max_chars: usize) -> String {
+    let mut out = String::new();
+    for (i, ch) in text.chars().enumerate() {
+        if i >= max_chars {
+            out.push_str("...");
+            break;
+        }
+        out.push(ch);
+    }
+    out
 }
 
 /// Read a workspace identity file with a size cap to prevent prompt stuffing.
@@ -1357,14 +1792,38 @@ impl ClawReformKernel {
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "SOUL.md")),
+                hands_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "HANDS.md")),
+                core_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "CORE.md")),
+                overview_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "OVERVIEW.md")),
+                project_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "PROJECT.md")),
                 user_md: manifest
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "USER.md")),
+                tools_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "TOOLS.md")),
                 memory_md: manifest
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "MEMORY.md")),
+                skills_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "SKILLS.md")),
                 canonical_context: self
                     .memory
                     .canonical_context(agent_id, None)
@@ -1525,8 +1984,12 @@ impl ClawReformKernel {
                         {
                             warn!("Failed to write JSONL session mirror (streaming): {e}");
                         }
-                        // Append daily memory log (best-effort)
-                        append_daily_memory_log(workspace, &result.response);
+                        // Append workspace memory artifacts (best-effort)
+                        append_workspace_memory_artifacts(
+                            workspace,
+                            &manifest.name,
+                            &result.response,
+                        );
                     }
 
                     kernel_clone
@@ -1805,14 +2268,38 @@ impl ClawReformKernel {
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "SOUL.md")),
+                hands_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "HANDS.md")),
+                core_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "CORE.md")),
+                overview_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "OVERVIEW.md")),
+                project_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "PROJECT.md")),
                 user_md: manifest
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "USER.md")),
+                tools_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "TOOLS.md")),
                 memory_md: manifest
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "MEMORY.md")),
+                skills_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "SKILLS.md")),
                 canonical_context: self
                     .memory
                     .canonical_context(agent_id, None)
@@ -1975,8 +2462,8 @@ impl ClawReformKernel {
             {
                 warn!("Failed to write JSONL session mirror: {e}");
             }
-            // Append daily memory log (best-effort)
-            append_daily_memory_log(workspace, &result.response);
+            // Append workspace memory artifacts (best-effort)
+            append_workspace_memory_artifacts(workspace, &manifest.name, &result.response);
         }
 
         // Record usage in the metering engine (uses catalog pricing as single source of truth)
@@ -1987,14 +2474,16 @@ impl ClawReformKernel {
             result.total_usage.input_tokens,
             result.total_usage.output_tokens,
         );
-        let _ = self.metering.record(&clawreform_memory::usage::UsageRecord {
-            agent_id,
-            model: model.clone(),
-            input_tokens: result.total_usage.input_tokens,
-            output_tokens: result.total_usage.output_tokens,
-            cost_usd: cost,
-            tool_calls: result.iterations.saturating_sub(1),
-        });
+        let _ = self
+            .metering
+            .record(&clawreform_memory::usage::UsageRecord {
+                agent_id,
+                model: model.clone(),
+                input_tokens: result.total_usage.input_tokens,
+                output_tokens: result.total_usage.output_tokens,
+                cost_usd: cost,
+                tool_calls: result.iterations.saturating_sub(1),
+            });
 
         // Populate cost on the result based on usage_footer mode
         let mut result = result;
@@ -2214,6 +2703,8 @@ impl ClawReformKernel {
             let mem_dir = workspace.join("memory");
             let filename = format!("{date}-{slug}.md");
             let _ = std::fs::write(mem_dir.join(&filename), &summary);
+            write_session_summary_note(workspace, &slug, &summary);
+            refresh_memory_views(workspace);
         }
 
         debug!(
@@ -2226,15 +2717,11 @@ impl ClawReformKernel {
     /// Switch an agent's model.
     pub fn set_agent_model(&self, agent_id: AgentId, model: &str) -> KernelResult<()> {
         // Resolve provider from model catalog so switching models also switches provider
-        let resolved_provider = self
-            .model_catalog
-            .read()
-            .ok()
-            .and_then(|catalog| {
-                catalog
-                    .find_model(model)
-                    .map(|entry| entry.provider.clone())
-            });
+        let resolved_provider = self.model_catalog.read().ok().and_then(|catalog| {
+            catalog
+                .find_model(model)
+                .map(|entry| entry.provider.clone())
+        });
 
         if let Some(provider) = resolved_provider {
             self.registry
@@ -2423,7 +2910,9 @@ impl ClawReformKernel {
 
         // Post-compaction audit: validate and repair the kept messages
         let (repaired_messages, repair_stats) =
-            clawreform_runtime::session_repair::validate_and_repair_with_stats(&result.kept_messages);
+            clawreform_runtime::session_repair::validate_and_repair_with_stats(
+                &result.kept_messages,
+            );
 
         // Also update the regular session with the repaired messages
         let mut updated_session = session;
@@ -3203,7 +3692,8 @@ impl ClawReformKernel {
                 let kernel = Arc::clone(self);
                 let agents = a2a_config.external_agents.clone();
                 tokio::spawn(async move {
-                    let discovered = clawreform_runtime::a2a::discover_external_agents(&agents).await;
+                    let discovered =
+                        clawreform_runtime::a2a::discover_external_agents(&agents).await;
                     if let Ok(mut store) = kernel.a2a_external_agents.lock() {
                         *store = discovered;
                     }
@@ -4077,7 +4567,8 @@ impl ClawReformKernel {
                 tool_names.join(", ")
             ));
         }
-        summary.push_str("MCP tools are prefixed with mcp_{server}_ and work like regular tools.\n");
+        summary
+            .push_str("MCP tools are prefixed with mcp_{server}_ and work like regular tools.\n");
         // Add filesystem-specific guidance when a filesystem MCP server is connected
         let has_filesystem = servers.keys().any(|s| s.contains("filesystem"));
         if has_filesystem {
@@ -4746,7 +5237,10 @@ impl KernelHandle for ClawReformKernel {
         };
 
         adapter
-            .send(&user, clawreform_channels::types::ChannelContent::Text(message.to_string()))
+            .send(
+                &user,
+                clawreform_channels::types::ChannelContent::Text(message.to_string()),
+            )
             .await
             .map_err(|e| format!("Channel send failed: {e}"))?;
 
@@ -4920,6 +5414,131 @@ mod tests {
             generate_identity_files: true,
             exec_policy: None,
         }
+    }
+
+    #[test]
+    fn test_generate_identity_files_includes_core_organs() {
+        let dir =
+            std::env::temp_dir().join(format!("clawreform_identity_test_{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let manifest = test_manifest("architect", "Systems architect", vec![]);
+        generate_identity_files(&dir, &manifest);
+
+        for file in [
+            "SOUL.md",
+            "HANDS.md",
+            "CORE.md",
+            "OVERVIEW.md",
+            "PROJECT.md",
+            "USER.md",
+            "TOOLS.md",
+            "MEMORY.md",
+            "SKILLS.md",
+            "AGENTS.md",
+            "BOOTSTRAP.md",
+            "IDENTITY.md",
+        ] {
+            assert!(dir.join(file).exists(), "missing {file}");
+        }
+
+        let identity = std::fs::read_to_string(dir.join("IDENTITY.md")).unwrap();
+        let hands = std::fs::read_to_string(dir.join("HANDS.md")).unwrap();
+        let core = std::fs::read_to_string(dir.join("CORE.md")).unwrap();
+        let overview = std::fs::read_to_string(dir.join("OVERVIEW.md")).unwrap();
+        let project = std::fs::read_to_string(dir.join("PROJECT.md")).unwrap();
+        let memory = std::fs::read_to_string(dir.join("MEMORY.md")).unwrap();
+        let skills = std::fs::read_to_string(dir.join("SKILLS.md")).unwrap();
+
+        assert!(identity.contains("platform: clawREFORM by aegntic.ai"));
+        assert!(hands.contains("## Action modes"));
+        assert!(core.contains("High-friction durable truths"));
+        assert!(overview.contains("## Auto Snapshot"));
+        assert!(project.contains("## Auto Snapshot"));
+        assert!(memory.contains("## Core"));
+        assert!(memory.contains("## Projects"));
+        assert!(skills.contains("## Core doctrine"));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_workspace_memory_artifacts_create_dispatch_and_snapshots() {
+        let dir = std::env::temp_dir().join(format!(
+            "clawreform_memory_artifacts_{}",
+            uuid::Uuid::new_v4()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        ensure_workspace(&dir).unwrap();
+
+        append_workspace_memory_artifacts(
+            &dir,
+            "architect",
+            "We updated the project ledger and promoted the latest design movement into the overview snapshot.",
+        );
+
+        let working_dir = dir.join("memory").join("working");
+        let dispatch_dir = dir.join("memory").join("dispatches");
+        let project = std::fs::read_to_string(dir.join("PROJECT.md")).unwrap();
+        let overview = std::fs::read_to_string(dir.join("OVERVIEW.md")).unwrap();
+
+        let working_files: Vec<_> = std::fs::read_dir(&working_dir).unwrap().flatten().collect();
+        let dispatch_files: Vec<_> = std::fs::read_dir(&dispatch_dir)
+            .unwrap()
+            .flatten()
+            .collect();
+
+        assert!(!working_files.is_empty());
+        assert!(!dispatch_files.is_empty());
+        assert!(project.contains("Recent Dispatches"));
+        assert!(project.contains("updated the project ledger"));
+        assert!(overview.contains("Latest movement"));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_workspace_memory_artifacts_strip_think_blocks_from_durable_notes() {
+        let dir = std::env::temp_dir().join(format!(
+            "clawreform_memory_sanitize_{}",
+            uuid::Uuid::new_v4()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        ensure_workspace(&dir).unwrap();
+
+        append_workspace_memory_artifacts(
+            &dir,
+            "architect",
+            "<think>internal reasoning</think>\n\nVisible conclusion for the project ledger.",
+        );
+
+        let working_dir = dir.join("memory").join("working");
+        let dispatch_dir = dir.join("memory").join("dispatches");
+        let working_file = std::fs::read_dir(&working_dir)
+            .unwrap()
+            .flatten()
+            .next()
+            .unwrap()
+            .path();
+        let dispatch_file = std::fs::read_dir(&dispatch_dir)
+            .unwrap()
+            .flatten()
+            .next()
+            .unwrap()
+            .path();
+
+        let working = std::fs::read_to_string(working_file).unwrap();
+        let dispatch = std::fs::read_to_string(dispatch_file).unwrap();
+        let project = std::fs::read_to_string(dir.join("PROJECT.md")).unwrap();
+        let overview = std::fs::read_to_string(dir.join("OVERVIEW.md")).unwrap();
+
+        assert!(!working.contains("<think>"));
+        assert!(!dispatch.contains("<think>"));
+        assert!(!project.contains("<think>"));
+        assert!(!overview.contains("<think>"));
+        assert!(dispatch.contains("Visible conclusion for the project ledger."));
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

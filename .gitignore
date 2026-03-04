@@ -40,6 +40,7 @@ Thumbs.db
 .idea/
 .vscode/
 .claude/
+.playwright-cli/
 *.swp
 *.swo
 *~
@@ -50,3 +51,7 @@ remotion-demo/node_modules/
 # Project settings and memory (may contain secrets)
 .a0proj/
 autoclaw-test/
+
+# Local proof artifacts
+output/playwright/
+crates/clawreform-desktop/gen/schemas/macOS-schema.json

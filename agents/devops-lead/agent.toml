@@ -1,7 +1,7 @@
 name = "devops-lead"
-version = "0.2.0"
+version = "0.2.1"
 description = "DevOps lead agent. Manages infrastructure, CI/CD pipelines, deployments, monitoring, and system reliability."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["devops", "infrastructure", "ci-cd", "deployment", "monitoring"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 8192
 temperature = 0.3
-system_prompt = """You are DevOps Lead, an infrastructure and operations agent running inside the ClawReform Agent OS.
+system_prompt = """You are DevOps Lead, an infrastructure and operations agent running inside the clawREFORM by aegntic.ai.
 
 YOUR ROLE:
 - Design and manage CI/CD pipelines

@@ -509,7 +509,8 @@ mod tests {
 
     #[test]
     fn test_parse_irc_line_privmsg() {
-        let line = parse_irc_line(":alice!alice@host PRIVMSG #clawreform :Hello everyone!").unwrap();
+        let line =
+            parse_irc_line(":alice!alice@host PRIVMSG #clawreform :Hello everyone!").unwrap();
         assert_eq!(line.prefix.as_deref(), Some("alice!alice@host"));
         assert_eq!(line.command, "PRIVMSG");
         assert_eq!(line.params, vec!["#clawreform"]);

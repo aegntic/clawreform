@@ -1,10 +1,10 @@
-# ClawReform Desktop App
+# clawREFORM by aegntic.ai Desktop App
 
-The ClawReform Desktop App is a native desktop wrapper built with [Tauri 2.0](https://v2.tauri.app/) that packages the entire ClawReform Agent OS into a single, installable application. Instead of running a CLI daemon and opening a browser, users get a native window with system tray integration, OS notifications, and single-instance enforcement -- all powered by the same kernel and API server that the headless deployment uses.
+The clawREFORM by aegntic.ai Desktop App is a native desktop wrapper built with [Tauri 2.0](https://v2.tauri.app/) that packages the entire clawREFORM by aegntic.ai into a single, installable application. Instead of running a CLI daemon and opening a browser, users get a native window with system tray integration, OS notifications, and single-instance enforcement -- all powered by the same kernel and API server that the headless deployment uses.
 
 **Crate:** `clawreform-desktop`
 **Identifier:** `ai.clawreform.desktop`
-**Product name:** ClawReform
+**Product name:** clawREFORM by aegntic.ai
 
 ---
 
@@ -25,7 +25,7 @@ The desktop app follows a straightforward embedded-server pattern:
 |  | (main)    |    | channel bridges    |  |
 |  |           |    | background agents  |  |
 |  | System    |    |                    |  |
-|  | Tray      |    | ClawReform Kernel    |  |
+|  | Tray      |    | clawREFORM by aegntic.ai Kernel    |  |
 |  +-----------+    +--------------------+  |
 |       |                    |              |
 |       |   http://127.0.0.1:{port}        |
@@ -36,7 +36,7 @@ The desktop app follows a straightforward embedded-server pattern:
 ### Startup Sequence
 
 1. **Tracing init** -- `tracing_subscriber` is configured with `RUST_LOG` env, defaulting to `clawreform=info,tauri=info`.
-2. **Kernel boot** -- `ClawReformKernel::boot(None)` loads the default configuration (from `config.toml` or defaults), wrapped in `Arc`. `set_self_handle()` is called to enable self-referencing kernel operations.
+2. **Kernel boot** -- `clawREFORM by aegntic.aiKernel::boot(None)` loads the default configuration (from `config.toml` or defaults), wrapped in `Arc`. `set_self_handle()` is called to enable self-referencing kernel operations.
 3. **Port binding** -- A `std::net::TcpListener` binds to `127.0.0.1:0` on the main thread, which lets the OS assign a random free port. This ensures the port number is known before any window is created.
 4. **Server thread** -- A dedicated OS thread named `"clawreform-server"` is spawned. It creates its own `tokio::runtime::Builder::new_multi_thread()` runtime and runs:
    - `kernel.start_background_agents()` -- heartbeat monitor, autonomous agents, etc.
@@ -51,7 +51,7 @@ The `ServerHandle` struct (defined in `src/server.rs`) manages the embedded serv
 ```rust
 pub struct ServerHandle {
     pub port: u16,
-    pub kernel: Arc<ClawReformKernel>,
+    pub kernel: Arc<clawREFORM by aegntic.aiKernel>,
     shutdown_tx: watch::Sender<bool>,
     server_thread: Option<std::thread::JoinHandle<()>>,
 }
@@ -94,15 +94,15 @@ The system tray (defined in `src/tray.rs`) provides quick access without bringin
 | **Launch at Login** | Checkbox — toggles OS-level auto-start via `tauri-plugin-autostart` |
 | **Check for Updates...** | Checks for updates, downloads, installs, and restarts if available. Shows notifications for progress/success/failure |
 | **Open Config Directory** | Opens `~/.clawreform/` in the OS file manager |
-| **Quit ClawReform** | Logs the quit event and calls `app.exit(0)` |
+| **Quit clawREFORM by aegntic.ai** | Logs the quit event and calls `app.exit(0)` |
 
-The tray tooltip reads **"ClawReform Agent OS"**.
+The tray tooltip reads **"clawREFORM by aegntic.ai"**.
 
 **Left-click on tray icon** shows the main window (same as "Show Window" menu item). This is implemented via `on_tray_icon_event` listening for `MouseButton::Left` with `MouseButtonState::Up`.
 
 ### Single-Instance Enforcement
 
-On desktop platforms, `tauri-plugin-single-instance` prevents multiple copies of ClawReform from running simultaneously. When a second instance attempts to launch, the existing instance's main window is shown, unminimized, and focused:
+On desktop platforms, `tauri-plugin-single-instance` prevents multiple copies of clawREFORM by aegntic.ai from running simultaneously. When a second instance attempts to launch, the existing instance's main window is shown, unminimized, and focused:
 
 ```rust
 #[cfg(desktop)]
@@ -133,7 +133,7 @@ Closing the window does not quit the application. Instead, the window is hidden 
 })
 ```
 
-To actually quit, use the **"Quit ClawReform"** option in the system tray menu.
+To actually quit, use the **"Quit clawREFORM by aegntic.ai"** option in the system tray menu.
 
 ### Native OS Notifications
 
@@ -196,14 +196,14 @@ Opens a native file picker for skill files (`.md`, `.toml`, `.py`, `.js`, `.wasm
 
 ### `get_autostart` / `set_autostart`
 
-Check or toggle whether ClawReform launches at OS login. Uses `tauri-plugin-autostart` (launchd on macOS, registry on Windows, systemd on Linux).
+Check or toggle whether clawREFORM by aegntic.ai launches at OS login. Uses `tauri-plugin-autostart` (launchd on macOS, registry on Windows, systemd on Linux).
 
 ### `check_for_updates`
 
 Checks for available updates without installing. Returns an `UpdateInfo` object:
 
 ```json
-{ "available": true, "version": "0.2.0", "body": "Release notes..." }
+{ "available": true, "version": "0.2.1", "body": "Release notes..." }
 ```
 
 ### `install_update`
@@ -227,7 +227,7 @@ The main window is created programmatically in the `setup` closure (not via `tau
 | Property | Value |
 |----------|-------|
 | Window label | `"main"` |
-| Title | `"ClawReform"` |
+| Title | `"clawREFORM by aegntic.ai"` |
 | URL | `http://127.0.0.1:{port}` (external) |
 | Inner size | 1280 x 800 |
 | Minimum inner size | 800 x 600 |
@@ -409,4 +409,4 @@ crates/clawreform-desktop/
 |----------|--------|
 | `RUST_LOG` | Controls tracing verbosity. Defaults to `clawreform=info,tauri=info` if unset. |
 
-All other ClawReform environment variables (API keys, configuration) apply as normal since the desktop app boots the same kernel as the headless daemon.
+All other clawREFORM by aegntic.ai environment variables (API keys, configuration) apply as normal since the desktop app boots the same kernel as the headless daemon.

@@ -1,10 +1,10 @@
 //! Execution approval manager — gates dangerous operations behind human approval.
 
 use chrono::Utc;
-use dashmap::DashMap;
 use clawreform_types::approval::{
     ApprovalDecision, ApprovalPolicy, ApprovalRequest, ApprovalResponse, RiskLevel,
 };
+use dashmap::DashMap;
 use tracing::{debug, info, warn};
 use uuid::Uuid;
 

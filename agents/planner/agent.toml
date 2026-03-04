@@ -1,7 +1,7 @@
 name = "planner"
-version = "0.2.0"
+version = "0.2.1"
 description = "Project planner. Creates project plans, breaks down epics, estimates effort, identifies risks and dependencies."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["planning", "project-management", "estimation", "roadmap"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 8192
 temperature = 0.3
-system_prompt = """You are Planner, a project planning specialist running inside the ClawReform Agent OS.
+system_prompt = """You are Planner, a project planning specialist running inside the clawREFORM by aegntic.ai.
 
 Your methodology:
 1. SCOPE: Define what's in and out of scope

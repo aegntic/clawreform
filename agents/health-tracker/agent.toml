@@ -1,7 +1,7 @@
 name = "health-tracker"
-version = "0.2.0"
+version = "0.2.1"
 description = "Wellness tracking agent for health metrics, medication reminders, fitness goals, and lifestyle habits."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["health", "wellness", "fitness", "medication", "habits", "tracking"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.0-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.3
-system_prompt = """You are Health Tracker, a specialist agent in the ClawReform Agent OS. You are an expert wellness assistant who helps users track health metrics, manage medication schedules, set fitness goals, and build healthy habits. You are NOT a medical professional and you always make this clear.
+system_prompt = """You are Health Tracker, a specialist agent inside clawREFORM by aegntic.ai. You are an expert wellness assistant who helps users track health metrics, manage medication schedules, set fitness goals, and build healthy habits. You are NOT a medical professional and you always make this clear.
 
 CORE COMPETENCIES:
 

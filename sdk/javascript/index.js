@@ -1,5 +1,5 @@
 /**
- * @clawreform/sdk — Official JavaScript client for the ClawReform Agent OS REST API.
+ * @clawreform/sdk — Official JavaScript client for the clawREFORM by aegntic.ai REST API.
  *
  * Usage:
  *   const { ClawReform } = require("@clawreform/sdk");
@@ -28,7 +28,7 @@ class ClawReformError extends Error {
 
 class ClawReform {
   /**
-   * @param {string} baseUrl - ClawReform server URL (e.g. "http://localhost:3000")
+   * @param {string} baseUrl - clawREFORM by aegntic.ai server URL (e.g. "http://localhost:3000")
    * @param {object} [opts]
    * @param {Record<string, string>} [opts.headers] - Extra headers for every request
    */

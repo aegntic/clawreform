@@ -1,9 +1,9 @@
 //! Agent scheduler — manages agent execution and resource tracking.
 
-use dashmap::DashMap;
 use clawreform_types::agent::{AgentId, ResourceQuota};
 use clawreform_types::error::{ClawReformError, ClawReformResult};
 use clawreform_types::message::TokenUsage;
+use dashmap::DashMap;
 use std::time::Instant;
 use tokio::task::JoinHandle;
 use tracing::debug;
@@ -88,8 +88,7 @@ impl AgentScheduler {
         // Reset the window if an hour has passed
         tracker.reset_if_expired();
 
-        if quota.max_llm_tokens_per_hour > 0
-            && tracker.total_tokens > quota.max_llm_tokens_per_hour
+        if quota.max_llm_tokens_per_hour > 0 && tracker.total_tokens > quota.max_llm_tokens_per_hour
         {
             return Err(ClawReformError::QuotaExceeded(format!(
                 "Token limit exceeded: {} / {}",

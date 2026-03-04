@@ -23,7 +23,7 @@ use tower_http::trace::TraceLayer;
 fn test_daemon_info_serde_roundtrip() {
     let info = DaemonInfo {
         pid: 12345,
-        listen_addr: "127.0.0.1:4200".to_string(),
+        listen_addr: "127.0.0.1:4332".to_string(),
         started_at: "2024-01-01T00:00:00Z".to_string(),
         version: "0.1.0".to_string(),
         platform: "linux".to_string(),
@@ -33,7 +33,7 @@ fn test_daemon_info_serde_roundtrip() {
     let parsed: DaemonInfo = serde_json::from_str(&json).unwrap();
 
     assert_eq!(parsed.pid, 12345);
-    assert_eq!(parsed.listen_addr, "127.0.0.1:4200");
+    assert_eq!(parsed.listen_addr, "127.0.0.1:4332");
     assert_eq!(parsed.version, "0.1.0");
     assert_eq!(parsed.platform, "linux");
 }

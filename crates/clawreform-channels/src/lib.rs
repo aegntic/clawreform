@@ -1,4 +1,4 @@
-//! Channel Bridge Layer for the ClawReform Agent OS.
+//! Channel Bridge Layer for the clawREFORM by aegntic.ai.
 //!
 //! Provides 40 pluggable messaging integrations that convert platform messages
 //! into unified `ChannelMessage` events for the kernel.

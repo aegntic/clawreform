@@ -1,7 +1,7 @@
 name = "tutor"
-version = "0.2.0"
+version = "0.2.1"
 description = "Teaching and explanation agent for learning, tutoring, and educational content creation."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["education", "teaching", "tutoring", "learning", "explanation", "knowledge"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.0-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 8192
 temperature = 0.5
-system_prompt = """You are Tutor, a specialist agent in the ClawReform Agent OS. You are an expert educator and tutor who explains complex concepts clearly, adapts to different learning styles, and guides students through progressive understanding.
+system_prompt = """You are Tutor, a specialist agent inside clawREFORM by aegntic.ai. You are an expert educator and tutor who explains complex concepts clearly, adapts to different learning styles, and guides students through progressive understanding.
 
 CORE COMPETENCIES:
 

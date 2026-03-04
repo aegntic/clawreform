@@ -270,7 +270,7 @@ impl ClawHubClient {
         let response = self
             .client
             .get(&url)
-            .header("User-Agent", "ClawReform/0.1")
+            .header("User-Agent", "clawREFORM-by-aegntic.ai/0.2.1")
             .send()
             .await
             .map_err(|e| SkillError::Network(format!("ClawHub search failed: {e}")))?;
@@ -313,7 +313,7 @@ impl ClawHubClient {
         let response = self
             .client
             .get(&url)
-            .header("User-Agent", "ClawReform/0.1")
+            .header("User-Agent", "clawREFORM-by-aegntic.ai/0.2.1")
             .send()
             .await
             .map_err(|e| SkillError::Network(format!("ClawHub browse failed: {e}")))?;
@@ -343,7 +343,7 @@ impl ClawHubClient {
         let response = self
             .client
             .get(&url)
-            .header("User-Agent", "ClawReform/0.1")
+            .header("User-Agent", "clawREFORM-by-aegntic.ai/0.2.1")
             .send()
             .await
             .map_err(|e| SkillError::Network(format!("ClawHub detail failed: {e}")))?;
@@ -387,7 +387,7 @@ impl ClawHubClient {
         let response = self
             .client
             .get(&url)
-            .header("User-Agent", "ClawReform/0.1")
+            .header("User-Agent", "clawREFORM-by-aegntic.ai/0.2.1")
             .send()
             .await
             .map_err(|e| SkillError::Network(format!("ClawHub file fetch failed: {e}")))?;
@@ -430,7 +430,7 @@ impl ClawHubClient {
         let response = self
             .client
             .get(&url)
-            .header("User-Agent", "ClawReform/0.1")
+            .header("User-Agent", "clawREFORM-by-aegntic.ai/0.2.1")
             .send()
             .await
             .map_err(|e| SkillError::Network(format!("ClawHub download failed: {e}")))?;

@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="assets/branding/clawreform-logo.png" width="160" alt="ClawReform Logo" />
+  <img src="assets/branding/clawreform-logo.png" width="160" alt="clawREFORM by aegntic.ai Logo" />
 </p>
 
-<h1 align="center">ClawReform</h1>
-<h3 align="center">The Self-Evolving Agent Operating System</h3>
+<h1 align="center">clawREFORM by aegntic.ai</h1>
+<h3 align="center">The self-evolving agent operating system from aegntic.ai</h3>
 
 <p align="center">
-  <strong>ClawReform fork with autonomous self-modification capabilities</strong><br/>
-  Built in Rust • 14 crates • 1,369+ tests • Zero clippy warnings
+  <strong>clawREFORM by aegntic.ai with autonomous self-modification capabilities</strong><br/>
+  Built in Rust • 14 crates • robust test coverage • zero clippy warnings
 </p>
 
 <p align="center">
@@ -20,15 +20,15 @@
 <p align="center">
   <img src="https://img.shields.io/badge/language-Rust-orange?style=flat-square" alt="Rust" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT" />
-  <img src="https://img.shields.io/badge/version-0.2.0-purple?style=flat-square" alt="v0.2.0" />
+  <img src="https://img.shields.io/badge/version-0.2.1-purple?style=flat-square" alt="v0.2.1" />
   <img src="https://img.shields.io/badge/self--modify-enabled-brightgreen?style=flat-square" alt="Self-Modify" />
 </p>
 
 ---
 
-## What is ClawReform?
+## 🦾 What is clawREFORM by aegntic.ai?
 
-ClawReform is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/clawreform) with **autonomous self-modification capabilities**. It can:
+clawREFORM by aegntic.ai is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/clawreform) with **autonomous self-modification capabilities**. It can:
 
 - **Modify its own code** through natural language requests
 - **Self-improve** by adding features, fixing bugs, and refactoring
@@ -39,7 +39,7 @@ ClawReform is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/cl
 
 | Feature               | Description                                                     |
 | --------------------- | --------------------------------------------------------------- |
-| **Self-Modification** | Ask ClawReform to add features and it modifies its own codebase |
+| **Self-Modification** | Ask clawREFORM by aegntic.ai to add features and it modifies its own codebase |
 | **Tailscale Mesh**    | Secure P2P networking across all your devices                   |
 | **MCP Servers**       | 23+ Model Context Protocol servers for extended capabilities    |
 | **60 Bundled Skills** | Pre-built skills for common tasks                               |
@@ -61,7 +61,7 @@ ClawReform is an enhanced fork of [ClawReform](https://github.com/RightNow-AI/cl
 ## Quick Start
 
 ```bash
-# Install ClawReform
+# Install clawREFORM by aegntic.ai
 curl -fsSL https://clawreform.com/install.sh | sh
 
 # Start the daemon
@@ -91,5 +91,5 @@ MIT or Apache-2.0 - your choice.
 ---
 
 <p align="center">
-  <strong>Built with earlier versions of ClawReform by the ClawReform Team at AE.ltd</strong>
+  <strong>Built with 🦀 by ae.ltd for aegntic.ai</strong>
 </p>

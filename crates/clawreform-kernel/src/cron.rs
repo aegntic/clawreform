@@ -8,10 +8,10 @@
 //! to query due jobs and record outcomes.
 
 use chrono::{Duration, Utc};
-use dashmap::DashMap;
 use clawreform_types::agent::AgentId;
 use clawreform_types::error::{ClawReformError, ClawReformResult};
 use clawreform_types::scheduler::{CronJob, CronJobId, CronSchedule};
+use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -116,8 +116,9 @@ impl CronScheduler {
     /// Persist all jobs to disk via atomic write (write to `.tmp`, then rename).
     pub fn persist(&self) -> ClawReformResult<()> {
         let metas: Vec<JobMeta> = self.jobs.iter().map(|r| r.value().clone()).collect();
-        let data = serde_json::to_string_pretty(&metas)
-            .map_err(|e| ClawReformError::Internal(format!("Failed to serialize cron jobs: {e}")))?;
+        let data = serde_json::to_string_pretty(&metas).map_err(|e| {
+            ClawReformError::Internal(format!("Failed to serialize cron jobs: {e}"))
+        })?;
         let tmp_path = self.persist_path.with_extension("json.tmp");
         std::fs::write(&tmp_path, data.as_bytes()).map_err(|e| {
             ClawReformError::Internal(format!("Failed to write cron jobs temp file: {e}"))
@@ -185,7 +186,9 @@ impl CronScheduler {
                 }
                 Ok(())
             }
-            None => Err(ClawReformError::Internal(format!("Cron job {id} not found"))),
+            None => Err(ClawReformError::Internal(format!(
+                "Cron job {id} not found"
+            ))),
         }
     }
 

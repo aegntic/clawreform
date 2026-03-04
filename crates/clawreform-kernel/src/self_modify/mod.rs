@@ -7,16 +7,16 @@
 //! - Rollback on failure
 //! - Integration with approval system
 
-pub mod types;
 pub mod analyzer;
-pub mod modifier;
 pub mod backup;
+pub mod modifier;
+pub mod types;
 pub mod validate;
 
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use tracing::{info, warn, error};
+use tracing::{error, info, warn};
 
 pub use types::*;
 
@@ -46,13 +46,13 @@ impl SelfModifier {
     /// Analyze a modification request
     pub async fn analyze(&self, request: &str) -> Result<ModifyPlan, ModifyError> {
         info!("Analyzing modification request: {}", request);
-        
+
         let mut state = self.state.write().await;
         state.last_request = Some(request.to_string());
-        
+
         // Use analyzer to create a plan
         let plan = analyzer::analyze_request(request, &self.source_dir)?;
-        
+
         // Check safety limits
         if plan.files.len() > self.config.max_files_per_mod {
             return Err(ModifyError::TooManyFiles(
@@ -60,7 +60,7 @@ impl SelfModifier {
                 self.config.max_files_per_mod,
             ));
         }
-        
+
         state.current_plan = Some(plan.clone());
         Ok(plan)
     }
@@ -68,7 +68,9 @@ impl SelfModifier {
     /// Apply a modification with full safety checks
     pub async fn apply(&self, plan_id: &str) -> Result<ModifyResult, ModifyError> {
         let state = self.state.read().await;
-        let plan = state.current_plan.as_ref()
+        let plan = state
+            .current_plan
+            .as_ref()
             .ok_or(ModifyError::NoPlan)?
             .clone();
         drop(state);
@@ -81,7 +83,7 @@ impl SelfModifier {
 
         // 1. Create backup
         let backup_id = backup::create_backup(&self.backup_dir, &plan.files, &self.source_dir)?;
-        
+
         let mut state = self.state.write().await;
         state.current_backup = Some(backup_id.clone());
         drop(state);
@@ -120,7 +122,9 @@ impl SelfModifier {
     /// Rollback to previous state
     pub async fn rollback(&self) -> Result<RollbackResult, ModifyError> {
         let state = self.state.read().await;
-        let backup_id = state.current_backup.as_ref()
+        let backup_id = state
+            .current_backup
+            .as_ref()
             .ok_or(ModifyError::NoBackup)?
             .clone();
         drop(state);

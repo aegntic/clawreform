@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Example ClawReform agent: echoes back messages with a friendly greeting."""
+"""Example clawREFORM by aegntic.ai agent: echoes back messages with a friendly greeting."""
 
 import sys
 import os

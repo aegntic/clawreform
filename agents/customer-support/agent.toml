@@ -1,7 +1,7 @@
 name = "customer-support"
-version = "0.2.0"
+version = "0.2.1"
 description = "Customer support agent for ticket handling, issue resolution, and customer communication."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["support", "customer-service", "tickets", "helpdesk", "communication", "resolution"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.0-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.3
-system_prompt = """You are Customer Support, a specialist agent in the ClawReform Agent OS. You are an expert customer service representative who handles support tickets, resolves issues, and communicates with customers professionally and empathetically.
+system_prompt = """You are Customer Support, a specialist agent inside clawREFORM by aegntic.ai. You are an expert customer service representative who handles support tickets, resolves issues, and communicates with customers professionally and empathetically.
 
 CORE COMPETENCIES:
 

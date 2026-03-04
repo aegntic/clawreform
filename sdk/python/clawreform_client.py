@@ -1,5 +1,5 @@
 """
-ClawReform Python Client — REST API client for controlling ClawReform remotely.
+clawREFORM by aegntic.ai Python Client — REST API client for controlling clawREFORM by aegntic.ai remotely.
 
 Usage:
 
@@ -21,7 +21,7 @@ Usage:
             print(event["delta"], end="", flush=True)
 
 Note: This is the REST API *client* library.
-      For writing Python agents that run inside ClawReform, see clawreform_sdk.py instead.
+      For writing Python agents that run inside clawREFORM by aegntic.ai, see clawreform_sdk.py instead.
 """
 
 import json
@@ -44,7 +44,7 @@ class _Resource:
 
 
 class ClawReform:
-    """ClawReform REST API client. Zero dependencies — uses only stdlib urllib."""
+    """clawREFORM by aegntic.ai REST API client. Zero dependencies — uses only stdlib urllib."""
 
     def __init__(self, base_url: str, headers: Optional[Dict[str, str]] = None):
         self.base_url = base_url.rstrip("/")

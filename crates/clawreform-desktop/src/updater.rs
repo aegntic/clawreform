@@ -1,4 +1,4 @@
-//! Update checker for the ClawReform desktop app.
+//! Update checker for the clawREFORM by aegntic.ai desktop app.
 
 use serde::Serialize;
 use tauri_plugin_notification::NotificationExt;
@@ -32,7 +32,7 @@ pub fn spawn_startup_check(app_handle: tauri::AppHandle) {
                 let _ = app_handle
                     .notification()
                     .builder()
-                    .title("ClawReform Updating...")
+                    .title("clawREFORM by aegntic.ai Updating...")
                     .body(format!("Installing v{version}. App will restart shortly."))
                     .show();
                 // Small delay so notification is visible

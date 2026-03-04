@@ -3,7 +3,7 @@ name = "clawreform-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "CLI tool for the OpenFang Agent OS"
+description = "CLI tool for the clawREFORM by aegntic.ai"
 
 [[bin]]
 name = "clawreform"

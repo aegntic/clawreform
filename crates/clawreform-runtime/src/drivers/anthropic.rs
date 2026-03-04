@@ -5,11 +5,11 @@
 
 use crate::llm_driver::{CompletionRequest, CompletionResponse, LlmDriver, LlmError, StreamEvent};
 use async_trait::async_trait;
-use futures::StreamExt;
 use clawreform_types::message::{
     ContentBlock, Message, MessageContent, Role, StopReason, TokenUsage,
 };
 use clawreform_types::tool::ToolCall;
+use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
 use zeroize::Zeroizing;

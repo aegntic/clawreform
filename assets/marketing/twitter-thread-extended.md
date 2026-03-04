@@ -84,7 +84,7 @@ And 15+ more...
 7/12
 🤖 MULTI-AGENT SUPPORT
 
-ClawReform supports:
+clawREFORM by aegntic.ai supports:
 
 • Single agent workflows
 • Multi-agent collaboration
@@ -156,7 +156,7 @@ Star us on GitHub: github.com/aegntic/clawreform ⭐
 
 ---
 
-*ClawReform 0.2.0 - Where AI Meets Evolution*
+*ClawReform 0.2.1 - Where AI Meets Evolution*
 
 #AI #OpenSource #DevOps #Automation #Rust #MachineLearning
 

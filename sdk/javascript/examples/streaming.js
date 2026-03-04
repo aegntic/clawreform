@@ -8,7 +8,7 @@
 const { ClawReform } = require("../index");
 
 async function main() {
-  const client = new ClawReform("http://localhost:4200");
+  const client = new ClawReform("http://localhost:4332");
 
   // Create an agent
   const agent = await client.agents.create({ template: "assistant" });

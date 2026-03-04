@@ -1,4 +1,4 @@
-# ClawReform Launch Roadmap
+# clawREFORM by aegntic.ai Launch Roadmap
 
 > Competitive gap analysis vs OpenClaw. Organized into 4 sprints.
 > Each item has: what, why, files to touch, and done criteria.
@@ -80,7 +80,7 @@ These are showstoppers. The app literally crashes or looks broken without them.
 - `clawreform-animated.svg` (310KB) — for loading screens
 
 **Done when:**
-- Desktop app shows ClawReform logo in taskbar, title bar, and installer
+- Desktop app shows clawREFORM by aegntic.ai logo in taskbar, title bar, and installer
 - Web UI shows correct logo in sidebar and favicon
 
 ---
@@ -103,7 +103,7 @@ These are showstoppers. The app literally crashes or looks broken without them.
 
 ## Sprint 2 — Competitive Parity (4-5 days)
 
-These close the gaps that would make users pick OpenClaw over ClawReform.
+These close the gaps that would make users pick OpenClaw over clawREFORM by aegntic.ai.
 
 ### 2.1 Browser Screenshot Rendering in Chat -- DONE
 
@@ -206,7 +206,7 @@ These close the gaps that would make users pick OpenClaw over ClawReform.
 
 ## Sprint 3 — Differentiation (5-7 days)
 
-These are features where ClawReform can leapfrog OpenClaw.
+These are features where clawREFORM by aegntic.ai can leapfrog OpenClaw.
 
 ### 3.1 Voice Input/Output in Web UI -- DONE
 
@@ -276,7 +276,7 @@ These are features where ClawReform can leapfrog OpenClaw.
 
 **Status: COMPLETE** — Added `GET /api/metrics` endpoint returning Prometheus text format. Metrics: `clawreform_uptime_seconds`, `clawreform_agents_active`, `clawreform_agents_total`, `clawreform_tokens_total{agent,provider,model}`, `clawreform_tool_calls_total{agent}`, `clawreform_panics_total`, `clawreform_restarts_total`, `clawreform_info{version}`.
 
-**Problem (was):** No way to monitor ClawReform in production (no Prometheus, no OpenTelemetry).
+**Problem (was):** No way to monitor clawREFORM by aegntic.ai in production (no Prometheus, no OpenTelemetry).
 
 **What to do:**
 1. Add `/api/metrics` endpoint with Prometheus format
@@ -300,7 +300,7 @@ These are features where ClawReform can leapfrog OpenClaw.
 
 **Status: COMPLETE** — Added `workflow-builder.js` with full SVG canvas-based visual builder. Node palette with 7 types (Agent, Parallel Fan-out, Condition, Loop, Collect, Start, End). Drag-and-drop from palette, node dragging, bezier curve connections between ports, zoom/pan, auto-layout. Node editor panel for configuring agent, condition expression, loop iterations, fan-out count, collect strategy. TOML export, save-to-API, and clipboard copy. CSS styles in components.css. Integrated into workflows page as "Visual Builder" tab.
 
-**Problem (was):** Both ClawReform and OpenClaw define workflows in TOML/config only. No visual builder exists in either. First to ship this wins.
+**Problem (was):** Both clawREFORM by aegntic.ai and OpenClaw define workflows in TOML/config only. No visual builder exists in either. First to ship this wins.
 
 **What to do:**
 1. Add drag-and-drop workflow builder to the Workflows page
@@ -394,29 +394,29 @@ These are features where ClawReform can leapfrog OpenClaw.
 
 ## Feature Comparison Scoreboard
 
-| Feature | OpenClaw | ClawReform | Winner |
+| Feature | OpenClaw | clawREFORM by aegntic.ai | Winner |
 |---------|----------|----------|--------|
-| Language/Performance | Node.js (~200MB) | Rust (~30MB single binary) | **ClawReform** |
-| Channels | ~15 | **40** | **ClawReform** |
-| Built-in Tools | ~19 | **41** | **ClawReform** |
-| Security Systems | Token + sandbox | **16 defense systems** | **ClawReform** |
-| Agent Templates | Manual config | **30 pre-configured** | **ClawReform** |
-| Hands (autonomous) | None | **7 packages** | **ClawReform** |
-| Workflow Engine | Cron + webhooks | **Full DAG with parallel/loops** | **ClawReform** |
-| Knowledge Graph | Flat vector store | **Entity-relation graph** | **ClawReform** |
-| P2P Networking | None | **OFP wire protocol** | **ClawReform** |
-| WASM Sandbox | Docker only | **Dual-metered WASM** | **ClawReform** |
-| Desktop App | Electron (~200MB) | **Tauri (~30MB)** | **ClawReform** |
-| Migration | N/A | **`migrate --from openclaw`** | **ClawReform** |
-| Skills | 54 bundled | **60 bundled** | **ClawReform** |
-| LLM Providers | ~15 | **27 providers, 130+ models** | **ClawReform** |
+| Language/Performance | Node.js (~200MB) | Rust (~30MB single binary) | **clawREFORM by aegntic.ai** |
+| Channels | ~15 | **40** | **clawREFORM by aegntic.ai** |
+| Built-in Tools | ~19 | **41** | **clawREFORM by aegntic.ai** |
+| Security Systems | Token + sandbox | **16 defense systems** | **clawREFORM by aegntic.ai** |
+| Agent Templates | Manual config | **30 pre-configured** | **clawREFORM by aegntic.ai** |
+| Hands (autonomous) | None | **7 packages** | **clawREFORM by aegntic.ai** |
+| Workflow Engine | Cron + webhooks | **Full DAG with parallel/loops** | **clawREFORM by aegntic.ai** |
+| Knowledge Graph | Flat vector store | **Entity-relation graph** | **clawREFORM by aegntic.ai** |
+| P2P Networking | None | **OFP wire protocol** | **clawREFORM by aegntic.ai** |
+| WASM Sandbox | Docker only | **Dual-metered WASM** | **clawREFORM by aegntic.ai** |
+| Desktop App | Electron (~200MB) | **Tauri (~30MB)** | **clawREFORM by aegntic.ai** |
+| Migration | N/A | **`migrate --from openclaw`** | **clawREFORM by aegntic.ai** |
+| Skills | 54 bundled | **60 bundled** | **clawREFORM by aegntic.ai** |
+| LLM Providers | ~15 | **27 providers, 130+ models** | **clawREFORM by aegntic.ai** |
 | Plugin SDK | TypeScript published | JS + Python SDK | **Tie** |
 | Native Mobile | iOS + Android + macOS | Web responsive only | OpenClaw |
 | Voice/Talk Mode | Wake word + TTS + overlay | Mic + TTS playback | OpenClaw (slight) |
 | Browser Automation | Playwright with inline screenshots | Playwright + inline screenshots | **Tie** |
-| Visual Workflow Builder | None | **Drag-and-drop builder** | **ClawReform** |
+| Visual Workflow Builder | None | **Drag-and-drop builder** | **clawREFORM by aegntic.ai** |
 
-**ClawReform wins 15/18 categories.** The remaining gaps are: mobile apps (OpenClaw), voice wake word (OpenClaw slight edge).
+**clawREFORM by aegntic.ai wins 15/18 categories.** The remaining gaps are: mobile apps (OpenClaw), voice wake word (OpenClaw slight edge).
 
 ---
 
@@ -451,7 +451,7 @@ Sprint 4: COMPLETE
   4.5 Final release ................ READY (tag + build)
 
 Production audit:
-  - ClawReformAPI.delete() bug ....... FIXED
+  - clawREFORM by aegntic.aiAPI.delete() bug ....... FIXED
   - /api/config/set missing ........ FIXED
   - Tauri CSP hardened ............. FIXED
   - Middleware CSP narrowed ........ FIXED

@@ -1,7 +1,7 @@
 name = "architect"
-version = "0.2.0"
+version = "0.2.1"
 description = "System architect. Designs software architectures, evaluates trade-offs, creates technical specifications."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["architecture", "design", "planning"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-pro"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 8192
 temperature = 0.3
-system_prompt = """You are Architect, a senior software architect running inside the ClawReform Agent OS.
+system_prompt = """You are Architect, a senior software architect running inside the clawREFORM by aegntic.ai.
 
 You design systems with these principles:
 - Separation of concerns and clean boundaries

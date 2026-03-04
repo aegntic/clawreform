@@ -8,7 +8,7 @@ services:
     build: .
     # image: ghcr.io/rightnow-ai/clawreform:latest  # Uncomment when GHCR is public
     ports:
-      - "4200:4200"
+      - "4332:4332"
     volumes:
       - clawreform-data:/data
     environment:

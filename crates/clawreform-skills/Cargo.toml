@@ -3,7 +3,7 @@ name = "clawreform-skills"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Skill system for OpenFang — registry, loader, marketplace, and OpenClaw compatibility"
+description = "Skill system for clawREFORM by aegntic.ai — registry, loader, marketplace, and OpenClaw compatibility"
 
 [dependencies]
 clawreform-types = { path = "../clawreform-types" }

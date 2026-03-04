@@ -1,6 +1,6 @@
-# ClawReform Documentation
+# clawREFORM by aegntic.ai Documentation
 
-Welcome to the ClawReform documentation. ClawReform is the open-source Agent Operating System -- 14 Rust crates, 40 channels, 60 skills, 20 LLM providers, 76 API endpoints, and 16 security systems in a single binary.
+Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai is the open-source Agent Operating System -- 14 Rust crates, 40 channels, 60 skills, 20 LLM providers, 76 API endpoints, and 16 security systems in a single binary.
 
 ---
 
@@ -18,6 +18,7 @@ Welcome to the ClawReform documentation. ClawReform is the open-source Agent Ope
 | Guide | Description |
 |-------|-------------|
 | [Architecture](architecture.md) | 12-crate structure, kernel boot, agent lifecycle, memory substrate |
+| [Organ System](organ-system.md) | Core organ files, memory ladder, dispatch/ledger doctrine |
 | [Agent Templates](agent-templates.md) | 30 pre-built agents across 4 performance tiers |
 | [Workflows](workflows.md) | Multi-agent pipelines with branching, fan-out, loops, and triggers |
 | [Security](security.md) | 16 defense-in-depth security systems |
@@ -62,8 +63,16 @@ Welcome to the ClawReform documentation. ClawReform is the open-source Agent Ope
 ```bash
 export GROQ_API_KEY="your-key"
 clawreform init && clawreform start
-# Open http://127.0.0.1:4200
+# Open http://127.0.0.1:4332
 ```
+
+### Dashboard Proof
+
+```bash
+./scripts/dashboard-proof.sh
+```
+
+This verifies the live dashboard version badge, reasoning panel rendering, focus mode, and browser console cleanliness, then saves fresh proof artifacts under `output/playwright/`.
 
 ### Key Numbers
 

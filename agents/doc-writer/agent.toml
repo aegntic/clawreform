@@ -1,7 +1,7 @@
 name = "doc-writer"
-version = "0.2.0"
+version = "0.2.1"
 description = "Documentation writer agent. Creates technical docs, API references, guides, READMEs, and changelogs."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["documentation", "technical-writing", "api-docs", "guides", "readme"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 8192
 temperature = 0.4
-system_prompt = """You are Doc Writer, a technical documentation agent running inside the ClawReform Agent OS.
+system_prompt = """You are Doc Writer, a technical documentation agent running inside the clawREFORM by aegntic.ai.
 
 YOUR ROLE:
 - Write clear, accurate technical documentation

@@ -7,15 +7,15 @@ use tracing::info;
 /// Analyze a modification request and create a plan
 pub fn analyze_request(request: &str, _source_dir: &Path) -> Result<ModifyPlan, ModifyError> {
     info!("Analyzing request: {}", request);
-    
+
     // Parse the request to understand what needs to be modified
     let intent = parse_intent(request);
     let affected_files = find_affected_files(&intent, _source_dir)?;
     let complexity = estimate_complexity(&affected_files);
     let risk = assess_risk(&intent, &affected_files);
-    
+
     let id = generate_plan_id();
-    
+
     Ok(ModifyPlan {
         id,
         description: intent.description,
@@ -60,7 +60,7 @@ enum Action {
 
 fn parse_intent(request: &str) -> Intent {
     let request_lower = request.to_lowercase();
-    
+
     // Detect target area
     let target_area = if request_lower.contains("api") || request_lower.contains("endpoint") {
         TargetArea::Api
@@ -81,7 +81,7 @@ fn parse_intent(request: &str) -> Intent {
     } else {
         TargetArea::Multiple
     };
-    
+
     // Detect action
     let action = if request_lower.contains("add") || request_lower.contains("new") {
         if request_lower.contains("endpoint") {
@@ -104,7 +104,7 @@ fn parse_intent(request: &str) -> Intent {
     } else {
         Action::AddFeature
     };
-    
+
     Intent {
         description: request.to_string(),
         target_area,
@@ -112,9 +112,12 @@ fn parse_intent(request: &str) -> Intent {
     }
 }
 
-fn find_affected_files(intent: &Intent, __source_dir: &Path) -> Result<Vec<FileChange>, ModifyError> {
+fn find_affected_files(
+    intent: &Intent,
+    __source_dir: &Path,
+) -> Result<Vec<FileChange>, ModifyError> {
     let mut files = Vec::new();
-    
+
     match intent.target_area {
         TargetArea::Api => {
             files.push(FileChange {
@@ -160,18 +163,24 @@ fn find_affected_files(intent: &Intent, __source_dir: &Path) -> Result<Vec<FileC
             });
         }
     }
-    
+
     Ok(files)
 }
 
 fn estimate_complexity(files: &[FileChange]) -> u8 {
     let total_lines: usize = files.iter().map(|f| f.lines_added + f.lines_removed).sum();
-    
-    if total_lines < 50 { 1 }
-    else if total_lines < 100 { 3 }
-    else if total_lines < 200 { 5 }
-    else if total_lines < 500 { 7 }
-    else { 9 }
+
+    if total_lines < 50 {
+        1
+    } else if total_lines < 100 {
+        3
+    } else if total_lines < 200 {
+        5
+    } else if total_lines < 500 {
+        7
+    } else {
+        9
+    }
 }
 
 fn assess_risk(intent: &Intent, _files: &[FileChange]) -> RiskLevel {

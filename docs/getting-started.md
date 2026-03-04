@@ -1,6 +1,6 @@
-# Getting Started with ClawReform
+# Getting Started with clawREFORM by aegntic.ai
 
-This guide walks you through installing ClawReform, configuring your first LLM provider, spawning an agent, and chatting with it.
+This guide walks you through installing clawREFORM by aegntic.ai, configuring your first LLM provider, spawning an agent, and chatting with it.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ Download the installer for your platform from the [latest release](https://githu
 | macOS | `.dmg` disk image |
 | Linux | `.AppImage` or `.deb` |
 
-The desktop app includes the full ClawReform system with a native window, system tray, auto-updates, and OS notifications. Updates are installed automatically in the background.
+The desktop app includes the full clawREFORM by aegntic.ai system with a native window, system tray, auto-updates, and OS notifications. Updates are installed automatically in the background.
 
 ### Option 2: Shell Installer (Linux / macOS)
 
@@ -67,7 +67,7 @@ docker pull ghcr.io/RightNow-AI/clawreform:latest
 
 docker run -d \
   --name clawreform \
-  -p 4200:4200 \
+  -p 4332:4332 \
   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
   -v clawreform-data:/data \
   ghcr.io/RightNow-AI/clawreform:latest
@@ -111,7 +111,7 @@ This creates:
 
 ### Set Up an API Key
 
-ClawReform needs at least one LLM provider API key. Set it as an environment variable:
+clawREFORM by aegntic.ai needs at least one LLM provider API key. Set it as an environment variable:
 
 ```bash
 # Anthropic (Claude)
@@ -131,6 +131,8 @@ Add the export to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to persist 
 The default config uses Anthropic. To change the provider, edit `~/.clawreform/config.toml`:
 
 ```toml
+api_listen = "127.0.0.1:4332"        # HTTP/WS API + dashboard
+
 [default_model]
 provider = "groq"                      # anthropic, openai, groq, ollama, etc.
 model = "llama-3.3-70b-versatile"      # Model identifier for the provider
@@ -157,7 +159,7 @@ This checks that your config exists, API keys are set, and the toolchain is avai
 
 ### Using a Built-in Template
 
-ClawReform ships with 30 agent templates. Spawn the hello-world agent:
+clawREFORM by aegntic.ai ships with 30 agent templates. Spawn the hello-world agent:
 
 ```bash
 clawreform agent spawn agents/hello-world/agent.toml
@@ -170,6 +172,8 @@ Agent spawned successfully!
   ID:   a1b2c3d4-e5f6-...
   Name: hello-world
 ```
+
+Each new workspace also gets a first-class organ set, including `IDENTITY.md`, `SOUL.md`, `HANDS.md`, `MEMORY.md`, `SKILLS.md`, `TOOLS.md`, `AGENTS.md`, plus the memory views `CORE.md`, `OVERVIEW.md`, and `PROJECT.md`. These files give you an editable constitutional layer, action doctrine, memory law, procedural doctrine, and visible memory ladder for the agent.
 
 ### Using a Custom Manifest
 
@@ -241,7 +245,7 @@ Chat session started (daemon mode). Type 'exit' or Ctrl+C to quit.
 
 you> Hello! What can you do?
 
-agent> I'm the hello-world agent running on ClawReform. I can:
+agent> I'm the hello-world agent running on clawREFORM by aegntic.ai. I can:
 - Read files from the filesystem
 - List directory contents
 - Fetch web pages
@@ -278,15 +282,15 @@ clawreform start
 Output:
 
 ```
-Starting ClawReform daemon...
-ClawReform daemon running on http://127.0.0.1:4200
+Starting clawREFORM by aegntic.ai daemon...
+clawREFORM by aegntic.ai daemon running on http://127.0.0.1:4332
 Press Ctrl+C to stop.
 ```
 
 The daemon provides:
-- **REST API** at `http://127.0.0.1:4200/api/`
-- **WebSocket** endpoint at `ws://127.0.0.1:4200/api/agents/{id}/ws`
-- **WebChat UI** at `http://127.0.0.1:4200/`
+- **REST API** at `http://127.0.0.1:4332/api/`
+- **WebSocket** endpoint at `ws://127.0.0.1:4332/api/agents/{id}/ws`
+- **WebChat UI** at `http://127.0.0.1:4332/`
 - **OFP networking** on port 4200
 
 ### Check Status
@@ -300,7 +304,7 @@ clawreform status
 Press `Ctrl+C` in the terminal running the daemon, or:
 
 ```bash
-curl -X POST http://127.0.0.1:4200/api/shutdown
+curl -X POST http://127.0.0.1:4332/api/shutdown
 ```
 
 ---
@@ -310,7 +314,7 @@ curl -X POST http://127.0.0.1:4200/api/shutdown
 With the daemon running, open your browser to:
 
 ```
-http://127.0.0.1:4200/
+http://127.0.0.1:4332/
 ```
 
 The embedded WebChat UI allows you to:
@@ -323,7 +327,7 @@ The embedded WebChat UI allows you to:
 
 ## Next Steps
 
-Now that you have ClawReform running:
+Now that you have clawREFORM by aegntic.ai running:
 
 - **Explore agent templates**: Browse the `agents/` directory for 30 pre-built agents (coder, researcher, writer, ops, analyst, security-auditor, and more).
 - **Create custom agents**: Write your own `agent.toml` manifests. See the [Architecture guide](architecture.md) for details on capabilities and scheduling.

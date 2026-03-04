@@ -1,7 +1,8 @@
 //! Workspace context auto-detection.
 //!
 //! Scans the workspace root for project type indicators (Cargo.toml, package.json, etc.),
-//! context files (AGENTS.md, SOUL.md, TOOLS.md, IDENTITY.md, HEARTBEAT.md), and ClawReform
+//! context files (AGENTS.md, SOUL.md, HANDS.md, TOOLS.md, IDENTITY.md, MEMORY.md, SKILLS.md,
+//! HEARTBEAT.md), and ClawReform
 //! state files. Provides mtime-cached file reads to avoid redundant I/O.
 
 use serde::{Deserialize, Serialize};
@@ -17,8 +18,14 @@ const MAX_FILE_SIZE: u64 = 32_768;
 const CONTEXT_FILES: &[&str] = &[
     "AGENTS.md",
     "SOUL.md",
+    "HANDS.md",
+    "CORE.md",
+    "OVERVIEW.md",
+    "PROJECT.md",
     "TOOLS.md",
     "IDENTITY.md",
+    "MEMORY.md",
+    "SKILLS.md",
     "HEARTBEAT.md",
 ];
 
@@ -316,11 +323,17 @@ mod tests {
         std::fs::write(dir.join("Cargo.toml"), "[package]").unwrap();
         std::fs::create_dir_all(dir.join(".git")).unwrap();
         std::fs::write(dir.join("AGENTS.md"), "# Agent Guidelines\nBe helpful.").unwrap();
+        std::fs::write(dir.join("HANDS.md"), "# Hands\nObserve first.").unwrap();
+        std::fs::write(dir.join("SKILLS.md"), "# Skills\nPrefer reusable moves.").unwrap();
+        std::fs::write(dir.join("PROJECT.md"), "# Project Memory\nRecent focus.").unwrap();
 
         let ctx = WorkspaceContext::detect(&dir);
         assert_eq!(ctx.project_type, ProjectType::Rust);
         assert!(ctx.is_git_repo);
         assert!(ctx.cache.contains_key("AGENTS.md"));
+        assert!(ctx.cache.contains_key("HANDS.md"));
+        assert!(ctx.cache.contains_key("SKILLS.md"));
+        assert!(ctx.cache.contains_key("PROJECT.md"));
 
         let _ = std::fs::remove_dir_all(&dir);
     }
@@ -365,6 +378,8 @@ mod tests {
         std::fs::write(dir.join("Cargo.toml"), "[package]").unwrap();
         std::fs::create_dir_all(dir.join(".git")).unwrap();
         std::fs::write(dir.join("SOUL.md"), "Be nice").unwrap();
+        std::fs::write(dir.join("HANDS.md"), "Observe before acting").unwrap();
+        std::fs::write(dir.join("OVERVIEW.md"), "Active arc: memory promotion").unwrap();
 
         let mut ctx = WorkspaceContext::detect(&dir);
         let section = ctx.build_context_section();
@@ -372,6 +387,10 @@ mod tests {
         assert!(section.contains("Git repository: yes"));
         assert!(section.contains("SOUL.md"));
         assert!(section.contains("Be nice"));
+        assert!(section.contains("HANDS.md"));
+        assert!(section.contains("Observe before acting"));
+        assert!(section.contains("OVERVIEW.md"));
+        assert!(section.contains("memory promotion"));
 
         let _ = std::fs::remove_dir_all(&dir);
     }

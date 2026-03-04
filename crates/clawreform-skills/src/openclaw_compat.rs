@@ -327,7 +327,7 @@ pub fn convert_skillmd_str(name_hint: &str, content: &str) -> Result<ConvertedSk
             name: skill_name,
             version: "0.1.0".to_string(),
             description: frontmatter.description.clone(),
-            author: "ClawReform".to_string(),
+            author: "aegntic.ai".to_string(),
             license: "Apache-2.0".to_string(),
             tags: vec!["bundled".to_string(), "prompt-only".to_string()],
         },

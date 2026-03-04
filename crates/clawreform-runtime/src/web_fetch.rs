@@ -48,7 +48,10 @@ impl WebFetchEngine {
         let resp = self
             .client
             .get(url)
-            .header("User-Agent", "Mozilla/5.0 (compatible; ClawReformAgent/0.1)")
+            .header(
+                "User-Agent",
+                "Mozilla/5.0 (compatible; ClawReformAgent/0.1)",
+            )
             .send()
             .await
             .map_err(|e| format!("HTTP request failed: {e}"))?;
@@ -142,9 +145,7 @@ pub(crate) fn check_ssrf(url: &str) -> Result<(), String> {
     let host = extract_host(url);
     // For IPv6 bracket notation like [::1]:80, extract [::1] as hostname
     let hostname = if host.starts_with('[') {
-        host.find(']')
-            .map(|i| &host[..=i])
-            .unwrap_or(&host)
+        host.find(']').map(|i| &host[..=i]).unwrap_or(&host)
     } else {
         host.split(':').next().unwrap_or(&host)
     };

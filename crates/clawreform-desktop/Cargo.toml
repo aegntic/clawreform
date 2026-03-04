@@ -3,7 +3,7 @@ name = "clawreform-desktop"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Native desktop application for the OpenFang Agent OS (Tauri 2.0)"
+description = "Native desktop application for the clawREFORM by aegntic.ai (Tauri 2.0)"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

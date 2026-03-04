@@ -799,7 +799,9 @@ pub fn run() -> InitResult {
 fn handle_migration_key(
     state: &mut State,
     code: KeyCode,
-    migrate_tx: &std::sync::mpsc::Sender<Result<clawreform_migrate::report::MigrationReport, String>>,
+    migrate_tx: &std::sync::mpsc::Sender<
+        Result<clawreform_migrate::report::MigrationReport, String>,
+    >,
 ) {
     match state.migration_phase {
         MigrationPhase::Detecting => {} // auto-resolves, no keys
@@ -983,10 +985,10 @@ complex_threshold = 500
 
     let config_path = clawreform_dir.join("config.toml");
     let config = format!(
-        r#"# ClawReform Agent OS configuration
+        r#"# clawREFORM by aegntic.ai configuration
 # See https://github.com/RightNow-AI/clawreform for documentation
 
-api_listen = "127.0.0.1:4200"
+api_listen = "127.0.0.1:4332"
 
 [default_model]
 provider = "{provider}"

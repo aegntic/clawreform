@@ -27,10 +27,22 @@ pub struct PromptContext {
     pub workspace_path: Option<String>,
     /// SOUL.md content (persona).
     pub soul_md: Option<String>,
+    /// HANDS.md content (action doctrine).
+    pub hands_md: Option<String>,
+    /// CORE.md content (durable truths).
+    pub core_md: Option<String>,
+    /// OVERVIEW.md content (big-picture situational map).
+    pub overview_md: Option<String>,
+    /// PROJECT.md content (workspace ledger).
+    pub project_md: Option<String>,
     /// USER.md content.
     pub user_md: Option<String>,
+    /// TOOLS.md content (local tool notes and constraints).
+    pub tools_md: Option<String>,
     /// MEMORY.md content.
     pub memory_md: Option<String>,
+    /// SKILLS.md content (procedural doctrine).
+    pub skills_md: Option<String>,
     /// Cross-channel canonical context summary.
     pub canonical_context: Option<String>,
     /// Known user name (from shared memory).
@@ -101,18 +113,22 @@ pub fn build_system_prompt(ctx: &PromptContext) -> String {
         sections.push(build_mcp_section(&ctx.mcp_summary));
     }
 
-    // Section 7 — Persona / Identity files (skip for subagents)
-    if !ctx.is_subagent {
-        let persona = build_persona_section(
-            ctx.identity_md.as_deref(),
-            ctx.soul_md.as_deref(),
-            ctx.user_md.as_deref(),
-            ctx.memory_md.as_deref(),
-            ctx.workspace_path.as_deref(),
-        );
-        if !persona.is_empty() {
-            sections.push(persona);
-        }
+    // Section 7 — Core organs
+    let organs = build_core_organs_section(
+        ctx.identity_md.as_deref(),
+        ctx.soul_md.as_deref(),
+        ctx.hands_md.as_deref(),
+        ctx.core_md.as_deref(),
+        ctx.overview_md.as_deref(),
+        ctx.project_md.as_deref(),
+        ctx.user_md.as_deref(),
+        ctx.tools_md.as_deref(),
+        ctx.memory_md.as_deref(),
+        ctx.skills_md.as_deref(),
+        ctx.workspace_path.as_deref(),
+    );
+    if !organs.is_empty() {
+        sections.push(organs);
     }
 
     // Section 7.5 — Heartbeat checklist (only for autonomous agents)
@@ -194,7 +210,7 @@ pub fn build_system_prompt(ctx: &PromptContext) -> String {
 fn build_identity_section(ctx: &PromptContext) -> String {
     if ctx.base_system_prompt.is_empty() {
         format!(
-            "You are {}, an AI agent running inside the ClawReform Agent OS.\n{}",
+            "You are {}, an AI agent running inside the clawREFORM by aegntic.ai.\n{}",
             ctx.agent_name, ctx.agent_description
         )
     } else {
@@ -287,11 +303,17 @@ fn build_mcp_section(mcp_summary: &str) -> String {
     format!("## Connected Tool Servers (MCP)\n{}", mcp_summary.trim())
 }
 
-fn build_persona_section(
+fn build_core_organs_section(
     identity_md: Option<&str>,
     soul_md: Option<&str>,
+    hands_md: Option<&str>,
+    core_md: Option<&str>,
+    overview_md: Option<&str>,
+    project_md: Option<&str>,
     user_md: Option<&str>,
+    tools_md: Option<&str>,
     memory_md: Option<&str>,
+    skills_md: Option<&str>,
     workspace_path: Option<&str>,
 ) -> String {
     let mut parts: Vec<String> = Vec::new();
@@ -316,15 +338,51 @@ fn build_persona_section(
         }
     }
 
+    if let Some(hands) = hands_md {
+        if !hands.trim().is_empty() {
+            parts.push(format!("## Hands\n{}", cap_str(hands, 1000)));
+        }
+    }
+
+    if let Some(core) = core_md {
+        if !core.trim().is_empty() {
+            parts.push(format!("## Core Memory\n{}", cap_str(core, 700)));
+        }
+    }
+
+    if let Some(overview) = overview_md {
+        if !overview.trim().is_empty() {
+            parts.push(format!("## Overview Memory\n{}", cap_str(overview, 900)));
+        }
+    }
+
+    if let Some(project) = project_md {
+        if !project.trim().is_empty() {
+            parts.push(format!("## Project Memory\n{}", cap_str(project, 900)));
+        }
+    }
+
     if let Some(user) = user_md {
         if !user.trim().is_empty() {
             parts.push(format!("## User Context\n{}", cap_str(user, 500)));
         }
     }
 
+    if let Some(tools) = tools_md {
+        if !tools.trim().is_empty() {
+            parts.push(format!("## Local Tooling Notes\n{}", cap_str(tools, 700)));
+        }
+    }
+
     if let Some(memory) = memory_md {
         if !memory.trim().is_empty() {
-            parts.push(format!("## Long-Term Memory\n{}", cap_str(memory, 500)));
+            parts.push(format!("## Memory Doctrine\n{}", cap_str(memory, 800)));
+        }
+    }
+
+    if let Some(skills) = skills_md {
+        if !skills.trim().is_empty() {
+            parts.push(format!("## Procedural Doctrine\n{}", cap_str(skills, 800)));
         }
     }
 
@@ -599,16 +657,20 @@ mod tests {
     fn test_subagent_omits_sections() {
         let mut ctx = basic_ctx();
         ctx.is_subagent = true;
+        ctx.soul_md = Some("Role-specific sub-soul.".to_string());
+        ctx.hands_md = Some("Sub-agent acts through shared hands.".to_string());
         let prompt = build_system_prompt(&ctx);
 
         assert!(!prompt.contains("## Tool Call Behavior"));
         assert!(!prompt.contains("## User Profile"));
         assert!(!prompt.contains("## Channel"));
         assert!(!prompt.contains("## Safety"));
-        // Subagents still get tools and guidelines
+        // Subagents still get tools, guidelines, and core organs
         assert!(prompt.contains("## Your Tools"));
         assert!(prompt.contains("## Operational Guidelines"));
         assert!(prompt.contains("## Memory"));
+        assert!(prompt.contains("## Persona"));
+        assert!(prompt.contains("## Hands"));
     }
 
     #[test]
@@ -729,7 +791,7 @@ mod tests {
     }
 
     #[test]
-    fn test_persona_section_with_soul() {
+    fn test_core_organs_section_with_soul() {
         let mut ctx = basic_ctx();
         ctx.soul_md = Some("You are a pirate. Arr!".to_string());
         let prompt = build_system_prompt(&ctx);
@@ -738,9 +800,36 @@ mod tests {
     }
 
     #[test]
-    fn test_persona_soul_capped_at_1000() {
+    fn test_core_organs_section_includes_hands_and_skill_doctrine() {
+        let mut ctx = basic_ctx();
+        ctx.hands_md = Some("Observe, draft, modify, execute.".to_string());
+        ctx.project_md = Some("Recent movement lives here.".to_string());
+        ctx.skills_md = Some("Prefer repeatable procedures.".to_string());
+        let prompt = build_system_prompt(&ctx);
+        assert!(prompt.contains("## Hands"));
+        assert!(prompt.contains("Observe, draft, modify, execute."));
+        assert!(prompt.contains("## Project Memory"));
+        assert!(prompt.contains("Recent movement lives here."));
+        assert!(prompt.contains("## Procedural Doctrine"));
+        assert!(prompt.contains("Prefer repeatable procedures."));
+    }
+
+    #[test]
+    fn test_core_organs_soul_capped_at_1000() {
         let long_soul = "x".repeat(2000);
-        let section = build_persona_section(None, Some(&long_soul), None, None, None);
+        let section = build_core_organs_section(
+            None,
+            Some(&long_soul),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
         assert!(section.contains("..."));
         // The raw soul content in the section should be at most 1003 chars (1000 + "...")
         assert!(section.len() < 1200);

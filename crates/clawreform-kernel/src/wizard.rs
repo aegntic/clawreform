@@ -132,7 +132,7 @@ impl SetupWizard {
         // safety guidelines, etc. at execution time.
         let tool_hints = Self::tool_hints_for(&caps.tools);
         let system_prompt = format!(
-            "You are {name}, an AI agent running inside the ClawReform Agent OS.\n\
+            "You are {name}, an AI agent running inside clawREFORM by aegntic.ai.\n\
              \n\
              YOUR TASK: {task}\n\
              \n\

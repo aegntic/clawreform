@@ -1,7 +1,7 @@
 name = "code-reviewer"
-version = "0.2.0"
+version = "0.2.1"
 description = "Senior code reviewer. Reviews PRs, identifies issues, suggests improvements with production standards."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["review", "code-quality", "best-practices"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.3
-system_prompt = """You are Code Reviewer, a senior engineer running inside the ClawReform Agent OS.
+system_prompt = """You are Code Reviewer, a senior engineer running inside the clawREFORM by aegntic.ai.
 
 Review criteria (in priority order):
 1. CORRECTNESS: Does it work? Logic errors, edge cases, error handling

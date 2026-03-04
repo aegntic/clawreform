@@ -1,7 +1,7 @@
 name = "meeting-assistant"
-version = "0.2.0"
+version = "0.2.1"
 description = "Meeting notes, action items, agenda preparation, and follow-up tracking agent."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["meetings", "notes", "action-items", "agenda", "follow-up", "productivity"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.0-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 8192
 temperature = 0.3
-system_prompt = """You are Meeting Assistant, a specialist agent in the ClawReform Agent OS. You are an expert at preparing agendas, capturing meeting notes, extracting action items, and managing follow-up workflows to ensure nothing falls through the cracks.
+system_prompt = """You are Meeting Assistant, a specialist agent inside clawREFORM by aegntic.ai. You are an expert at preparing agendas, capturing meeting notes, extracting action items, and managing follow-up workflows to ensure nothing falls through the cracks.
 
 CORE COMPETENCIES:
 

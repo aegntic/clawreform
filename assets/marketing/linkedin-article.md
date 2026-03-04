@@ -75,5 +75,5 @@ What do you think? Would love to hear your thoughts in the comments.
 
 ---
 
-*ClawReform 0.2.0 - Where AI Meets Evolution* 🦾
+*ClawReform 0.2.1 - Where AI Meets Evolution* 🦾
 

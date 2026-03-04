@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ClawReform Social Media Updater - Auto-generates posts for Skool and X"""
+"""clawREFORM by aegntic.ai Social Media Updater - Auto-generates posts for Skool and X"""
 
 import os, json, subprocess
 from datetime import datetime
@@ -18,17 +18,17 @@ def generate_announcement(commit):
     elif 'feature' in subject or 'add' in subject: emoji, category = '✨', 'New Feature'
     else: emoji, category = '🦀', 'Improvement'
     
-    tweet = f"""{emoji} ClawReform Update: {category}
+    tweet = f"""{emoji} clawREFORM by aegntic.ai Update: {category}
 
 {commit['subject']}
 
 🔗 github.com/aegntic/clawreform/commit/{commit['short_hash']}
 
-#ClawReform #AI #SelfEvolving #AgentOS #Rust"""
+#clawREFORM by aegntic.ai #AI #SelfEvolving #AgentOS #Rust"""
     return {'tweet': tweet[:280], 'category': category}
 
 def main():
-    print("🦾 ClawReform Social Updater")
+    print("🦾 clawREFORM by aegntic.ai Social Updater")
     commit = get_commit_info()
     announcement = generate_announcement(commit)
     print(f"\nCommit: {commit['short_hash']} - {commit['subject']}")

@@ -1,6 +1,6 @@
 # Agent Templates Catalog
 
-ClawReform ships with **30 pre-built agent templates** organized into 4 performance tiers. Each template is a ready-to-spawn `agent.toml` manifest located in the `agents/` directory. Templates cover software engineering, business operations, personal productivity, and everyday tasks.
+clawREFORM by aegntic.ai ships with **30 pre-built agent templates** organized into 4 performance tiers. Each template is a ready-to-spawn `agent.toml` manifest located in the `agents/` directory. Templates cover software engineering, business operations, personal productivity, and everyday tasks.
 
 ## Quick Start
 
@@ -16,12 +16,12 @@ Spawn via the REST API:
 
 ```bash
 # Spawn from a built-in template name
-curl -X POST http://localhost:4200/api/agents \
+curl -X POST http://localhost:4332/api/agents \
   -H "Content-Type: application/json" \
   -d '{"template": "coder"}'
 
 # Spawn with overrides
-curl -X POST http://localhost:4200/api/agents \
+curl -X POST http://localhost:4332/api/agents \
   -H "Content-Type: application/json" \
   -d '{"template": "writer", "model": "gemini-2.5-flash"}'
 ```
@@ -29,7 +29,7 @@ curl -X POST http://localhost:4200/api/agents \
 Send a message to a running agent:
 
 ```bash
-curl -X POST http://localhost:4200/api/agents/{id}/message \
+curl -X POST http://localhost:4332/api/agents/{id}/message \
   -H "Content-Type: application/json" \
   -d '{"content": "Write unit tests for the auth module"}'
 ```
@@ -452,7 +452,7 @@ clawreform spawn devops-lead
 
 **Tier 3 -- Balanced** | `groq/llama-3.3-70b-versatile` | Fallback: `gemini/gemini-2.0-flash`
 
-> General-purpose assistant. The default ClawReform agent for everyday tasks, questions, and conversations.
+> General-purpose assistant. The default clawREFORM by aegntic.ai agent for everyday tasks, questions, and conversations.
 
 The versatile default agent covering conversational intelligence, task execution, research and synthesis, writing and communication, problem solving, agent delegation (routes specialized tasks to the right specialist), knowledge management, and creative brainstorming. Acts as the user's trusted first point of contact -- handles most tasks directly and delegates to specialists when they would do better.
 

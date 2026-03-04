@@ -1,6 +1,6 @@
-# Migrating to ClawReform
+# Migrating to clawREFORM by aegntic.ai
 
-This guide covers migrating from OpenClaw (and other frameworks) to ClawReform. The migration engine handles config conversion, agent import, memory transfer, channel re-configuration, and skill scanning.
+This guide covers migrating from OpenClaw (and other frameworks) to clawREFORM by aegntic.ai. The migration engine handles config conversion, agent import, memory transfer, channel re-configuration, and skill scanning.
 
 ## Table of Contents
 
@@ -51,7 +51,7 @@ clawreform migrate --from autogpt     # Coming soon
 
 ## What Gets Migrated
 
-| Item | Source (OpenClaw) | Destination (ClawReform) | Status |
+| Item | Source (OpenClaw) | Destination (clawREFORM by aegntic.ai) | Status |
 |------|-------------------|------------------------|--------|
 | **Config** | `~/.openclaw/config.yaml` | `~/.clawreform/config.toml` | Fully automated |
 | **Agents** | `~/.openclaw/agents/*/agent.yaml` | `~/.clawreform/agents/*/agent.toml` | Fully automated |
@@ -73,7 +73,7 @@ OpenClaw skills (Node.js) are detected and listed in the migration report but no
 clawreform skill install <skill-name-or-path>
 ```
 
-ClawReform automatically detects OpenClaw-format skills and converts them during installation.
+clawREFORM by aegntic.ai automatically detects OpenClaw-format skills and converts them during installation.
 
 ---
 
@@ -81,7 +81,7 @@ ClawReform automatically detects OpenClaw-format skills and converts them during
 
 If you prefer migrating by hand (or need to handle edge cases), follow these steps:
 
-### 1. Initialize ClawReform
+### 1. Initialize clawREFORM by aegntic.ai
 
 ```bash
 clawreform init
@@ -103,7 +103,7 @@ memory:
   decay_rate: 0.05
 ```
 
-**ClawReform** (`~/.clawreform/config.toml`):
+**clawREFORM by aegntic.ai** (`~/.clawreform/config.toml`):
 ```toml
 [default_model]
 provider = "anthropic"
@@ -114,7 +114,7 @@ api_key_env = "ANTHROPIC_API_KEY"
 decay_rate = 0.05
 
 [network]
-listen_addr = "127.0.0.1:4200"
+listen_addr = "127.0.0.1:4332"
 ```
 
 ### 3. Convert Agent Manifests
@@ -136,12 +136,12 @@ tags:
   - dev
 ```
 
-**ClawReform** (`~/.clawreform/agents/coder/agent.toml`):
+**clawREFORM by aegntic.ai** (`~/.clawreform/agents/coder/agent.toml`):
 ```toml
 name = "coder"
 version = "0.1.0"
 description = "A coding assistant"
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["coding", "dev"]
 
@@ -166,7 +166,7 @@ allowed_users:
   - "123456789"
 ```
 
-**ClawReform** (add to `~/.clawreform/config.toml`):
+**clawREFORM by aegntic.ai** (add to `~/.clawreform/config.toml`):
 ```toml
 [channels.telegram]
 bot_token_env = "TELEGRAM_BOT_TOKEN"
@@ -176,7 +176,7 @@ allowed_users = ["123456789"]
 
 ### 5. Import Memory
 
-Copy any `MEMORY.md` files from OpenClaw agents to ClawReform agent directories:
+Copy any `MEMORY.md` files from OpenClaw agents to clawREFORM by aegntic.ai agent directories:
 
 ```bash
 cp ~/.openclaw/agents/coder/MEMORY.md ~/.clawreform/agents/coder/imported_memory.md
@@ -188,7 +188,7 @@ The kernel will ingest these on first boot.
 
 ## Config Format Differences
 
-| Aspect | OpenClaw | ClawReform |
+| Aspect | OpenClaw | clawREFORM by aegntic.ai |
 |--------|----------|----------|
 | Format | YAML | TOML |
 | Config location | `~/.openclaw/config.yaml` | `~/.clawreform/config.toml` |
@@ -205,9 +205,9 @@ The kernel will ingest these on first boot.
 
 ## Tool Name Mapping
 
-Tools were renamed between OpenClaw and ClawReform for consistency. The migration engine handles this automatically.
+Tools were renamed between OpenClaw and clawREFORM by aegntic.ai for consistency. The migration engine handles this automatically.
 
-| OpenClaw Tool | ClawReform Tool | Notes |
+| OpenClaw Tool | clawREFORM by aegntic.ai Tool | Notes |
 |---------------|---------------|-------|
 | `read_file` | `file_read` | Noun-first naming |
 | `write_file` | `file_write` | |
@@ -225,7 +225,7 @@ Tools were renamed between OpenClaw and ClawReform for consistency. The migratio
 | `agents_list` | `agent_list` | |
 | `agent_list` | `agent_list` | |
 
-### New Tools in ClawReform
+### New Tools in clawREFORM by aegntic.ai
 
 These tools have no OpenClaw equivalent:
 
@@ -251,7 +251,7 @@ These tools have no OpenClaw equivalent:
 
 OpenClaw's tool profiles map to explicit tool lists:
 
-| OpenClaw Profile | ClawReform Tools |
+| OpenClaw Profile | clawREFORM by aegntic.ai Tools |
 |------------------|----------------|
 | `minimal` | `file_read`, `file_list` |
 | `coding` | `file_read`, `file_write`, `file_list`, `shell_exec`, `web_fetch` |
@@ -263,7 +263,7 @@ OpenClaw's tool profiles map to explicit tool lists:
 
 ## Provider Mapping
 
-| OpenClaw Name | ClawReform Name | API Key Env Var |
+| OpenClaw Name | clawREFORM by aegntic.ai Name | API Key Env Var |
 |---------------|---------------|-----------------|
 | `anthropic` | `anthropic` | `ANTHROPIC_API_KEY` |
 | `claude` | `anthropic` | `ANTHROPIC_API_KEY` |
@@ -277,7 +277,7 @@ OpenClaw's tool profiles map to explicit tool lists:
 | `mistral` | `mistral` | `MISTRAL_API_KEY` |
 | `fireworks` | `fireworks` | `FIREWORKS_API_KEY` |
 
-### New Providers in ClawReform
+### New Providers in clawREFORM by aegntic.ai
 
 | Provider | Description |
 |----------|-------------|
@@ -288,7 +288,7 @@ OpenClaw's tool profiles map to explicit tool lists:
 
 ## Feature Comparison
 
-| Feature | OpenClaw | ClawReform |
+| Feature | OpenClaw | clawREFORM by aegntic.ai |
 |---------|----------|----------|
 | **Language** | Node.js / TypeScript | Rust |
 | **Config format** | YAML | TOML |
@@ -305,7 +305,7 @@ OpenClaw's tool profiles map to explicit tool lists:
 | **Event triggers** | None | Pattern-matching event triggers with templated prompts |
 | **WASM sandbox** | None | Wasmtime-based sandboxed execution |
 | **Python runtime** | None | Subprocess-based Python agent execution |
-| **Networking** | None | OFP (ClawReform Protocol) peer-to-peer |
+| **Networking** | None | OFP (clawREFORM by aegntic.ai Protocol) peer-to-peer |
 | **API server** | Basic REST | REST + WebSocket + SSE streaming |
 | **WebChat UI** | Separate | Embedded in daemon |
 | **Channel adapters** | Telegram, Discord | Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Email |

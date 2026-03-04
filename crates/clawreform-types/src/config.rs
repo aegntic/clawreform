@@ -929,7 +929,7 @@ pub struct KernelConfig {
     pub data_dir: PathBuf,
     /// Log level (trace, debug, info, warn, error).
     pub log_level: String,
-    /// API listen address (e.g., "0.0.0.0:4200").
+    /// API listen address (e.g., "0.0.0.0:4332").
     #[serde(alias = "listen_addr")]
     pub api_listen: String,
     /// Whether to enable the OFP network layer.
@@ -1167,6 +1167,12 @@ fn default_language() -> String {
     "en".to_string()
 }
 
+/// Default HTTP API/dashboard listen address for new installs.
+pub const DEFAULT_API_LISTEN_ADDR: &str = "127.0.0.1:4332";
+
+/// Default HTTP API/dashboard port for localhost tooling and docs.
+pub const DEFAULT_API_PORT: u16 = 4332;
+
 impl Default for KernelConfig {
     fn default() -> Self {
         let home_dir = dirs_next_home().join(".clawreform");
@@ -1174,7 +1180,7 @@ impl Default for KernelConfig {
             data_dir: home_dir.join("data"),
             home_dir,
             log_level: "info".to_string(),
-            api_listen: "127.0.0.1:50051".to_string(),
+            api_listen: DEFAULT_API_LISTEN_ADDR.to_string(),
             network_enabled: false,
             default_model: DefaultModelConfig::default(),
             memory: MemoryConfig::default(),
@@ -3210,7 +3216,7 @@ mod tests {
     fn test_default_config() {
         let config = KernelConfig::default();
         assert_eq!(config.log_level, "info");
-        assert_eq!(config.api_listen, "127.0.0.1:50051");
+        assert_eq!(config.api_listen, DEFAULT_API_LISTEN_ADDR);
         assert!(!config.network_enabled);
     }
 

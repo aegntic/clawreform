@@ -183,7 +183,10 @@ impl MemorySubstrate {
     }
 
     /// List all sessions for a specific agent.
-    pub fn list_agent_sessions(&self, agent_id: AgentId) -> ClawReformResult<Vec<serde_json::Value>> {
+    pub fn list_agent_sessions(
+        &self,
+        agent_id: AgentId,
+    ) -> ClawReformResult<Vec<serde_json::Value>> {
         self.sessions.list_agent_sessions(agent_id)
     }
 
@@ -504,7 +507,10 @@ impl MemorySubstrate {
     }
 
     /// List tasks, optionally filtered by status.
-    pub async fn task_list(&self, status: Option<&str>) -> ClawReformResult<Vec<serde_json::Value>> {
+    pub async fn task_list(
+        &self,
+        status: Option<&str>,
+    ) -> ClawReformResult<Vec<serde_json::Value>> {
         let conn = Arc::clone(&self.conn);
         let status = status.map(|s| s.to_string());
 
@@ -550,7 +556,11 @@ impl MemorySubstrate {
 
 #[async_trait]
 impl Memory for MemorySubstrate {
-    async fn get(&self, agent_id: AgentId, key: &str) -> ClawReformResult<Option<serde_json::Value>> {
+    async fn get(
+        &self,
+        agent_id: AgentId,
+        key: &str,
+    ) -> ClawReformResult<Option<serde_json::Value>> {
         let store = self.structured.clone();
         let key = key.to_string();
         tokio::task::spawn_blocking(move || store.get(agent_id, &key))

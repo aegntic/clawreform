@@ -5,7 +5,6 @@ use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
-use dashmap::DashMap;
 use clawreform_kernel::triggers::{TriggerId, TriggerPattern};
 use clawreform_kernel::workflow::{
     ErrorMode, StepAgent, StepMode, Workflow, WorkflowId, WorkflowStep,
@@ -14,6 +13,7 @@ use clawreform_kernel::ClawReformKernel;
 use clawreform_runtime::kernel_handle::KernelHandle;
 use clawreform_runtime::tool_runner::builtin_tool_definitions;
 use clawreform_types::agent::{AgentId, AgentIdentity, AgentManifest};
+use dashmap::DashMap;
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock};
 use std::time::Instant;
@@ -344,7 +344,8 @@ pub async fn get_agent_session(
                                         texts.push("[Image]".to_string());
                                     }
                                     clawreform_types::message::ContentBlock::ToolUse {
-                                        name, ..
+                                        name,
+                                        ..
                                     } => {
                                         tools.push(serde_json::json!({
                                             "name": name,
@@ -866,6 +867,9 @@ pub async fn set_agent_mode(
 pub async fn version() -> impl IntoResponse {
     Json(serde_json::json!({
         "name": "clawreform",
+        "display_name": "clawREFORM by aegntic.ai",
+        "operator": "ae.ltd",
+        "homepage": "https://aegntic.ai",
         "version": env!("CARGO_PKG_VERSION"),
         "build_date": option_env!("BUILD_DATE").unwrap_or("dev"),
         "git_sha": option_env!("GIT_SHA").unwrap_or("unknown"),
@@ -944,8 +948,8 @@ pub async fn send_message_stream(
     Json(req): Json<MessageRequest>,
 ) -> axum::response::Response {
     use axum::response::sse::{Event, Sse};
-    use futures::stream;
     use clawreform_runtime::llm_driver::StreamEvent;
+    use futures::stream;
 
     // SECURITY: Reject oversized messages to prevent OOM / LLM token abuse.
     const MAX_MESSAGE_SIZE: usize = 64 * 1024; // 64KB
@@ -4860,7 +4864,8 @@ pub async fn list_providers(State(state): State<Arc<AppState>>) -> impl IntoResp
         // For local providers, add reachability info via health probe
         if !p.key_required {
             entry["is_local"] = serde_json::json!(true);
-            let probe = clawreform_runtime::provider_health::probe_provider(&p.id, &p.base_url).await;
+            let probe =
+                clawreform_runtime::provider_health::probe_provider(&p.id, &p.base_url).await;
             entry["reachable"] = serde_json::json!(probe.reachable);
             entry["latency_ms"] = serde_json::json!(probe.latency_ms);
             if !probe.discovered_models.is_empty() {
@@ -4900,7 +4905,7 @@ pub async fn a2a_agent_card(State(state): State<Arc<AppState>>) -> impl IntoResp
     } else {
         let card = serde_json::json!({
             "name": "clawreform",
-            "description": "ClawReform Agent OS — no agents spawned yet",
+            "description": "clawREFORM by aegntic.ai — no agents spawned yet",
             "url": format!("{base_url}/a2a"),
             "version": "0.1.0",
             "capabilities": { "streaming": true },
@@ -5972,8 +5977,7 @@ pub async fn set_provider_url(
     }
 
     // Probe reachability at the new URL
-    let probe =
-        clawreform_runtime::provider_health::probe_provider(&name, &base_url).await;
+    let probe = clawreform_runtime::provider_health::probe_provider(&name, &base_url).await;
 
     (
         StatusCode::OK,
@@ -6951,7 +6955,9 @@ pub async fn patch_agent_config(
         if name.len() > MAX_NAME_LEN {
             return (
                 StatusCode::PAYLOAD_TOO_LARGE,
-                Json(serde_json::json!({"error": format!("Name exceeds max length ({MAX_NAME_LEN} chars)")})),
+                Json(
+                    serde_json::json!({"error": format!("Name exceeds max length ({MAX_NAME_LEN} chars)")}),
+                ),
             );
         }
     }
@@ -6959,7 +6965,9 @@ pub async fn patch_agent_config(
         if desc.len() > MAX_DESC_LEN {
             return (
                 StatusCode::PAYLOAD_TOO_LARGE,
-                Json(serde_json::json!({"error": format!("Description exceeds max length ({MAX_DESC_LEN} chars)")})),
+                Json(
+                    serde_json::json!({"error": format!("Description exceeds max length ({MAX_DESC_LEN} chars)")}),
+                ),
             );
         }
     }
@@ -6967,7 +6975,9 @@ pub async fn patch_agent_config(
         if prompt.len() > MAX_PROMPT_LEN {
             return (
                 StatusCode::PAYLOAD_TOO_LARGE,
-                Json(serde_json::json!({"error": format!("System prompt exceeds max length ({MAX_PROMPT_LEN} chars)")})),
+                Json(
+                    serde_json::json!({"error": format!("System prompt exceeds max length ({MAX_PROMPT_LEN} chars)")}),
+                ),
             );
         }
     }
@@ -7190,10 +7200,15 @@ pub async fn clone_agent(
 /// Whitelisted workspace identity files that can be read/written via API.
 const KNOWN_IDENTITY_FILES: &[&str] = &[
     "SOUL.md",
+    "HANDS.md",
+    "CORE.md",
+    "OVERVIEW.md",
+    "PROJECT.md",
     "IDENTITY.md",
     "USER.md",
     "TOOLS.md",
     "MEMORY.md",
+    "SKILLS.md",
     "AGENTS.md",
     "BOOTSTRAP.md",
     "HEARTBEAT.md",
@@ -7646,7 +7661,9 @@ pub async fn serve_upload(Path(file_id): Path<String>) -> impl IntoResponse {
         );
     }
 
-    let file_path = std::env::temp_dir().join("clawreform_uploads").join(&file_id);
+    let file_path = std::env::temp_dir()
+        .join("clawreform_uploads")
+        .join(&file_id);
 
     // Look up metadata from registry; fall back to disk probe for generated images
     // (image_generate saves files without registering in UPLOAD_REGISTRY).
@@ -8635,7 +8652,7 @@ pub async fn pairing_notify(
     let title = body
         .get("title")
         .and_then(|v| v.as_str())
-        .unwrap_or("ClawReform");
+        .unwrap_or("clawREFORM by aegntic.ai");
     let message = body.get("message").and_then(|v| v.as_str()).unwrap_or("");
     if message.is_empty() {
         return (

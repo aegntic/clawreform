@@ -3,10 +3,10 @@
 //! The AuthManager maps platform user identities (Telegram ID, Discord ID, etc.)
 //! to ClawReform users with roles, then enforces permission checks on actions.
 
-use dashmap::DashMap;
 use clawreform_types::agent::UserId;
 use clawreform_types::config::UserConfig;
 use clawreform_types::error::{ClawReformError, ClawReformResult};
+use dashmap::DashMap;
 use std::fmt;
 use tracing::info;
 

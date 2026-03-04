@@ -135,7 +135,7 @@ impl WelcomeState {
         });
         self.menu_items.push(MenuItem {
             label: "Exit",
-            hint: "quit ClawReform",
+            hint: "quit clawREFORM by aegntic.ai",
             action: WelcomeAction::Exit,
         });
         self.menu.select(Some(0));

@@ -1,6 +1,6 @@
-# ClawReform Configuration Reference
+# clawREFORM by aegntic.ai Configuration Reference
 
-Complete reference for `config.toml`, covering every configurable field in the ClawReform Agent OS.
+Complete reference for `config.toml`, covering every configurable field in the clawREFORM by aegntic.ai.
 
 ---
 
@@ -28,7 +28,7 @@ Complete reference for `config.toml`, covering every configurable field in the C
 
 ## Overview
 
-ClawReform reads its configuration from a single TOML file:
+clawREFORM by aegntic.ai reads its configuration from a single TOML file:
 
 ```
 ~/.clawreform/config.toml
@@ -47,7 +47,7 @@ On Windows, `~` resolves to `C:\Users\<username>`. If the home directory cannot 
 
 ## Minimal Configuration
 
-The simplest working configuration only needs an LLM provider API key set as an environment variable. With no config file at all, ClawReform boots with Anthropic as the default provider:
+The simplest working configuration only needs an LLM provider API key set as an environment variable. With no config file at all, clawREFORM by aegntic.ai boots with Anthropic as the default provider:
 
 ```toml
 # ~/.clawreform/config.toml
@@ -76,14 +76,14 @@ api_key_env = ""
 
 ```toml
 # ============================================================
-# ClawReform Agent OS -- Complete Configuration Reference
+# clawREFORM by aegntic.ai -- Complete Configuration Reference
 # ============================================================
 
 # --- Top-level fields ---
-home_dir = "~/.clawreform"             # ClawReform home directory
+home_dir = "~/.clawreform"             # clawREFORM by aegntic.ai home directory
 data_dir = "~/.clawreform/data"        # SQLite databases and data files
 log_level = "info"                   # trace | debug | info | warn | error
-api_listen = "127.0.0.1:50051"      # HTTP/WS API bind address
+api_listen = "127.0.0.1:4332"      # HTTP/WS API bind address
 network_enabled = false              # Enable OFP peer-to-peer network
 api_key = ""                         # API Bearer token (empty = unauthenticated)
 mode = "default"                     # stable | default | dev
@@ -224,10 +224,10 @@ These fields sit at the root of `config.toml` (not inside any `[section]`).
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `home_dir` | path | `~/.clawreform` | ClawReform home directory. Stores config, agents, skills. |
+| `home_dir` | path | `~/.clawreform` | clawREFORM by aegntic.ai home directory. Stores config, agents, skills. |
 | `data_dir` | path | `~/.clawreform/data` | Directory for SQLite databases and persistent data. |
 | `log_level` | string | `"info"` | Log verbosity. One of: `trace`, `debug`, `info`, `warn`, `error`. |
-| `api_listen` | string | `"127.0.0.1:50051"` | Bind address for the HTTP/WebSocket/SSE API server. |
+| `api_listen` | string | `"127.0.0.1:4332"` | Bind address for the HTTP/WebSocket/SSE API server. |
 | `network_enabled` | bool | `false` | Enable the OFP peer-to-peer network layer. |
 | `api_key` | string | `""` (empty) | API authentication key. When set, all endpoints except `/api/health` require `Authorization: Bearer <key>`. Empty means unauthenticated (local development only). |
 | `mode` | string | `"default"` | Kernel operating mode. See below. |
@@ -297,7 +297,7 @@ decay_rate = 0.1
 
 ### `[network]`
 
-Configures the OFP (ClawReform Protocol) peer-to-peer networking layer with HMAC-SHA256 mutual authentication.
+Configures the OFP (clawREFORM by aegntic.ai Protocol) peer-to-peer networking layer with HMAC-SHA256 mutual authentication.
 
 ```toml
 [network]
@@ -1131,7 +1131,7 @@ url = "https://mcp.example.com/sse"
 
 ### `[a2a]`
 
-Agent-to-Agent protocol configuration, enabling inter-agent communication across ClawReform instances.
+Agent-to-Agent protocol configuration, enabling inter-agent communication across clawREFORM by aegntic.ai instances.
 
 ```toml
 [a2a]

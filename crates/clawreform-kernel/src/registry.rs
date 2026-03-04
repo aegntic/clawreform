@@ -1,8 +1,8 @@
 //! Agent registry — tracks all agents, their state, and indexes.
 
-use dashmap::DashMap;
 use clawreform_types::agent::{AgentEntry, AgentId, AgentMode, AgentState};
 use clawreform_types::error::{ClawReformError, ClawReformResult};
+use dashmap::DashMap;
 
 /// Registry of all agents in the kernel.
 pub struct AgentRegistry {

@@ -7,10 +7,10 @@ use crate::formatter;
 use crate::router::AgentRouter;
 use crate::types::{ChannelAdapter, ChannelContent, ChannelMessage, ChannelUser};
 use async_trait::async_trait;
-use dashmap::DashMap;
-use futures::StreamExt;
 use clawreform_types::agent::AgentId;
 use clawreform_types::config::{ChannelOverrides, DmPolicy, GroupPolicy, OutputFormat};
+use dashmap::DashMap;
+use futures::StreamExt;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::watch;
@@ -660,7 +660,7 @@ async fn handle_command(
     match name {
         "start" => {
             let agents = handle.list_agents().await.unwrap_or_default();
-            let mut msg = "Welcome to ClawReform! I connect you to AI agents.\n\nAvailable agents:\n"
+            let mut msg = "Welcome to clawREFORM by aegntic.ai! I connect you to AI agents.\n\nAvailable agents:\n"
                 .to_string();
             if agents.is_empty() {
                 msg.push_str("  (none running)\n");
@@ -672,7 +672,7 @@ async fn handle_command(
             msg.push_str("\nCommands:\n/agents - list agents\n/agent <name> - select an agent\n/help - show this help");
             msg
         }
-        "help" => "ClawReform Bot Commands:\n\
+        "help" => "clawREFORM by aegntic.ai Bot Commands:\n\
              \n\
              Session:\n\
              /agents - list running agents\n\

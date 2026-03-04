@@ -53,8 +53,8 @@ impl StructuredStore {
             .conn
             .lock()
             .map_err(|e| ClawReformError::Internal(e.to_string()))?;
-        let blob =
-            serde_json::to_vec(&value).map_err(|e| ClawReformError::Serialization(e.to_string()))?;
+        let blob = serde_json::to_vec(&value)
+            .map_err(|e| ClawReformError::Serialization(e.to_string()))?;
         let now = Utc::now().to_rfc3339();
         conn.execute(
             "INSERT INTO kv_store (agent_id, key, value, version, updated_at) VALUES (?1, ?2, ?3, 1, ?4)
@@ -288,7 +288,8 @@ impl StructuredStore {
                 continue;
             }
 
-            let agent_id = match uuid::Uuid::parse_str(&id_str).map(clawreform_types::agent::AgentId)
+            let agent_id = match uuid::Uuid::parse_str(&id_str)
+                .map(clawreform_types::agent::AgentId)
             {
                 Ok(id) => id,
                 Err(e) => {

@@ -470,7 +470,7 @@ pub struct AgentManifest {
     /// Default: `{workspaces_dir}/{agent_name}-{agent_id_prefix}/`
     #[serde(default)]
     pub workspace: Option<PathBuf>,
-    /// Whether to generate workspace identity files (SOUL.md, USER.md, etc.) on creation.
+    /// Whether to generate workspace organ files (SOUL.md, HANDS.md, USER.md, TOOLS.md, MEMORY.md, SKILLS.md, etc.) on creation.
     #[serde(default = "default_true")]
     pub generate_identity_files: bool,
     /// Per-agent exec policy override. If None, uses global exec_policy.

@@ -1,9 +1,9 @@
-# ClawReform Agent OS — Example Configuration
+# clawREFORM by aegntic.ai — Example Configuration
 # Copy to ~/.clawreform/config.toml and customize.
 
 # API server settings
 # api_key = ""                               # Set to enable Bearer auth (recommended)
-# api_listen = "127.0.0.1:50051"             # HTTP API bind address (use 0.0.0.0 for public)
+# api_listen = "127.0.0.1:4332"             # HTTP API bind address (use 0.0.0.0 for public)
 
 [default_model]
 provider = "gemini"                      # "gemini", "anthropic", "openai", "groq", "ollama", etc.

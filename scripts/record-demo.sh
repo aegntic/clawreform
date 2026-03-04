@@ -1,5 +1,5 @@
 #!/bin/bash
-# ClawReform Demo Recording Script
+# clawREFORM by aegntic.ai Demo Recording Script
 # Records actual usage, combines with Remotion overlay, adds voiceover
 
 set -e
@@ -14,7 +14,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${GREEN}🦾 ClawReform Demo Recording Script${NC}"
+echo -e "${GREEN}🦾 clawREFORM by aegntic.ai Demo Recording Script${NC}"
 echo "=================================="
 
 # Create directories
@@ -27,7 +27,7 @@ command -v ffmpeg >/dev/null 2>&1 || { echo "ffmpeg required"; exit 1; }
 # Function to record terminal session
 record_terminal() {
     echo -e "${GREEN}Recording terminal session...${NC}"
-    echo "Run your ClawReform commands, then press Ctrl+D to finish"
+    echo "Run your clawREFORM by aegntic.ai commands, then press Ctrl+D to finish"
     
     # Use asciinema if available, otherwise script command
     if command -v asciinema >/dev/null 2>&1; then
@@ -48,7 +48,7 @@ capture_screenshots() {
     echo -e "${GREEN}Capturing screenshots...${NC}"
     
     # Wait for user to set up screen
-    echo "Position ClawReform dashboard in browser, then press Enter..."
+    echo "Position clawREFORM by aegntic.ai dashboard in browser, then press Enter..."
     read
     
     # Capture using scrot or import (ImageMagick)
@@ -78,7 +78,7 @@ capture_screenshots() {
 # Function to record screen with ffmpeg
 record_screen() {
     echo -e "${GREEN}Recording screen (15 seconds)...${NC}"
-    echo "Make sure ClawReform dashboard is visible!"
+    echo "Make sure clawREFORM by aegntic.ai dashboard is visible!"
     sleep 3
     
     # Record screen using x11grab (requires X11)
@@ -92,12 +92,12 @@ record_screen() {
 generate_voiceover() {
     echo -e "${GREEN}Generating voiceover...${NC}"
     
-    VOICEOVER_TEXT="Welcome to ClawReform, the Self-Evolving Agent Operating System.
-    ClawReform can modify itself through natural language requests.
+    VOICEOVER_TEXT="Welcome to clawREFORM by aegntic.ai, the Self-Evolving Agent Operating System.
+    clawREFORM by aegntic.ai can modify itself through natural language requests.
     It comes with 61 bundled skills and 23 plus MCP servers.
     Seven specialized hands enable browser automation, clip operations, and more.
     Built in Rust for performance and reliability.
-    ClawReform. The AI that evolves."
+    clawREFORM by aegntic.ai. The AI that evolves."
     
     # Use espeak or festival for TTS
     if command -v espeak >/dev/null 2>&1; then

@@ -50,5 +50,5 @@ Would love feedback on the self-modification approach and potential use cases!
 
 ---
 
-*ClawReform 0.2.0*
+*ClawReform 0.2.1*
 

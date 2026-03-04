@@ -136,3 +136,62 @@ jobs:
         run: |
           curl -fsSL https://clawreform.sh/install.ps1 -o /tmp/install.ps1
           pwsh -NoProfile -Command "Get-Content /tmp/install.ps1 | Out-Null" 2>&1 || true
+
+  dashboard-proof:
+    name: Dashboard Proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: dashboard-proof
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Show browser runtime
+        run: |
+          google-chrome --version || chromium-browser --version || chromium --version || echo "No system Chrome detected"
+      - name: Build clawREFORM CLI
+        run: cargo build -p clawreform-cli
+      - name: Run dashboard proof against temp-home daemon
+        run: |
+          set -euo pipefail
+          export PROOF_HOME="$RUNNER_TEMP/clawreform-proof-home"
+          mkdir -p "$PROOF_HOME/.clawreform/data" "$PROOF_HOME/.clawreform/agents"
+          cat > "$PROOF_HOME/.clawreform/config.toml" <<'EOF'
+          api_listen = "127.0.0.1:4311"
+
+          [default_model]
+          provider = "ollama"
+          model = "llama3.2"
+          api_key_env = "OLLAMA_API_KEY"
+
+          [memory]
+          decay_rate = 0.05
+          EOF
+
+          HOME="$PROOF_HOME" XDG_CONFIG_HOME="$PROOF_HOME/.config" target/debug/clawreform start >"$RUNNER_TEMP/clawreform-dashboard-proof.log" 2>&1 &
+          DAEMON_PID=$!
+          trap 'kill "$DAEMON_PID" >/dev/null 2>&1 || true; wait "$DAEMON_PID" >/dev/null 2>&1 || true' EXIT
+
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4311/api/health >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl -fsS http://127.0.0.1:4311/api/health >/dev/null
+          ./scripts/dashboard-proof.sh http://127.0.0.1:4311/#agents
+      - name: Upload dashboard proof artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-proof
+          path: |
+            output/playwright/dashboard-shell-proof.png
+            output/playwright/dashboard-proof.png
+            output/playwright/dashboard-proof-console.log
+            ${{ runner.temp }}/clawreform-dashboard-proof.log

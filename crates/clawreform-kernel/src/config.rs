@@ -260,7 +260,7 @@ mod tests {
         let mut base: toml::Value = toml::from_str(
             r#"
             log_level = "debug"
-            api_listen = "0.0.0.0:4200"
+            api_listen = "0.0.0.0:4332"
         "#,
         )
         .unwrap();
@@ -273,7 +273,7 @@ mod tests {
         .unwrap();
         deep_merge_toml(&mut base, &overlay);
         assert_eq!(base["log_level"].as_str(), Some("info"));
-        assert_eq!(base["api_listen"].as_str(), Some("0.0.0.0:4200"));
+        assert_eq!(base["api_listen"].as_str(), Some("0.0.0.0:4332"));
         assert_eq!(base["network_enabled"].as_bool(), Some(true));
     }
 

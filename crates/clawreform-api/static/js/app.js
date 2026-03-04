@@ -98,7 +98,7 @@ document.addEventListener('alpine:init', function() {
     wsConnected: false,
     connectionState: 'connected',
     lastError: '',
-    version: '0.1.0',
+    version: '0.2.1',
     agentCount: 0,
     pendingAgent: null,
     focusMode: localStorage.getItem('clawreform-focus') === 'true',
@@ -124,7 +124,7 @@ document.addEventListener('alpine:init', function() {
         this.connected = true;
         this.booting = false;
         this.lastError = '';
-        this.version = s.version || '0.1.0';
+        this.version = s.version || '0.2.1';
         this.agentCount = s.agent_count || 0;
       } catch(e) {
         this.connected = false;
@@ -193,7 +193,7 @@ function app() {
     mobileMenuOpen: false,
     connected: false,
     wsConnected: false,
-    version: '0.1.0',
+    version: '0.2.1',
     agentCount: 0,
 
     get agents() { return Alpine.store('app').agents; },

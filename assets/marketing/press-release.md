@@ -8,7 +8,7 @@
 
 ---
 
-**SAN FRANCISCO, CA** - March 1, 2026 - ClawReform today announced the release of version 0.2.0 of its open-source AI agent framework, featuring groundbreaking self-modification capabilities that allow the system to evolve and improve itself through natural language requests.
+**SAN FRANCISCO, CA** - March 1, 2026 - ClawReform today announced the release of version 0.2.1 of its open-source AI agent framework, featuring groundbreaking self-modification capabilities that allow the system to evolve and improve itself through natural language requests.
 
 Unlike traditional AI agent frameworks that remain static after deployment, ClawReform introduces a revolutionary "self-modification kernel" that enables the system to analyze its own codebase, propose improvements, and safely apply changes—all while maintaining comprehensive audit trails and human-in-the-loop approval workflows.
 

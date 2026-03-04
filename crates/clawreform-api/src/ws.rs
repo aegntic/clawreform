@@ -16,13 +16,13 @@ use crate::routes::AppState;
 use axum::extract::ws::{Message, WebSocket};
 use axum::extract::{ConnectInfo, Path, State, WebSocketUpgrade};
 use axum::response::IntoResponse;
-use dashmap::DashMap;
-use futures::stream::SplitSink;
-use futures::{SinkExt, StreamExt};
 use clawreform_runtime::kernel_handle::KernelHandle;
 use clawreform_runtime::llm_driver::StreamEvent;
 use clawreform_runtime::llm_errors;
 use clawreform_types::agent::AgentId;
+use dashmap::DashMap;
+use futures::stream::SplitSink;
+use futures::{SinkExt, StreamExt};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::net::{IpAddr, SocketAddr};
@@ -1112,7 +1112,8 @@ fn classify_streaming_error(err: &clawreform_kernel::error::KernelError) -> Stri
             "Model unavailable. Use /model to see options.".to_string()
         }
         llm_errors::LlmErrorCategory::Format => {
-            "LLM request failed. Check your API key and model configuration in Settings.".to_string()
+            "LLM request failed. Check your API key and model configuration in Settings."
+                .to_string()
         }
         _ => classified.sanitized_message,
     }

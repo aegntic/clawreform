@@ -1,6 +1,6 @@
 # Channel Adapters
 
-ClawReform connects to messaging platforms through **40 channel adapters**, allowing users to interact with their agents across every major communication platform. Adapters span consumer messaging, enterprise collaboration, social media, community platforms, privacy-focused protocols, and generic webhooks.
+clawREFORM by aegntic.ai connects to messaging platforms through **40 channel adapters**, allowing users to interact with their agents across every major communication platform. Adapters span consumer messaging, enterprise collaboration, social media, community platforms, privacy-focused protocols, and generic webhooks.
 
 All adapters share a common foundation: graceful shutdown via `watch::channel`, exponential backoff on connection failures, `Zeroizing<String>` for secrets, automatic message splitting for platform limits, per-channel model/prompt overrides, DM/group policy enforcement, per-user rate limiting, and output formatting (Markdown, TelegramHTML, SlackMrkdwn, PlainText).
 
@@ -146,7 +146,7 @@ default_agent = "social-media"
 
 ### Common Fields
 
-- `bot_token_env` / `token_env` -- The environment variable holding the bot/access token. ClawReform reads the token from this env var at startup. All secrets are stored as `Zeroizing<String>` and wiped from memory on drop.
+- `bot_token_env` / `token_env` -- The environment variable holding the bot/access token. clawREFORM by aegntic.ai reads the token from this env var at startup. All secrets are stored as `Zeroizing<String>` and wiped from memory on drop.
 - `default_agent` -- The agent name (or ID) that receives messages when no specific routing applies.
 - `allowed_users` -- Optional list of platform user IDs allowed to interact. Empty means allow all.
 - `overrides` -- Optional per-channel behavior overrides (see [Channel Overrides](#channel-overrides) below).
@@ -537,7 +537,7 @@ The email adapter polls the IMAP inbox at the configured interval. New emails ar
 The WebChat UI is embedded in the daemon and requires no configuration. When the daemon is running:
 
 ```
-http://127.0.0.1:4200/
+http://127.0.0.1:4332/
 ```
 
 Features:

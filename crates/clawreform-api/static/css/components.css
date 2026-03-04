@@ -343,6 +343,49 @@ tr:hover td { background: var(--surface2); }
 }
 .message.thinking .message-bubble { animation: pulse 1.5s infinite; }
 
+.message-reasoning {
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface2) 88%, transparent);
+  overflow: hidden;
+}
+
+.message-reasoning summary {
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  user-select: none;
+  list-style: none;
+}
+
+.message-reasoning summary::-webkit-details-marker {
+  display: none;
+}
+
+.message-reasoning summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 0.15s ease;
+}
+
+.message-reasoning[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.message-reasoning-content {
+  padding: 0 12px 12px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12.5px;
+}
+
+.message-reasoning-answer {
+  margin-top: 8px;
+}
+
 /* Streaming indicator — pulsing left border */
 .message.streaming .message-bubble {
   border-left: 3px solid var(--accent);

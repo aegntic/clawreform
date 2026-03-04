@@ -1,6 +1,6 @@
-# Contributing to ClawReform
+# Contributing to clawREFORM by aegntic.ai
 
-Thank you for your interest in contributing to ClawReform. This guide covers everything you need to get started, from setting up your development environment to submitting pull requests.
+Thank you for your interest in contributing to clawREFORM by aegntic.ai. This guide covers everything you need to get started, from setting up your development environment to submitting pull requests.
 
 ## Table of Contents
 
@@ -163,7 +163,7 @@ agents/my-agent/agent.toml
 name = "my-agent"
 version = "0.1.0"
 description = "A brief description of what this agent does."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["category"]
 

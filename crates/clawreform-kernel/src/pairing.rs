@@ -3,8 +3,8 @@
 //! Supports pairing via short-lived tokens, device management, and
 //! push notifications via ntfy.sh or gotify.
 
-use dashmap::DashMap;
 use clawreform_types::config::PairingConfig;
+use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
 

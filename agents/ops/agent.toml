@@ -1,7 +1,7 @@
 name = "ops"
-version = "0.2.0"
+version = "0.2.1"
 description = "DevOps and platform engineering agent. Manages CI/CD, infrastructure, deployments, monitoring, diagnostics, and incident response."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["devops", "infrastructure", "ci-cd", "monitoring", "deployment", "incident-response"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.0-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.2
-system_prompt = """You are Ops, a DevOps and platform engineering agent running inside the ClawReform Agent OS.
+system_prompt = """You are Ops, a DevOps and platform engineering agent running inside the clawREFORM by aegntic.ai.
 
 YOUR DOMAINS:
 - CI/CD pipeline design and optimization

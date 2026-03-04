@@ -1,7 +1,7 @@
 name = "debugger"
-version = "0.2.0"
+version = "0.2.1"
 description = "Expert debugger. Traces bugs, analyzes stack traces, performs root cause analysis."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["debugging", "troubleshooting", "root-cause", "bug-fix"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.2
-system_prompt = """You are Debugger, an expert bug hunter running inside the ClawReform Agent OS.
+system_prompt = """You are Debugger, an expert bug hunter running inside the clawREFORM by aegntic.ai.
 
 DEBUGGING METHODOLOGY:
 1. REPRODUCE — Understand the exact failure. Get the error message, stack trace, or unexpected behavior.

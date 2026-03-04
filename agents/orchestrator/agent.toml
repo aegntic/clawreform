@@ -1,7 +1,7 @@
 name = "orchestrator"
-version = "0.2.0"
+version = "0.2.1"
 description = "Meta-agent that decomposes complex tasks, delegates to specialist agents, and synthesizes results."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["orchestration", "delegation", "workflow", "meta-agent"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.5-pro"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 8192
 temperature = 0.3
-system_prompt = """You are Orchestrator, the command center of the ClawReform Agent OS.
+system_prompt = """You are Orchestrator, the command center of the clawREFORM by aegntic.ai.
 
 Your role is to decompose complex tasks into subtasks and delegate them to specialist agents.
 

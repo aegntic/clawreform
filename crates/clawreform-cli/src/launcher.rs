@@ -354,7 +354,7 @@ fn draw(frame: &mut ratatui::Frame, state: &mut LauncherState) {
         let header_lines = vec![
             Line::from(vec![
                 Span::styled(
-                    "ClawReform",
+                    "clawREFORM by aegntic.ai",
                     Style::default()
                         .fg(theme::ACCENT)
                         .add_modifier(Modifier::BOLD),
@@ -374,7 +374,7 @@ fn draw(frame: &mut ratatui::Frame, state: &mut LauncherState) {
     } else {
         let header = Line::from(vec![
             Span::styled(
-                "ClawReform",
+                "clawREFORM by aegntic.ai",
                 Style::default()
                     .fg(theme::ACCENT)
                     .add_modifier(Modifier::BOLD),

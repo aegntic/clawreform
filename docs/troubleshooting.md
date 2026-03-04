@@ -1,6 +1,6 @@
 # Troubleshooting & FAQ
 
-Common issues, diagnostics, and answers to frequently asked questions about ClawReform.
+Common issues, diagnostics, and answers to frequently asked questions about clawREFORM by aegntic.ai.
 
 ## Table of Contents
 
@@ -42,18 +42,18 @@ clawreform status
 ### Check Health via API
 
 ```bash
-curl http://127.0.0.1:4200/api/health
-curl http://127.0.0.1:4200/api/health/detail  # Requires auth
+curl http://127.0.0.1:4332/api/health
+curl http://127.0.0.1:4332/api/health/detail  # Requires auth
 ```
 
 ### View Logs
 
-ClawReform uses `tracing` for structured logging. Set the log level via environment:
+clawREFORM by aegntic.ai uses `tracing` for structured logging. Set the log level via environment:
 
 ```bash
 RUST_LOG=info clawreform start          # Default
 RUST_LOG=debug clawreform start         # Verbose
-RUST_LOG=clawreform=debug clawreform start  # Only ClawReform debug, deps at info
+RUST_LOG=clawreform=debug clawreform start  # Only clawREFORM by aegntic.ai debug, deps at info
 ```
 
 ---
@@ -92,7 +92,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 **Common causes**:
 - No API key provided: `docker run -e GROQ_API_KEY=... ghcr.io/RightNow-AI/clawreform`
-- Port already in use: change the port mapping `-p 3001:4200`
+- Port already in use: change the port mapping `-p 3001:4332`
 - Permission denied on volume mount: check directory permissions
 
 ---
@@ -146,9 +146,9 @@ Common issues:
 
 # Or find and kill the process using the port
 # Linux/macOS:
-lsof -i :4200
+lsof -i :4332
 # Windows:
-netstat -aon | findstr :4200
+netstat -aon | findstr :4332
 ```
 
 ---
@@ -168,7 +168,7 @@ netstat -aon | findstr :4200
 echo $GROQ_API_KEY
 
 # Test the provider
-curl http://127.0.0.1:4200/api/providers/groq/test -X POST
+curl http://127.0.0.1:4332/api/providers/groq/test -X POST
 ```
 
 ### "Rate limited" / 429 errors
@@ -199,7 +199,7 @@ model = "llama-3.1-8b-instant"  # Fast, small model
 
 **Fix**: Check available models:
 ```bash
-curl http://127.0.0.1:4200/api/models
+curl http://127.0.0.1:4332/api/models
 ```
 
 Or use an alias:
@@ -210,7 +210,7 @@ model = "llama"  # Alias for llama-3.3-70b-versatile
 
 See the full alias list:
 ```bash
-curl http://127.0.0.1:4200/api/models/aliases
+curl http://127.0.0.1:4332/api/models/aliases
 ```
 
 ### Ollama / local models not connecting
@@ -283,14 +283,14 @@ RUST_LOG=clawreform_channels=debug clawreform start
 
 **Cause**: The agent is repeatedly calling the same tool with the same parameters.
 
-**Automatic protection**: ClawReform has a built-in loop guard:
+**Automatic protection**: clawREFORM by aegntic.ai has a built-in loop guard:
 - **Warn** at 3 identical tool calls
 - **Block** at 5 identical tool calls
 - **Circuit breaker** at 30 total blocked calls (stops the agent)
 
 **Manual fix**: Cancel the agent's current run:
 ```bash
-curl -X POST http://127.0.0.1:4200/api/agents/{id}/stop
+curl -X POST http://127.0.0.1:4332/api/agents/{id}/stop
 ```
 
 Or via chat command: `/stop`
@@ -301,7 +301,7 @@ Or via chat command: `/stop`
 
 **Fix**: Compact the session:
 ```bash
-curl -X POST http://127.0.0.1:4200/api/agents/{id}/session/compact
+curl -X POST http://127.0.0.1:4332/api/agents/{id}/session/compact
 ```
 
 Or via chat command: `/compact`
@@ -347,7 +347,7 @@ tools = ["file_read", "web_fetch", "shell_exec"]  # Must list each tool
 
 **Fix**: Include the Bearer token:
 ```bash
-curl -H "Authorization: Bearer your-api-key" http://127.0.0.1:4200/api/agents
+curl -H "Authorization: Bearer your-api-key" http://127.0.0.1:4332/api/agents
 ```
 
 ### 429 Too Many Requests
@@ -463,7 +463,7 @@ Yes. Each agent can use a different provider via its manifest `[model]` section.
 2. Set the required environment variables (tokens, secrets)
 3. Restart the daemon
 
-### How do I update ClawReform?
+### How do I update clawREFORM by aegntic.ai?
 
 ```bash
 # From source
@@ -495,7 +495,7 @@ rm -rf ~/.clawreform
 clawreform init  # Start fresh
 ```
 
-### Can I run ClawReform without an internet connection?
+### Can I run clawREFORM by aegntic.ai without an internet connection?
 
 Yes, if you use a local LLM provider:
 - **Ollama**: `ollama serve` + `ollama pull llama3.2`
@@ -509,9 +509,9 @@ provider = "ollama"
 model = "llama3.2"
 ```
 
-### What's the difference between ClawReform and OpenClaw?
+### What's the difference between clawREFORM by aegntic.ai and OpenClaw?
 
-| Aspect | ClawReform | OpenClaw |
+| Aspect | clawREFORM by aegntic.ai | OpenClaw |
 |--------|----------|----------|
 | Language | Rust | Python |
 | Channels | 40 | 38 |
@@ -521,7 +521,7 @@ model = "llama3.2"
 | Binary size | ~30 MB | ~200 MB |
 | Startup | <200 ms | ~3 s |
 
-ClawReform can import OpenClaw configs: `clawreform migrate --from openclaw`
+clawREFORM by aegntic.ai can import OpenClaw configs: `clawreform migrate --from openclaw`
 
 ### How do I report a bug or request a feature?
 
@@ -545,7 +545,7 @@ ClawReform can import OpenClaw configs: `clawreform migrate --from openclaw`
 RUST_LOG=clawreform_runtime=debug,clawreform_channels=info clawreform start
 ```
 
-### Can I use ClawReform as a library?
+### Can I use clawREFORM by aegntic.ai as a library?
 
 Yes. Each crate is independently usable:
 ```toml

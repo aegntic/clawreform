@@ -345,11 +345,10 @@ function chatPage() {
       this.connectWs(agent.id);
       // Show welcome tips on first use
       if (!localStorage.getItem('of-chat-tips-seen')) {
-        var localMsgId = 0;
         this.messages.push({
-          id: ++localMsgId,
+          id: ++msgId,
           role: 'system',
-          text: '**Welcome to ClawReform Chat!**\n\n' +
+          text: '**Welcome to clawREFORM by aegntic.ai Chat!**\n\n' +
             '- Type `/` to see available commands\n' +
             '- `/help` shows all commands\n' +
             '- `/think on` enables extended reasoning\n' +
@@ -379,8 +378,6 @@ function chatPage() {
           self.messages = data.messages.map(function(m) {
             var role = m.role === 'User' ? 'user' : (m.role === 'System' ? 'system' : 'agent');
             var text = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
-            // Sanitize any raw function-call text from history
-            text = self.sanitizeToolText(text);
             // Build tool cards from historical tool data
             var tools = (m.tools || []).map(function(t, idx) {
               return {
@@ -393,7 +390,7 @@ function chatPage() {
                 is_error: !!t.is_error
               };
             });
-            return { id: ++msgId, role: role, text: text, meta: '', tools: tools };
+            return self.normalizeMessage({ id: ++msgId, role: role, text: text, meta: '', tools: tools });
           });
           self.$nextTick(function() { self.scrollToBottom(); });
         }
@@ -649,7 +646,7 @@ function chatPage() {
           if (!finalText.trim() && streamedTools.length) {
             finalText = '';
           }
-          this.messages.push({ id: ++msgId, role: 'agent', text: finalText, meta: meta, tools: streamedTools, ts: Date.now() });
+          this.messages.push(this.normalizeMessage({ id: ++msgId, role: 'agent', text: finalText, meta: meta, tools: streamedTools, ts: Date.now() }));
           this.sending = false;
           this.tokenCount = 0;
           this.scrollToBottom();
@@ -730,7 +727,7 @@ function chatPage() {
 
     // Copy message text to clipboard
     copyMessage: function(msg) {
-      var text = msg.text || '';
+      var text = msg.copyText || msg.searchText || msg.text || '';
       navigator.clipboard.writeText(text).then(function() {
         msg._copied = true;
         setTimeout(function() { msg._copied = false; }, 2000);
@@ -839,7 +836,7 @@ function chatPage() {
         var httpMeta = (res.input_tokens || 0) + ' in / ' + (res.output_tokens || 0) + ' out';
         if (res.cost_usd != null) httpMeta += ' | $' + res.cost_usd.toFixed(4);
         if (res.iterations) httpMeta += ' | ' + res.iterations + ' iter';
-        this.messages.push({ id: ++msgId, role: 'agent', text: res.response, meta: httpMeta, tools: [], ts: Date.now() });
+        this.messages.push(this.normalizeMessage({ id: ++msgId, role: 'agent', text: res.response, meta: httpMeta, tools: [], ts: Date.now() }));
       } catch(e) {
         this.messages = this.messages.filter(function(m) { return !m.thinking; });
         this.messages.push({ id: ++msgId, role: 'system', text: 'Error: ' + e.message, meta: '', tools: [], ts: Date.now() });
@@ -956,6 +953,68 @@ function chatPage() {
       return text.trim();
     },
 
+    extractThinkingBlocks: function(text) {
+      var source = text || '';
+      var regex = /<(think|thinking)>([\s\S]*?)<\/\1>/gi;
+      var thoughts = [];
+      var visibleParts = [];
+      var lastIndex = 0;
+      var match;
+
+      while ((match = regex.exec(source)) !== null) {
+        visibleParts.push(source.slice(lastIndex, match.index));
+        if ((match[2] || '').trim()) thoughts.push((match[2] || '').trim());
+        lastIndex = regex.lastIndex;
+      }
+
+      visibleParts.push(source.slice(lastIndex));
+      return {
+        thoughts: thoughts,
+        visible: visibleParts.join('').trim()
+      };
+    },
+
+    decorateThinkingMessage: function(text) {
+      var parsed = this.extractThinkingBlocks(text);
+      if (!parsed.thoughts.length) return null;
+
+      var html = parsed.thoughts.map(function(thought, idx) {
+        return '<details class="message-reasoning"' + (idx === parsed.thoughts.length - 1 ? ' open' : '') + '>' +
+          '<summary>Reasoning</summary>' +
+          '<div class="message-reasoning-content markdown-body">' + renderMarkdown(thought) + '</div>' +
+          '</details>';
+      }).join('');
+
+      if (parsed.visible) {
+        html += '<div class="message-reasoning-answer markdown-body">' + renderMarkdown(parsed.visible) + '</div>';
+      }
+
+      return {
+        html: html,
+        copyText: text,
+        searchText: [parsed.visible].concat(parsed.thoughts).filter(Boolean).join('\n\n')
+      };
+    },
+
+    normalizeMessage: function(message) {
+      var msg = Object.assign({}, message || {});
+      msg.text = this.sanitizeToolText(msg.text || '');
+      if (!msg.copyText) msg.copyText = msg.text;
+      if (!msg.searchText) msg.searchText = msg.copyText;
+
+      if ((msg.role === 'agent' || msg.role === 'system') && !msg.thinking && !msg.isHtml) {
+        var decorated = this.decorateThinkingMessage(msg.copyText);
+        if (decorated) {
+          msg.text = decorated.html;
+          msg.isHtml = true;
+          msg.copyText = decorated.copyText;
+          msg.searchText = decorated.searchText;
+        }
+      }
+
+      return msg;
+    },
+
     formatToolJson: function(text) {
       if (!text) return '';
       try { return JSON.stringify(JSON.parse(text), null, 2); }
@@ -1053,7 +1112,8 @@ function chatPage() {
       if (!this.searchQuery.trim()) return this.messages;
       var q = this.searchQuery.toLowerCase();
       return this.messages.filter(function(m) {
-        return (m.text && m.text.toLowerCase().indexOf(q) !== -1) ||
+        var haystack = (m.searchText || m.copyText || m.text || '').toLowerCase();
+        return (haystack && haystack.indexOf(q) !== -1) ||
                (m.tools && m.tools.some(function(t) { return t.name.toLowerCase().indexOf(q) !== -1; }));
       });
     },

@@ -1,8 +1,8 @@
 //! Capability manager — enforces capability-based security.
 
-use dashmap::DashMap;
 use clawreform_types::agent::AgentId;
 use clawreform_types::capability::{capability_matches, Capability, CapabilityCheck};
+use dashmap::DashMap;
 use tracing::debug;
 
 /// Manages capability grants for all agents.

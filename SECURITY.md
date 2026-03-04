@@ -8,7 +8,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in ClawReform, please report it responsibly.
+If you discover a security vulnerability in clawREFORM by aegntic.ai, please report it responsibly.
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
@@ -45,7 +45,7 @@ The following are in scope for security reports:
 
 ## Security Architecture
 
-ClawReform implements defense-in-depth with the following security controls:
+clawREFORM by aegntic.ai implements defense-in-depth with the following security controls:
 
 ### Access Control
 - **Capability-based permissions**: Agents only access resources explicitly granted

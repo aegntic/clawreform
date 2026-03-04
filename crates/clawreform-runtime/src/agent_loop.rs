@@ -320,15 +320,16 @@ pub async fn run_agent_loop(
         match response.stop_reason {
             StopReason::EndTurn | StopReason::StopSequence => {
                 // LLM is done — extract text and save
-                let text = response.text();
+                let raw_text = response.text();
 
                 // Parse reply directives from the response text
-                let (cleaned_text, parsed_directives) =
-                    crate::reply_directives::parse_directives(&text);
-                let text = cleaned_text;
+                let (visible_text, parsed_directives) =
+                    crate::reply_directives::parse_directives(&raw_text);
+                let stored_text =
+                    crate::response_sanitizer::sanitize_visible_response(&visible_text);
 
                 // NO_REPLY: agent intentionally chose not to reply
-                if text.trim() == "NO_REPLY" || parsed_directives.silent {
+                if stored_text.trim() == "NO_REPLY" || parsed_directives.silent {
                     debug!(agent = %manifest.name, "Agent chose NO_REPLY/silent — silent completion");
                     session
                         .messages
@@ -353,7 +354,8 @@ pub async fn run_agent_loop(
                 // One-shot retry: if the very first LLM call returns empty text
                 // with no tool use, try once more before accepting the empty result.
                 // This catches transient LLM hiccups (overload, empty stream, etc.).
-                if text.trim().is_empty() && iteration == 0 && response.tool_calls.is_empty() {
+                if stored_text.trim().is_empty() && iteration == 0 && response.tool_calls.is_empty()
+                {
                     warn!(agent = %manifest.name, "Empty response on first call, retrying once");
                     messages.push(Message::assistant("[no response]".to_string()));
                     messages.push(Message::user("Please provide your response.".to_string()));
@@ -361,25 +363,28 @@ pub async fn run_agent_loop(
                 }
 
                 // Guard against empty response — covers both iteration 0 and post-tool cycles
-                let text = if text.trim().is_empty() {
+                let (response_text, memory_text) = if stored_text.trim().is_empty() {
                     warn!(
                         agent = %manifest.name,
                         iteration,
                         input_tokens = total_usage.input_tokens,
                         output_tokens = total_usage.output_tokens,
                         messages_count = messages.len(),
-                        "Empty response from LLM — guard activated"
+                        "Empty visible response from LLM — guard activated"
                     );
-                    if iteration > 0 {
+                    let fallback = if iteration > 0 {
                         "[Task completed — the agent executed tools but did not produce a text summary.]".to_string()
                     } else {
                         "[The model returned an empty response. This usually means the model is overloaded, the context is too large, or the API key lacks credits. Try again or check /status.]".to_string()
-                    }
+                    };
+                    (fallback.clone(), fallback)
                 } else {
-                    text
+                    (visible_text, stored_text)
                 };
-                final_response = text.clone();
-                session.messages.push(Message::assistant(text));
+                final_response = response_text.clone();
+                session
+                    .messages
+                    .push(Message::assistant(memory_text.clone()));
 
                 // Prune NO_REPLY heartbeat turns to save context budget
                 crate::session_repair::prune_heartbeat_turns(&mut session.messages, 10);
@@ -390,10 +395,8 @@ pub async fn run_agent_loop(
                     .map_err(|e| ClawReformError::Memory(e.to_string()))?;
 
                 // Remember this interaction (with embedding if available)
-                let interaction_text = format!(
-                    "User asked: {}\nI responded: {}",
-                    user_message, final_response
-                );
+                let interaction_text =
+                    format!("User asked: {}\nI responded: {}", user_message, memory_text);
                 if let Some(emb) = embedding_driver {
                     match emb.embed_one(&interaction_text).await {
                         Ok(vec) => {
@@ -663,13 +666,18 @@ pub async fn run_agent_loop(
                 consecutive_max_tokens += 1;
                 if consecutive_max_tokens >= MAX_CONTINUATIONS {
                     // Return partial response instead of continuing forever
-                    let text = response.text();
-                    let text = if text.trim().is_empty() {
-                        "[Partial response — token limit reached with no text output.]".to_string()
+                    let raw_text = response.text();
+                    let memory_text =
+                        crate::response_sanitizer::sanitize_visible_response(&raw_text);
+                    let (response_text, memory_text) = if memory_text.trim().is_empty() {
+                        let fallback =
+                            "[Partial response — token limit reached with no text output.]"
+                                .to_string();
+                        (fallback.clone(), fallback)
                     } else {
-                        text
+                        (raw_text, memory_text)
                     };
-                    session.messages.push(Message::assistant(&text));
+                    session.messages.push(Message::assistant(&memory_text));
                     if let Err(e) = memory.save_session(session) {
                         warn!("Failed to save session on max continuations: {e}");
                     }
@@ -692,7 +700,7 @@ pub async fn run_agent_loop(
                         let _ = hook_reg.fire(&ctx);
                     }
                     return Ok(AgentLoopResult {
-                        response: text,
+                        response: response_text,
                         total_usage,
                         iterations: iteration + 1,
                         cost_usd: None,
@@ -701,9 +709,12 @@ pub async fn run_agent_loop(
                     });
                 }
                 // Model hit token limit — add partial response and continue
-                let text = response.text();
-                session.messages.push(Message::assistant(&text));
-                messages.push(Message::assistant(&text));
+                let memory_text =
+                    crate::response_sanitizer::sanitize_visible_response(&response.text());
+                if !memory_text.trim().is_empty() {
+                    session.messages.push(Message::assistant(&memory_text));
+                    messages.push(Message::assistant(&memory_text));
+                }
                 session.messages.push(Message::user("Please continue."));
                 messages.push(Message::user("Please continue."));
                 warn!(iteration, "Max tokens hit, continuing");
@@ -1198,15 +1209,16 @@ pub async fn run_agent_loop_streaming(
 
         match response.stop_reason {
             StopReason::EndTurn | StopReason::StopSequence => {
-                let text = response.text();
+                let raw_text = response.text();
 
                 // Parse reply directives from the streaming response text
-                let (cleaned_text_s, parsed_directives_s) =
-                    crate::reply_directives::parse_directives(&text);
-                let text = cleaned_text_s;
+                let (visible_text, parsed_directives_s) =
+                    crate::reply_directives::parse_directives(&raw_text);
+                let stored_text =
+                    crate::response_sanitizer::sanitize_visible_response(&visible_text);
 
                 // NO_REPLY: agent intentionally chose not to reply
-                if text.trim() == "NO_REPLY" || parsed_directives_s.silent {
+                if stored_text.trim() == "NO_REPLY" || parsed_directives_s.silent {
                     debug!(agent = %manifest.name, "Agent chose NO_REPLY/silent (streaming) — silent completion");
                     session
                         .messages
@@ -1230,7 +1242,8 @@ pub async fn run_agent_loop_streaming(
 
                 // One-shot retry: if the very first LLM call returns empty text
                 // with no tool use, try once more before accepting the empty result.
-                if text.trim().is_empty() && iteration == 0 && response.tool_calls.is_empty() {
+                if stored_text.trim().is_empty() && iteration == 0 && response.tool_calls.is_empty()
+                {
                     warn!(agent = %manifest.name, "Empty response on first call (streaming), retrying once");
                     messages.push(Message::assistant("[no response]".to_string()));
                     messages.push(Message::user("Please provide your response.".to_string()));
@@ -1238,25 +1251,28 @@ pub async fn run_agent_loop_streaming(
                 }
 
                 // Guard against empty response — covers both iteration 0 and post-tool cycles
-                let text = if text.trim().is_empty() {
+                let (response_text, memory_text) = if stored_text.trim().is_empty() {
                     warn!(
                         agent = %manifest.name,
                         iteration,
                         input_tokens = total_usage.input_tokens,
                         output_tokens = total_usage.output_tokens,
                         messages_count = messages.len(),
-                        "Empty response from LLM (streaming) — guard activated"
+                        "Empty visible response from LLM (streaming) — guard activated"
                     );
-                    if iteration > 0 {
+                    let fallback = if iteration > 0 {
                         "[Task completed — the agent executed tools but did not produce a text summary.]".to_string()
                     } else {
                         "[The model returned an empty response. This usually means the model is overloaded, the context is too large, or the API key lacks credits. Try again or check /status.]".to_string()
-                    }
+                    };
+                    (fallback.clone(), fallback)
                 } else {
-                    text
+                    (visible_text, stored_text)
                 };
-                final_response = text.clone();
-                session.messages.push(Message::assistant(text));
+                final_response = response_text.clone();
+                session
+                    .messages
+                    .push(Message::assistant(memory_text.clone()));
 
                 // Prune NO_REPLY heartbeat turns to save context budget
                 crate::session_repair::prune_heartbeat_turns(&mut session.messages, 10);
@@ -1266,10 +1282,8 @@ pub async fn run_agent_loop_streaming(
                     .map_err(|e| ClawReformError::Memory(e.to_string()))?;
 
                 // Remember this interaction (with embedding if available)
-                let interaction_text = format!(
-                    "User asked: {}\nI responded: {}",
-                    user_message, final_response
-                );
+                let interaction_text =
+                    format!("User asked: {}\nI responded: {}", user_message, memory_text);
                 if let Some(emb) = embedding_driver {
                     match emb.embed_one(&interaction_text).await {
                         Ok(vec) => {
@@ -1546,13 +1560,18 @@ pub async fn run_agent_loop_streaming(
             StopReason::MaxTokens => {
                 consecutive_max_tokens += 1;
                 if consecutive_max_tokens >= MAX_CONTINUATIONS {
-                    let text = response.text();
-                    let text = if text.trim().is_empty() {
-                        "[Partial response — token limit reached with no text output.]".to_string()
+                    let raw_text = response.text();
+                    let memory_text =
+                        crate::response_sanitizer::sanitize_visible_response(&raw_text);
+                    let (response_text, memory_text) = if memory_text.trim().is_empty() {
+                        let fallback =
+                            "[Partial response — token limit reached with no text output.]"
+                                .to_string();
+                        (fallback.clone(), fallback)
                     } else {
-                        text
+                        (raw_text, memory_text)
                     };
-                    session.messages.push(Message::assistant(&text));
+                    session.messages.push(Message::assistant(&memory_text));
                     if let Err(e) = memory.save_session(session) {
                         warn!("Failed to save session on max continuations: {e}");
                     }
@@ -1575,7 +1594,7 @@ pub async fn run_agent_loop_streaming(
                         let _ = hook_reg.fire(&ctx);
                     }
                     return Ok(AgentLoopResult {
-                        response: text,
+                        response: response_text,
                         total_usage,
                         iterations: iteration + 1,
                         cost_usd: None,
@@ -1583,9 +1602,12 @@ pub async fn run_agent_loop_streaming(
                         directives: Default::default(),
                     });
                 }
-                let text = response.text();
-                session.messages.push(Message::assistant(&text));
-                messages.push(Message::assistant(&text));
+                let memory_text =
+                    crate::response_sanitizer::sanitize_visible_response(&response.text());
+                if !memory_text.trim().is_empty() {
+                    session.messages.push(Message::assistant(&memory_text));
+                    messages.push(Message::assistant(&memory_text));
+                }
                 session.messages.push(Message::user("Please continue."));
                 messages.push(Message::user("Please continue."));
                 warn!(iteration, "Max tokens hit (streaming), continuing");
@@ -1923,6 +1945,28 @@ mod tests {
         }
     }
 
+    struct ThinkVisibleDriver;
+
+    #[async_trait]
+    impl LlmDriver for ThinkVisibleDriver {
+        async fn complete(
+            &self,
+            _request: CompletionRequest,
+        ) -> Result<CompletionResponse, LlmError> {
+            Ok(CompletionResponse {
+                content: vec![ContentBlock::Text {
+                    text: "<think>internal reasoning</think>\n\nVisible answer.".to_string(),
+                }],
+                stop_reason: StopReason::EndTurn,
+                tool_calls: vec![],
+                usage: TokenUsage {
+                    input_tokens: 10,
+                    output_tokens: 12,
+                },
+            })
+        }
+    }
+
     #[tokio::test]
     async fn test_empty_response_after_tool_use_returns_fallback() {
         let memory = clawreform_memory::MemorySubstrate::open_in_memory(0.01).unwrap();
@@ -2068,6 +2112,53 @@ mod tests {
 
         // Normal response should pass through unchanged
         assert_eq!(result.response, "Hello from the agent!");
+    }
+
+    #[tokio::test]
+    async fn test_thinking_remains_visible_but_is_not_saved_in_session_text() {
+        let memory = clawreform_memory::MemorySubstrate::open_in_memory(0.01).unwrap();
+        let agent_id = clawreform_types::agent::AgentId::new();
+        let mut session = clawreform_memory::session::Session {
+            id: clawreform_types::agent::SessionId::new(),
+            agent_id,
+            messages: Vec::new(),
+            context_window_tokens: 0,
+            label: None,
+        };
+        let manifest = test_manifest();
+        let driver: Arc<dyn LlmDriver> = Arc::new(ThinkVisibleDriver);
+
+        let result = run_agent_loop(
+            &manifest,
+            "Explain the system.",
+            &mut session,
+            &memory,
+            driver,
+            &[],
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None, // on_phase
+            None, // media_engine
+            None, // tts_engine
+            None, // docker_config
+            None, // hooks
+            None, // context_window_tokens
+            None, // process_manager
+        )
+        .await
+        .expect("Loop should complete without error");
+
+        assert!(result.response.contains("<think>"));
+        let saved_text = session.messages.last().and_then(|msg| match &msg.content {
+            MessageContent::Text(text) => Some(text.as_str()),
+            _ => None,
+        });
+        assert_eq!(saved_text, Some("Visible answer."));
     }
 
     #[tokio::test]

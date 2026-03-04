@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ClawReform Demo Recording Script"""
+"""clawREFORM by aegntic.ai Demo Recording Script"""
 
 import subprocess
 import os
@@ -20,14 +20,14 @@ def generate_voiceover():
     """Generate TTS voiceover"""
     RECORDING_DIR.mkdir(parents=True, exist_ok=True)
     
-    text = ("Welcome to ClawReform, the Self-Evolving Agent Operating System. "
-            "Built entirely in Rust, ClawReform represents a paradigm shift in AI agent architecture. "
-            "With natural language self-modification, ClawReform can update its own codebase "
+    text = ("Welcome to clawREFORM by aegntic.ai, the Self-Evolving Agent Operating System. "
+            "Built entirely in Rust, clawREFORM by aegntic.ai represents a paradigm shift in AI agent architecture. "
+            "With natural language self-modification, clawREFORM by aegntic.ai can update its own codebase "
             "through simple conversational requests. "
             "Sixty-one bundled skills cover everything from code execution to browser automation. "
             "Twenty-three MCP servers provide seamless integration with external tools. "
             "Seven specialized hands enable browser control, clipboard operations, and more. "
-            "ClawReform. The AI that evolves itself.")
+            "clawREFORM by aegntic.ai. The AI that evolves itself.")
     
     result = run_cmd("which espeak", check=False)
     if result.returncode == 0:
@@ -62,6 +62,6 @@ def create_demo_video():
         print(f"Demo without voiceover: {output}")
 
 if __name__ == "__main__":
-    print("ClawReform Demo Recording Script")
+    print("clawREFORM by aegntic.ai Demo Recording Script")
     generate_voiceover()
     create_demo_video()

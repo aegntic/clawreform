@@ -34,7 +34,7 @@ pub const GITHUB_COPILOT_BASE_URL: &str = "https://api.githubcopilot.com";
 
 // ── Chinese providers ─────────────────────────────────────────────
 pub const QWEN_BASE_URL: &str = "https://dashscope.aliyuncs.com/compatible-mode/v1";
-pub const MINIMAX_BASE_URL: &str = "https://api.minimax.chat/v1";
+pub const MINIMAX_BASE_URL: &str = "https://api.minimax.io/v1";
 pub const ZHIPU_BASE_URL: &str = "https://open.bigmodel.cn/api/paas/v4";
 pub const ZHIPU_CODING_BASE_URL: &str = "https://open.bigmodel.cn/api/paas/v4";
 pub const MOONSHOT_BASE_URL: &str = "https://api.moonshot.cn/v1";
@@ -280,5 +280,10 @@ mod tests {
         assert_eq!(parsed.id, "anthropic");
         assert_eq!(parsed.auth_status, AuthStatus::Configured);
         assert_eq!(parsed.model_count, 3);
+    }
+
+    #[test]
+    fn test_minimax_base_url_points_to_openai_compatible_host() {
+        assert_eq!(MINIMAX_BASE_URL, "https://api.minimax.io/v1");
     }
 }

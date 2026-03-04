@@ -1,11 +1,9 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# clawREFORM by aegntic.ai — Agent Instructions
 
 ## Project Overview
-ClawReform is an open-source Agent Operating System written in Rust (14 crates in a Cargo workspace).
+clawREFORM by aegntic.ai is an open-source Agent Operating System written in Rust (14 crates).
 - Config: `~/.clawreform/config.toml`
-- Default API: `http://127.0.0.1:4200`
+- Default API: `http://127.0.0.1:4332`
 - CLI binary: `target/release/clawreform` (or `target/debug/clawreform`)
 
 ## Build & Verify Workflow
@@ -56,32 +54,32 @@ cargo build --release -p clawreform-cli
 ```bash
 GROQ_API_KEY=<key> target/release/clawreform start &
 sleep 6  # Wait for full boot
-curl -s http://127.0.0.1:4200/api/health  # Verify it's up
+curl -s http://127.0.0.1:4332/api/health  # Verify it's up
 ```
 The daemon command is `start` (not `daemon`).
 
 #### Step 4: Test every new endpoint
 ```bash
 # GET endpoints — verify they return real data, not empty/null
-curl -s http://127.0.0.1:4200/api/<new-endpoint>
+curl -s http://127.0.0.1:4332/api/<new-endpoint>
 
 # POST/PUT endpoints — send real payloads
-curl -s -X POST http://127.0.0.1:4200/api/<endpoint> \
+curl -s -X POST http://127.0.0.1:4332/api/<endpoint> \
   -H "Content-Type: application/json" \
   -d '{"field": "value"}'
 
 # Verify write endpoints persist — read back after writing
-curl -s -X PUT http://127.0.0.1:4200/api/<endpoint> -d '...'
-curl -s http://127.0.0.1:4200/api/<endpoint>  # Should reflect the update
+curl -s -X PUT http://127.0.0.1:4332/api/<endpoint> -d '...'
+curl -s http://127.0.0.1:4332/api/<endpoint>  # Should reflect the update
 ```
 
 #### Step 5: Test real LLM integration
 ```bash
 # Get an agent ID
-curl -s http://127.0.0.1:4200/api/agents | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])"
+curl -s http://127.0.0.1:4332/api/agents | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])"
 
 # Send a real message (triggers actual LLM call to Groq/OpenAI)
-curl -s -X POST "http://127.0.0.1:4200/api/agents/<id>/message" \
+curl -s -X POST "http://127.0.0.1:4332/api/agents/<id>/message" \
   -H "Content-Type: application/json" \
   -d '{"message": "Say hello in 5 words."}'
 ```
@@ -89,14 +87,14 @@ curl -s -X POST "http://127.0.0.1:4200/api/agents/<id>/message" \
 #### Step 6: Verify side effects
 After an LLM call, verify that any metering/cost/usage tracking updated:
 ```bash
-curl -s http://127.0.0.1:4200/api/budget       # Cost should have increased
-curl -s http://127.0.0.1:4200/api/budget/agents  # Per-agent spend should show
+curl -s http://127.0.0.1:4332/api/budget       # Cost should have increased
+curl -s http://127.0.0.1:4332/api/budget/agents  # Per-agent spend should show
 ```
 
 #### Step 7: Verify dashboard HTML
 ```bash
 # Check that new UI components exist in the served HTML
-curl -s http://127.0.0.1:4200/ | grep -c "newComponentName"
+curl -s http://127.0.0.1:4332/ | grep -c "newComponentName"
 # Should return > 0
 ```
 

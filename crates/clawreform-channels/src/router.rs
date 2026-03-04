@@ -1,9 +1,9 @@
 //! Agent router — routes incoming channel messages to the correct agent.
 
 use crate::types::ChannelType;
-use dashmap::DashMap;
 use clawreform_types::agent::AgentId;
 use clawreform_types::config::{AgentBinding, BroadcastConfig, BroadcastStrategy};
+use dashmap::DashMap;
 use std::sync::Mutex;
 use tracing::warn;
 

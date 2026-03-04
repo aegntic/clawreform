@@ -1273,7 +1273,10 @@ async fn tool_web_search_legacy(input: &serde_json::Value) -> Result<String, Str
     let resp = client
         .get("https://html.duckduckgo.com/html/")
         .query(&[("q", query)])
-        .header("User-Agent", "Mozilla/5.0 (compatible; ClawReformAgent/0.1)")
+        .header(
+            "User-Agent",
+            "Mozilla/5.0 (compatible; ClawReformAgent/0.1)",
+        )
         .send()
         .await
         .map_err(|e| format!("Search request failed: {e}"))?;
@@ -2399,7 +2402,7 @@ async fn tool_location_get() -> Result<String, String> {
     // Use ip-api.com (free, no API key, JSON response)
     let resp = client
         .get("https://ip-api.com/json/?fields=status,message,country,regionName,city,zip,lat,lon,timezone,isp,query")
-        .header("User-Agent", "ClawReform/0.1")
+        .header("User-Agent", "clawREFORM-by-aegntic.ai/0.2.1")
         .send()
         .await
         .map_err(|e| format!("Location request failed: {e}"))?;

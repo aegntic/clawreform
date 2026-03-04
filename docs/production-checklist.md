@@ -140,13 +140,13 @@ curl -sSf https://raw.githubusercontent.com/RightNow-AI/clawreform/main/scripts/
 ```bash
 docker build -t clawreform:local .
 docker run --rm clawreform:local --version
-docker run --rm -p 4200:4200 -v clawreform-data:/data clawreform:local start
+docker run --rm -p 4332:4332 -v clawreform-data:/data clawreform:local start
 ```
 
 Confirm:
 - Binary runs and prints version
 - `start` command boots the kernel and API server
-- Port 4200 is accessible
+- Port 4332 is accessible
 - `/data` volume persists between container restarts
 
 ---
@@ -258,7 +258,7 @@ docker run --rm ghcr.io/RightNow-AI/clawreform:latest --version
 2. Tag v0.1.1 and push
 3. Wait for release workflow to complete
 4. Open the v0.1.0 app — after 10 seconds it should:
-   - Show "ClawReform Updating..." notification
+   - Show "clawREFORM by aegntic.ai Updating..." notification
    - Download and install v0.1.1
    - Restart automatically to v0.1.1
 5. Right-click tray → "Check for Updates" → should show "Up to Date"

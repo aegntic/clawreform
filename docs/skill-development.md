@@ -1,6 +1,6 @@
 # Skill Development
 
-Skills are pluggable tool bundles that extend agent capabilities in ClawReform. A skill packages one or more tools with their implementation, letting agents do things that built-in tools do not cover. This guide covers skill creation, the manifest format, Python and WASM runtimes, publishing to FangHub, and CLI management.
+Skills are pluggable tool bundles that extend agent capabilities in clawREFORM by aegntic.ai. A skill packages one or more tools with their implementation, letting agents do things that built-in tools do not cover. This guide covers skill creation, the manifest format, Python and WASM runtimes, publishing to FangHub, and CLI management.
 
 ## Table of Contents
 
@@ -24,7 +24,7 @@ A skill consists of:
 1. A **manifest** (`skill.toml` or `SKILL.md`) that declares metadata, runtime type, provided tools, and requirements.
 2. An **entry point** (Python script, WASM module, Node.js module, or prompt-only Markdown) that implements the tool logic.
 
-Skills are installed to `~/.clawreform/skills/` and made available to agents through the skill registry. ClawReform ships with **60 bundled skills** that are compiled into the binary and available immediately.
+Skills are installed to `~/.clawreform/skills/` and made available to agents through the skill registry. clawREFORM by aegntic.ai ships with **60 bundled skills** that are compiled into the binary and available immediately.
 
 ### Supported Runtimes
 
@@ -38,7 +38,7 @@ Skills are installed to `~/.clawreform/skills/` and made available to agents thr
 
 ### 60 Bundled Skills
 
-ClawReform includes 60 expert knowledge skills compiled into the binary (no installation needed):
+clawREFORM by aegntic.ai includes 60 expert knowledge skills compiled into the binary (no installation needed):
 
 | Category | Skills |
 |----------|--------|
@@ -170,7 +170,7 @@ Python skills are the simplest to write. They run as subprocesses and communicat
 
 ### Protocol
 
-1. ClawReform sends a JSON payload to the script's stdin:
+1. clawREFORM by aegntic.ai sends a JSON payload to the script's stdin:
 
 ```json
 {
@@ -205,7 +205,7 @@ If an error occurs, return an error object:
 
 ```python
 #!/usr/bin/env python3
-"""ClawReform skill: web-summarizer"""
+"""clawREFORM by aegntic.ai skill: web-summarizer"""
 import json
 import sys
 import urllib.request
@@ -213,7 +213,7 @@ import urllib.request
 
 def summarize_url(url: str) -> str:
     """Fetch a URL and return a basic summary."""
-    req = urllib.request.Request(url, headers={"User-Agent": "ClawReform-Skill/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "clawREFORM by aegntic.ai-Skill/1.0"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         content = resp.read().decode("utf-8", errors="replace")
 
@@ -226,7 +226,7 @@ def extract_links(url: str) -> str:
     """Extract all links from a web page."""
     import re
 
-    req = urllib.request.Request(url, headers={"User-Agent": "ClawReform-Skill/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "clawREFORM by aegntic.ai-Skill/1.0"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         content = resp.read().decode("utf-8", errors="replace")
 
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     main()
 ```
 
-### Using the ClawReform Python SDK
+### Using the clawREFORM by aegntic.ai Python SDK
 
 For more advanced skills, use the Python SDK (`sdk/python/clawreform_sdk.py`):
 
@@ -421,7 +421,7 @@ clawreform skill remove web-summarizer
 
 ## Publishing to FangHub
 
-FangHub is the community skill marketplace for ClawReform.
+FangHub is the community skill marketplace for clawREFORM by aegntic.ai.
 
 ### Preparing Your Skill
 
@@ -518,7 +518,7 @@ Reference skills in the agent manifest's `skills` field:
 name = "my-assistant"
 version = "0.1.0"
 description = "An assistant with extra skills"
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 skills = ["web-summarizer", "data-analyzer"]
 
@@ -538,7 +538,7 @@ The kernel loads skill tools and prompts at agent spawn time, merging them with 
 
 ## OpenClaw Compatibility
 
-ClawReform can install and run OpenClaw-format skills. The skill installer auto-detects OpenClaw skills (by looking for `package.json` + `index.ts`/`index.js`) and converts them.
+clawREFORM by aegntic.ai can install and run OpenClaw-format skills. The skill installer auto-detects OpenClaw skills (by looking for `package.json` + `index.ts`/`index.js`) and converts them.
 
 ### Automatic Conversion
 
@@ -546,12 +546,12 @@ ClawReform can install and run OpenClaw-format skills. The skill installer auto-
 clawreform skill install /path/to/openclaw-skill
 ```
 
-If the directory contains an OpenClaw-style skill (Node.js package), ClawReform:
+If the directory contains an OpenClaw-style skill (Node.js package), clawREFORM by aegntic.ai:
 
 1. Detects the OpenClaw format.
 2. Generates a `skill.toml` manifest from `package.json`.
-3. Maps tool names to ClawReform conventions.
-4. Copies the skill to the ClawReform skills directory.
+3. Maps tool names to clawREFORM by aegntic.ai conventions.
+4. Copies the skill to the clawREFORM by aegntic.ai skills directory.
 
 ### Manual Conversion
 

@@ -1,4 +1,4 @@
-//! ClawReform Desktop — Native Tauri 2.0 wrapper for the ClawReform Agent OS.
+//! clawREFORM by aegntic.ai Desktop — Native Tauri 2.0 wrapper for the branded agent OS.
 //!
 //! Boots the kernel + embedded API server, then opens a native window pointing
 //! at the WebUI. Includes system tray, single-instance enforcement, native OS
@@ -38,14 +38,15 @@ pub fn run() {
         )
         .init();
 
-    info!("Starting ClawReform Desktop...");
+    info!("Starting clawREFORM by aegntic.ai Desktop...");
 
     // Boot kernel + embedded server (blocks until port is known)
-    let server_handle = server::start_server().expect("Failed to start ClawReform server");
+    let server_handle =
+        server::start_server().expect("Failed to start clawREFORM by aegntic.ai server");
     let port = server_handle.port;
     let kernel_for_notifications = server_handle.kernel.clone();
 
-    info!("ClawReform server running on port {port}");
+    info!("clawREFORM by aegntic.ai server running on port {port}");
 
     let url = format!("http://127.0.0.1:{port}");
 
@@ -114,7 +115,7 @@ pub fn run() {
                 "main",
                 WebviewUrl::External(url.parse().expect("Invalid server URL")),
             )
-            .title("ClawReform")
+            .title("clawREFORM by aegntic.ai")
             .inner_size(1280.0, 800.0)
             .min_inner_size(800.0, 600.0)
             .center()
@@ -145,7 +146,7 @@ pub fn run() {
                                 ),
                                 EventPayload::System(SystemEvent::KernelStopping) => (
                                     "Kernel Stopping".to_string(),
-                                    "ClawReform kernel is shutting down".to_string(),
+                                    "clawREFORM by aegntic.ai kernel is shutting down".to_string(),
                                 ),
                                 EventPayload::System(SystemEvent::QuotaEnforced {
                                     agent_id,
@@ -186,7 +187,7 @@ pub fn run() {
             #[cfg(desktop)]
             updater::spawn_startup_check(app.handle().clone());
 
-            info!("ClawReform Desktop window created");
+            info!("clawREFORM by aegntic.ai Desktop window created");
             Ok(())
         })
         .on_window_event(|window, event| {

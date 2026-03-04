@@ -5,9 +5,9 @@
 //! sends the event content as a message to the subscribing agent.
 
 use chrono::{DateTime, Utc};
-use dashmap::DashMap;
 use clawreform_types::agent::AgentId;
 use clawreform_types::event::{Event, EventPayload, LifecycleEvent, SystemEvent};
+use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info};
 use uuid::Uuid;

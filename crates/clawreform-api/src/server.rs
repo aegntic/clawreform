@@ -8,6 +8,7 @@ use crate::webchat;
 use crate::ws;
 use axum::Router;
 use clawreform_kernel::ClawReformKernel;
+use clawreform_types::config::DEFAULT_API_PORT;
 use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
@@ -59,9 +60,10 @@ pub async fn build_router(
         let mut origins: Vec<axum::http::HeaderValue> = vec![
             format!("http://{listen_addr}").parse().unwrap(),
             format!("http://localhost:{port}").parse().unwrap(),
+            format!("http://127.0.0.1:{port}").parse().unwrap(),
         ];
         // Also allow common dev ports
-        for p in [3000u16, 8080] {
+        for p in [3000u16, 8080, DEFAULT_API_PORT] {
             if p != port {
                 if let Ok(v) = format!("http://127.0.0.1:{p}").parse() {
                     origins.push(v);
@@ -79,19 +81,20 @@ pub async fn build_router(
         // Auth enabled → restrict CORS to localhost + configured origins.
         // SECURITY: CorsLayer::permissive() is dangerous — any website could
         // make cross-origin requests. Restrict to known origins instead.
+        let port = listen_addr.port();
         let mut origins: Vec<axum::http::HeaderValue> = vec![
             format!("http://{listen_addr}").parse().unwrap(),
-            "http://localhost:4200".parse().unwrap(),
-            "http://127.0.0.1:4200".parse().unwrap(),
+            format!("http://localhost:{port}").parse().unwrap(),
+            format!("http://127.0.0.1:{port}").parse().unwrap(),
             "http://localhost:8080".parse().unwrap(),
             "http://127.0.0.1:8080".parse().unwrap(),
         ];
-        // Add the actual listen address variants
-        if listen_addr.port() != 4200 && listen_addr.port() != 8080 {
-            if let Ok(v) = format!("http://localhost:{}", listen_addr.port()).parse() {
+        // Add the default localhost origin if the daemon is listening elsewhere.
+        if port != DEFAULT_API_PORT {
+            if let Ok(v) = format!("http://localhost:{DEFAULT_API_PORT}").parse() {
                 origins.push(v);
             }
-            if let Ok(v) = format!("http://127.0.0.1:{}", listen_addr.port()).parse() {
+            if let Ok(v) = format!("http://127.0.0.1:{DEFAULT_API_PORT}").parse() {
                 origins.push(v);
             }
         }

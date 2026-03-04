@@ -1,4 +1,4 @@
-//! ClawReform CLI — command-line interface for the ClawReform Agent OS.
+//! ClawReform CLI — command-line interface for the clawREFORM by aegntic.ai.
 //!
 //! When a daemon is running (`clawreform start`), the CLI talks to it over HTTP.
 //! Otherwise, commands boot an in-process kernel (single-shot mode).
@@ -14,10 +14,10 @@ mod tui;
 mod ui;
 
 use clap::{Parser, Subcommand};
-use colored::Colorize;
 use clawreform_api::server::read_daemon_info;
 use clawreform_kernel::ClawReformKernel;
 use clawreform_types::agent::{AgentId, AgentManifest};
+use colored::Colorize;
 use std::io::{self, BufRead, Write};
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
@@ -26,6 +26,8 @@ use std::sync::atomic::Ordering;
 
 /// Global flag set by the Ctrl+C handler.
 static CTRLC_PRESSED: AtomicBool = AtomicBool::new(false);
+const DEFAULT_API_PORT: u16 = clawreform_types::config::DEFAULT_API_PORT;
+const DEFAULT_API_LISTEN_ADDR: &str = clawreform_types::config::DEFAULT_API_LISTEN_ADDR;
 
 /// Install a Ctrl+C handler that force-exits the process.
 /// On Windows/MINGW, the default handler doesn't reliably interrupt blocking
@@ -80,16 +82,16 @@ const AFTER_HELP: &str = "\
   3. clawreform chat              Start chatting!
 
 \x1b[1;36mMore:\x1b[0m
-  Docs:       https://github.com/RightNow-AI/clawreform
-  Dashboard:  http://127.0.0.1:4200/ (when daemon is running)";
+  Docs:       https://github.com/aegntic/clawreform
+  Dashboard:  http://127.0.0.1:4332/ (when daemon is running)";
 
-/// ClawReform — the open-source Agent Operating System.
+/// clawREFORM by aegntic.ai — the open-source Agent Operating System.
 #[derive(Parser)]
 #[command(
     name = "clawreform",
     version,
-    about = "\u{1F9BE} ClawReform \u{2014} Self-Evolving Agent OS",
-    long_about = "\u{1F9BE} ClawReform \u{2014} Self-Evolving Agent OS\n\n\
+    about = "\u{1F9BE} clawREFORM by aegntic.ai \u{2014} Self-Evolving Agent OS",
+    long_about = "\u{1F9BE} clawREFORM by aegntic.ai \u{2014} Self-Evolving Agent OS\n\n\
                   Deploy, manage, and orchestrate AI agents from your terminal.\n\
                   40 channels \u{00b7} 60 skills \u{00b7} 50+ models \u{00b7} infinite possibilities.",
     after_help = AFTER_HELP,
@@ -1078,7 +1080,7 @@ fn cmd_init_quick(clawreform_dir: &std::path::Path) {
     write_config_if_missing(clawreform_dir, provider, model, api_key_env);
 
     ui::blank();
-    ui::success("ClawReform initialized (quick mode)");
+    ui::success("clawREFORM by aegntic.ai initialized (quick mode)");
     ui::kv("Provider", provider);
     ui::kv("Model", model);
     ui::blank();
@@ -1101,7 +1103,7 @@ fn cmd_init_interactive(clawreform_dir: &std::path::Path) {
         } => {
             // Print summary after TUI restores terminal
             ui::blank();
-            ui::success("ClawReform initialized!");
+            ui::success("clawREFORM by aegntic.ai initialized!");
             ui::kv("Provider", &provider);
             ui::kv("Model", &model);
 
@@ -1160,7 +1162,7 @@ fn launch_desktop_app(_clawreform_dir: &std::path::Path) {
 
     match desktop_bin {
         Some(ref path) if path.exists() => {
-            ui::success("Launching ClawReform Desktop...");
+            ui::success("Launching clawREFORM by aegntic.ai Desktop...");
             match std::process::Command::new(path)
                 .stdin(std::process::Stdio::null())
                 .stdout(std::process::Stdio::null())
@@ -1245,10 +1247,10 @@ fn write_config_if_missing(
         ui::check_ok(&format!("Config already exists: {}", config_path.display()));
     } else {
         let default_config = format!(
-            r#"# ClawReform Agent OS configuration
+            r#"# clawREFORM by aegntic.ai configuration
 # See https://github.com/RightNow-AI/clawreform for documentation
 
-api_listen = "127.0.0.1:4200"
+api_listen = "{default_api_listen}"
 
 [default_model]
 provider = "{provider}"
@@ -1257,7 +1259,11 @@ api_key_env = "{api_key_env}"
 
 [memory]
 decay_rate = 0.05
-"#
+"#,
+            default_api_listen = DEFAULT_API_LISTEN_ADDR,
+            provider = provider,
+            model = model,
+            api_key_env = api_key_env,
         );
         std::fs::write(&config_path, &default_config).unwrap_or_else(|e| {
             ui::error_with_fix("Failed to write config", &e.to_string());
@@ -1328,7 +1334,7 @@ fn cmd_start(config: Option<PathBuf>) {
         }
 
         ui::blank();
-        println!("  ClawReform daemon stopped.");
+        println!("  clawREFORM by aegntic.ai daemon stopped.");
     });
 }
 
@@ -1399,7 +1405,7 @@ fn boot_kernel_error(e: &clawreform_kernel::error::KernelError) {
     } else if msg.contains("database") || msg.contains("locked") || msg.contains("sqlite") {
         ui::error_with_fix(
             "Database error (file may be locked)",
-            "Check if another ClawReform process is running: clawreform status",
+            "Check if another clawREFORM by aegntic.ai process is running: clawreform status",
         );
     } else if msg.contains("key") || msg.contains("API") || msg.contains("auth") {
         ui::error_with_fix(
@@ -1707,7 +1713,7 @@ fn cmd_status(config: Option<PathBuf>, json: bool) {
             return;
         }
 
-        ui::section("ClawReform Daemon Status");
+        ui::section("clawREFORM by aegntic.ai Daemon Status");
         ui::blank();
         ui::kv_ok("Status", body["status"].as_str().unwrap_or("?"));
         ui::kv(
@@ -1760,7 +1766,7 @@ fn cmd_status(config: Option<PathBuf>, json: bool) {
             return;
         }
 
-        ui::section("ClawReform Status (in-process)");
+        ui::section("clawREFORM by aegntic.ai Status (in-process)");
         ui::blank();
         ui::kv("Agents", &agent_count.to_string());
         ui::kv("Provider", &kernel.config.default_model.provider);
@@ -1786,7 +1792,7 @@ fn cmd_doctor(json: bool, repair: bool) {
     let mut repaired = false;
 
     if !json {
-        ui::step("ClawReform Doctor");
+        ui::step("clawREFORM by aegntic.ai Doctor");
         println!();
     }
 
@@ -1797,12 +1803,15 @@ fn cmd_doctor(json: bool, repair: bool) {
         // --- Check 1: ClawReform directory ---
         if clawreform_dir.exists() {
             if !json {
-                ui::check_ok(&format!("ClawReform directory: {}", clawreform_dir.display()));
+                ui::check_ok(&format!(
+                    "clawREFORM by aegntic.ai directory: {}",
+                    clawreform_dir.display()
+                ));
             }
             checks.push(serde_json::json!({"check": "clawreform_dir", "status": "ok", "path": clawreform_dir.display().to_string()}));
         } else if repair {
             if !json {
-                ui::check_fail("ClawReform directory not found.");
+                ui::check_fail("clawREFORM by aegntic.ai directory not found.");
             }
             let answer = prompt_input("    Create it now? [Y/n] ");
             if answer.is_empty() || answer.starts_with('y') || answer.starts_with('Y') {
@@ -1812,7 +1821,7 @@ fn cmd_doctor(json: bool, repair: bool) {
                         let _ = std::fs::create_dir_all(clawreform_dir.join(sub));
                     }
                     if !json {
-                        ui::check_ok("Created ClawReform directory");
+                        ui::check_ok("Created clawREFORM by aegntic.ai directory");
                     }
                     repaired = true;
                 } else {
@@ -1827,7 +1836,9 @@ fn cmd_doctor(json: bool, repair: bool) {
             checks.push(serde_json::json!({"check": "clawreform_dir", "status": if repaired { "repaired" } else { "fail" }}));
         } else {
             if !json {
-                ui::check_fail("ClawReform directory not found. Run `clawreform init` first.");
+                ui::check_fail(
+                    "clawREFORM by aegntic.ai directory not found. Run `clawreform init` first.",
+                );
             }
             checks.push(serde_json::json!({"check": "clawreform_dir", "status": "fail"}));
             all_ok = false;
@@ -1910,10 +1921,11 @@ fn cmd_doctor(json: bool, repair: bool) {
             }
             let answer = prompt_input("    Create default config? [Y/n] ");
             if answer.is_empty() || answer.starts_with('y') || answer.starts_with('Y') {
-                let default_config = r#"# ClawReform Agent OS configuration
+                let default_config = format!(
+                    r#"# clawREFORM by aegntic.ai configuration
 # See https://github.com/RightNow-AI/clawreform for documentation
 
-api_listen = "127.0.0.1:4200"
+api_listen = "{default_api_listen}"
 
 [default_model]
 provider = "groq"
@@ -1922,9 +1934,11 @@ api_key_env = "GROQ_API_KEY"
 
 [memory]
 decay_rate = 0.05
-"#;
+"#,
+                    default_api_listen = DEFAULT_API_LISTEN_ADDR
+                );
                 let _ = std::fs::create_dir_all(&clawreform_dir);
-                if std::fs::write(&config_path, default_config).is_ok() {
+                if std::fs::write(&config_path, &default_config).is_ok() {
                     restrict_file_permissions(&config_path);
                     if !json {
                         ui::check_ok("Created default config.toml");
@@ -1948,7 +1962,7 @@ decay_rate = 0.05
             all_ok = false;
         }
 
-        // --- Check 4: Port 4200 availability ---
+        // --- Check 4: Default API port availability ---
         if !json {
             println!();
         }
@@ -1964,19 +1978,21 @@ decay_rate = 0.05
             }
             checks.push(serde_json::json!({"check": "daemon", "status": "warn"}));
 
-            // Check if port 4200 is available
-            match std::net::TcpListener::bind("127.0.0.1:4200") {
+            // Check if the default API port is available
+            match std::net::TcpListener::bind(("127.0.0.1", DEFAULT_API_PORT)) {
                 Ok(_) => {
                     if !json {
-                        ui::check_ok("Port 4200 is available");
+                        ui::check_ok(&format!("Port {DEFAULT_API_PORT} is available"));
                     }
-                    checks.push(serde_json::json!({"check": "port_4200", "status": "ok"}));
+                    checks.push(serde_json::json!({"check": format!("port_{DEFAULT_API_PORT}"), "status": "ok"}));
                 }
                 Err(_) => {
                     if !json {
-                        ui::check_warn("Port 4200 is in use by another process");
+                        ui::check_warn(&format!(
+                            "Port {DEFAULT_API_PORT} is in use by another process"
+                        ));
                     }
-                    checks.push(serde_json::json!({"check": "port_4200", "status": "warn"}));
+                    checks.push(serde_json::json!({"check": format!("port_{DEFAULT_API_PORT}"), "status": "warn"}));
                 }
             }
         }
@@ -2368,7 +2384,8 @@ decay_rate = 0.05
         let mut injection_warnings = 0;
         for skill in &skills {
             if let Some(ref prompt) = skill.manifest.prompt_context {
-                let warnings = clawreform_skills::verify::SkillVerifier::scan_prompt_content(prompt);
+                let warnings =
+                    clawreform_skills::verify::SkillVerifier::scan_prompt_content(prompt);
                 if !warnings.is_empty() {
                     injection_warnings += 1;
                     if !json {
@@ -2624,7 +2641,7 @@ decay_rate = 0.05
     } else {
         println!();
         if all_ok {
-            ui::success("All checks passed! ClawReform is ready.");
+            ui::success("All checks passed! clawREFORM by aegntic.ai is ready.");
             ui::hint("Start the daemon: clawreform start");
         } else if repaired {
             ui::success("Repairs applied. Re-run `clawreform doctor` to verify.");
@@ -3071,9 +3088,11 @@ fn cmd_skill_install(source: &str) {
                         let dest = skills_dir.join(&manifest.skill.name);
                         // Copy skill directory
                         copy_dir_recursive(&source_path, &dest);
-                        if let Err(e) = clawreform_skills::openclaw_compat::write_clawreform_manifest(
-                            &dest, &manifest,
-                        ) {
+                        if let Err(e) =
+                            clawreform_skills::openclaw_compat::write_clawreform_manifest(
+                                &dest, &manifest,
+                            )
+                        {
                             eprintln!("Failed to write manifest: {e}");
                             std::process::exit(1);
                         }
@@ -3243,7 +3262,7 @@ capabilities = []
     let entry_content = match runtime.as_str() {
         "python" => format!(
             r#"#!/usr/bin/env python3
-"""ClawReform skill: {name}"""
+"""clawREFORM by aegntic.ai skill: {name}"""
 import json
 import sys
 
@@ -3529,7 +3548,9 @@ fn cmd_channel_setup(channel: Option<&str>) {
                     Err(_) => println!("    export EMAIL_PASSWORD=your_app_password"),
                 }
             } else {
-                ui::hint("Set later: clawreform config set-key email (or export EMAIL_PASSWORD=...)");
+                ui::hint(
+                    "Set later: clawreform config set-key email (or export EMAIL_PASSWORD=...)",
+                );
             }
 
             ui::blank();
@@ -5285,7 +5306,7 @@ fn cmd_devices_pair() {
         ui::section("Device Pairing");
         ui::blank();
         // Render a simple text-based QR representation
-        println!("  Scan this QR code with the ClawReform mobile app:");
+        println!("  Scan this QR code with the clawREFORM by aegntic.ai mobile app:");
         ui::blank();
         println!("  {qr}");
         ui::blank();
@@ -5451,7 +5472,7 @@ fn cmd_system_info(json: bool) {
             );
             return;
         }
-        ui::section("ClawReform System Info");
+        ui::section("clawREFORM by aegntic.ai System Info");
         ui::blank();
         ui::kv("Version", env!("CARGO_PKG_VERSION"));
         ui::kv("Status", body["status"].as_str().unwrap_or("?"));
@@ -5478,7 +5499,7 @@ fn cmd_system_info(json: bool) {
             );
             return;
         }
-        ui::section("ClawReform System Info");
+        ui::section("clawREFORM by aegntic.ai System Info");
         ui::blank();
         ui::kv("Version", env!("CARGO_PKG_VERSION"));
         ui::kv_warn("Daemon", "NOT RUNNING");
@@ -5515,7 +5536,10 @@ fn cmd_reset(confirm: bool) {
     }
 
     if !confirm {
-        println!("  This will delete all data in {}", clawreform_dir.display());
+        println!(
+            "  This will delete all data in {}",
+            clawreform_dir.display()
+        );
         println!("  Including: config, database, agent manifests, credentials.");
         println!();
         let answer = prompt_input("  Are you sure? Type 'yes' to confirm: ");
@@ -5528,7 +5552,10 @@ fn cmd_reset(confirm: bool) {
     match std::fs::remove_dir_all(&clawreform_dir) {
         Ok(()) => ui::success(&format!("Removed {}", clawreform_dir.display())),
         Err(e) => {
-            ui::error(&format!("Failed to remove {}: {e}", clawreform_dir.display()));
+            ui::error(&format!(
+                "Failed to remove {}: {e}",
+                clawreform_dir.display()
+            ));
             std::process::exit(1);
         }
     }
@@ -5570,7 +5597,7 @@ mod tests {
     #[test]
     fn test_doctor_config_include_field() {
         let config_toml = r#"
-api_listen = "127.0.0.1:4200"
+api_listen = "127.0.0.1:4332"
 include = ["providers.toml", "agents.toml"]
 
 [default_model]
@@ -5587,7 +5614,7 @@ api_key_env = "GROQ_API_KEY"
     #[test]
     fn test_doctor_exec_policy_field() {
         let config_toml = r#"
-api_listen = "127.0.0.1:4200"
+api_listen = "127.0.0.1:4332"
 
 [exec_policy]
 mode = "allowlist"
@@ -5611,7 +5638,7 @@ api_key_env = "GROQ_API_KEY"
     #[test]
     fn test_doctor_mcp_transport_validation() {
         let config_toml = r#"
-api_listen = "127.0.0.1:4200"
+api_listen = "127.0.0.1:4332"
 
 [default_model]
 provider = "groq"

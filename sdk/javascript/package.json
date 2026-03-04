@@ -1,7 +1,7 @@
 {
   "name": "@clawreform/sdk",
   "version": "0.2.1",
-  "description": "Official JavaScript/TypeScript client for the ClawReform Agent OS REST API",
+  "description": "Official JavaScript/TypeScript client for the clawREFORM by aegntic.ai REST API",
   "main": "index.js",
   "types": "index.d.ts",
   "keywords": [
@@ -14,7 +14,7 @@
     "agent-os"
   ],
   "license": "MIT",
-  "author": "ClawReform Team",
+  "author": "clawREFORM by aegntic.ai Team",
   "repository": {
     "type": "git",
     "url": "https://github.com/aegntic/clawreform"

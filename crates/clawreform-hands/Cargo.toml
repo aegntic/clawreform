@@ -3,7 +3,7 @@ name = "clawreform-hands"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Hands system for OpenFang — curated autonomous capability packages"
+description = "Hands system for clawREFORM by aegntic.ai — curated autonomous capability packages"
 
 [dependencies]
 clawreform-types = { path = "../clawreform-types" }

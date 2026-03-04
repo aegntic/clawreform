@@ -1,11 +1,11 @@
-# Changelog
+# clawREFORM by aegntic.ai Changelog
 
-All notable changes to ClawReform will be documented in this file.
+All notable changes to clawREFORM by aegntic.ai will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2026-03-01
+## [0.2.1] - 2026-03-01
 
 Forked from [ClawReform](https://github.com/RightNow-AI/clawreform) v0.1.9
 
@@ -30,7 +30,7 @@ Forked from [ClawReform](https://github.com/RightNow-AI/clawreform) v0.1.9
 
 ### 🎨 Branding
 
-- Renamed to ClawReform
+- Rebranded as clawREFORM by aegntic.ai
 - Updated repository to [github.com/aegntic/clawreform](https://github.com/aegntic/clawreform)
 - New documentation and branding assets
 - **Burnished Gold Theme**: Reskinned the UI with an industrial gold and red palette.

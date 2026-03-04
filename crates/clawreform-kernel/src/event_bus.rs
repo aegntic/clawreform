@@ -1,8 +1,8 @@
 //! Event bus — pub/sub with pattern matching and history ring buffer.
 
-use dashmap::DashMap;
 use clawreform_types::agent::AgentId;
 use clawreform_types::event::{Event, EventTarget};
+use dashmap::DashMap;
 use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};

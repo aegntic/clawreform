@@ -9,8 +9,8 @@
 //! - All page content wrapped with `wrap_external_content()` markers
 //! - Session limits: max concurrent, idle timeout, 1 per agent
 
-use dashmap::DashMap;
 use clawreform_types::config::BrowserConfig;
+use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;

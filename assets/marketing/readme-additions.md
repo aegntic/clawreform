@@ -30,7 +30,7 @@ cargo build --release
 ```bash
 docker run -d \
   --name clawreform \
-  -p 50051:50051 \
+  -p 4332:4332 \
   -v clawreform-data:/data \
   ghcr.io/aegntic/clawreform:latest
 ```
@@ -112,4 +112,3 @@ Support ClawReform development:
 | 🚀 Supporter | $25/mo | Above + priority support |
 | 🏢 Enterprise | $100/mo | Above + logo on README |
 ```
-

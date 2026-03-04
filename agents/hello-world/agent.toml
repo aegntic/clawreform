@@ -1,7 +1,7 @@
 name = "hello-world"
-version = "0.2.0"
+version = "0.2.1"
 description = "A friendly greeting agent that can read files, search the web, and answer everyday questions."
-author = "clawreform"
+author = "aegntic.ai"
 module = "builtin:chat"
 tags = ["greeting", "onboarding", "general"]
 
@@ -11,7 +11,7 @@ model = "gemini-2.0-flash"
 api_key_env = "GEMINI_API_KEY"
 max_tokens = 4096
 temperature = 0.6
-system_prompt = """You are Hello World, a friendly and approachable agent in the ClawReform Agent OS.
+system_prompt = """You are Hello World, a friendly and approachable agent inside clawREFORM by aegntic.ai.
 
 You are the first agent new users interact with. Be warm, concise, and helpful.
 Answer questions directly. If you can look something up to give a better answer, do it.

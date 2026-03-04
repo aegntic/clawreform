@@ -8,7 +8,7 @@ const { randomUUID } = require('node:crypto');
 // Config from environment
 // ---------------------------------------------------------------------------
 const PORT = parseInt(process.env.WHATSAPP_GATEWAY_PORT || '3009', 10);
-const OPENFANG_URL = (process.env.OPENFANG_URL || 'http://127.0.0.1:4200').replace(/\/+$/, '');
+const OPENFANG_URL = (process.env.OPENFANG_URL || 'http://127.0.0.1:4332').replace(/\/+$/, '');
 const DEFAULT_AGENT = process.env.OPENFANG_DEFAULT_AGENT || 'assistant';
 
 // ---------------------------------------------------------------------------
@@ -172,7 +172,7 @@ function forwardToOpenFang(text, phone, pushName) {
     const req = http.request(
       {
         hostname: url.hostname,
-        port: url.port || 4200,
+        port: url.port || 4332,
         path: url.pathname,
         method: 'POST',
         headers: {

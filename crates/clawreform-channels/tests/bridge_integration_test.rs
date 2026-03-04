@@ -8,13 +8,13 @@
 //! via real tokio channels and tasks.
 
 use async_trait::async_trait;
-use futures::Stream;
 use clawreform_channels::bridge::{BridgeManager, ChannelBridgeHandle};
 use clawreform_channels::router::AgentRouter;
 use clawreform_channels::types::{
     ChannelAdapter, ChannelContent, ChannelMessage, ChannelType, ChannelUser,
 };
 use clawreform_types::agent::AgentId;
+use futures::Stream;
 use std::collections::HashMap;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};

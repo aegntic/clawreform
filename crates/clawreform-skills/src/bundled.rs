@@ -180,10 +180,10 @@ pub fn bundled_skills() -> Vec<(&'static str, &'static str)> {
             include_str!("../bundled/wasm-expert/SKILL.md"),
         ),
         (
-        "self-modify",
-        include_str!("../bundled/self-modify/SKILL.md"),
-    ),
-]
+            "self-modify",
+            include_str!("../bundled/self-modify/SKILL.md"),
+        ),
+    ]
 }
 
 /// Parse a bundled SKILL.md into a `SkillManifest`.

@@ -42,12 +42,12 @@ pub fn error(msg: &str) {
 // New themed output helpers
 // ---------------------------------------------------------------------------
 
-/// Brand banner: ">> ClawReform Agent OS"
+/// Brand banner: ">> clawREFORM by aegntic.ai"
 pub fn banner() {
     println!(
         "  {} {}",
         ">>".bright_cyan().bold(),
-        "ClawReform Agent OS".bold()
+        "clawREFORM by aegntic.ai".bold()
     );
     println!("     {}", "The open-source agent operating system".dimmed());
 }

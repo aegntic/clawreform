@@ -1,10 +1,10 @@
-# ClawReform CLI Reference
+# clawREFORM by aegntic.ai CLI Reference
 
-Complete command-line reference for `clawreform`, the CLI tool for the ClawReform Agent OS.
+Complete command-line reference for `clawreform`, the CLI tool for the clawREFORM by aegntic.ai.
 
 ## Overview
 
-The `clawreform` binary is the primary interface for managing the ClawReform Agent OS. It supports two modes of operation:
+The `clawreform` binary is the primary interface for managing the clawREFORM by aegntic.ai. It supports two modes of operation:
 
 - **Daemon mode** -- When a daemon is running (`clawreform start`), CLI commands communicate with it over HTTP. This is the recommended mode for production use.
 - **In-process mode** -- When no daemon is detected, commands that support it will boot an ephemeral in-process kernel. Agents spawned in this mode are not persisted and will be lost when the process exits.
@@ -76,7 +76,7 @@ Press `Ctrl+C` to exit. A second `Ctrl+C` force-exits the process.
 
 ### clawreform init
 
-Initialize the ClawReform workspace. Creates `~/.clawreform/` with subdirectories (`data/`, `agents/`) and a default `config.toml`.
+Initialize the clawREFORM by aegntic.ai workspace. Creates `~/.clawreform/` with subdirectories (`data/`, `agents/`) and a default `config.toml`.
 
 ```
 clawreform init [--quick]
@@ -109,7 +109,7 @@ clawreform init --quick
 
 ### clawreform start
 
-Start the ClawReform daemon (kernel + API server).
+Start the clawREFORM by aegntic.ai daemon (kernel + API server).
 
 ```
 clawreform start [--config <PATH>]
@@ -118,15 +118,15 @@ clawreform start [--config <PATH>]
 **Behavior:**
 
 - Checks if a daemon is already running; exits with an error if so.
-- Boots the ClawReform kernel (loads config, initializes SQLite database, loads agents, connects MCP servers, starts background tasks).
-- Starts the HTTP API server on the address specified in `config.toml` (default: `127.0.0.1:4200`).
+- Boots the clawREFORM by aegntic.ai kernel (loads config, initializes SQLite database, loads agents, connects MCP servers, starts background tasks).
+- Starts the HTTP API server on the address specified in `config.toml` (default: `127.0.0.1:4332`).
 - Writes `daemon.json` to `~/.clawreform/` so other CLI commands can discover the running daemon.
 - Blocks until interrupted with `Ctrl+C`.
 
 **Output:**
 
 ```
-  ClawReform Agent OS v0.1.0
+  clawREFORM by aegntic.ai v0.1.0
 
   Starting daemon...
 
@@ -134,8 +134,8 @@ clawreform start [--config <PATH>]
   [ok] 50 models available
   [ok] 3 agent(s) loaded
 
-  API:        http://127.0.0.1:4200
-  Dashboard:  http://127.0.0.1:4200/
+  API:        http://127.0.0.1:4332
+  Dashboard:  http://127.0.0.1:4332/
   Provider:   groq
   Model:      llama-3.3-70b-versatile
 
@@ -186,7 +186,7 @@ clawreform status --json | jq '.agent_count'
 
 ### clawreform doctor
 
-Run diagnostic checks on the ClawReform installation.
+Run diagnostic checks on the clawREFORM by aegntic.ai installation.
 
 ```
 clawreform doctor [--json] [--repair]
@@ -201,11 +201,11 @@ clawreform doctor [--json] [--repair]
 
 **Checks performed:**
 
-1. **ClawReform directory** -- `~/.clawreform/` exists
+1. **clawREFORM by aegntic.ai directory** -- `~/.clawreform/` exists
 2. **.env file** -- exists and has correct permissions (0600 on Unix)
 3. **Config TOML syntax** -- `config.toml` parses without errors
 4. **Daemon status** -- whether a daemon is running
-5. **Port 4200 availability** -- if daemon is not running, checks if the port is free
+5. **Port 4332 availability** -- if daemon is not running, checks if the port is free
 6. **Stale daemon.json** -- leftover `daemon.json` from a crashed daemon
 7. **Database file** -- SQLite magic bytes validation
 8. **Disk space** -- warns if less than 100MB available (Unix only)
@@ -238,7 +238,7 @@ clawreform dashboard
 **Behavior:**
 
 - Requires a running daemon.
-- Opens the daemon URL (e.g. `http://127.0.0.1:4200/`) in the system browser.
+- Opens the daemon URL (e.g. `http://127.0.0.1:4332/`) in the system browser.
 - Copies the URL to the system clipboard (uses PowerShell on Windows, `pbcopy` on macOS, `xclip`/`xsel` on Linux).
 
 **Example:**
@@ -849,7 +849,7 @@ clawreform config get default_model.provider
 # groq
 
 clawreform config get api_listen
-# 127.0.0.1:4200
+# 127.0.0.1:4332
 
 clawreform config get memory.decay_rate
 # 0.05
@@ -879,7 +879,7 @@ clawreform config set <KEY> <VALUE>
 ```bash
 clawreform config set default_model.provider anthropic
 clawreform config set default_model.model claude-sonnet-4-20250514
-clawreform config set api_listen "0.0.0.0:4200"
+clawreform config set api_listen "0.0.0.0:4332"
 ```
 
 ---
@@ -1026,7 +1026,7 @@ clawreform migrate --from <FRAMEWORK> [--source-dir <PATH>] [--dry-run]
 
 **Behavior:**
 
-- Converts agent configurations, YAML manifests, and settings from the source framework into ClawReform format.
+- Converts agent configurations, YAML manifests, and settings from the source framework into clawREFORM by aegntic.ai format.
 - Saves imported data to `~/.clawreform/`.
 - Writes a `migration_report.md` summarizing what was imported.
 
@@ -1060,7 +1060,7 @@ clawreform mcp
 
 **Behavior:**
 
-- Exposes running ClawReform agents as MCP tools via JSON-RPC 2.0 over stdin/stdout with Content-Length framing.
+- Exposes running clawREFORM by aegntic.ai agents as MCP tools via JSON-RPC 2.0 over stdin/stdout with Content-Length framing.
 - Each agent becomes a callable tool named `clawreform_agent_<name>` (hyphens replaced with underscores).
 - Connects to a running daemon via HTTP if available; otherwise boots an in-process kernel.
 - Protocol version: `2024-11-05`.
@@ -1099,7 +1099,7 @@ Add to your MCP client configuration:
 
 The CLI uses a two-step mechanism to detect a running daemon:
 
-1. **Read `daemon.json`:** On startup, the daemon writes `~/.clawreform/daemon.json` containing the listen address (e.g. `127.0.0.1:4200`). The CLI reads this file to learn where the daemon is.
+1. **Read `daemon.json`:** On startup, the daemon writes `~/.clawreform/daemon.json` containing the listen address (e.g. `127.0.0.1:4332`). The CLI reads this file to learn where the daemon is.
 
 2. **Health check:** The CLI sends `GET http://<listen_addr>/api/health` with a 2-second timeout. If the health check succeeds, the daemon is considered running and the CLI uses HTTP to communicate with it.
 
@@ -1120,7 +1120,7 @@ clawreform doctor --repair  # Cleans up stale daemon.json from crashes
 
 ## Environment File
 
-ClawReform loads `~/.clawreform/.env` into the process environment on every CLI invocation. System environment variables take priority over `.env` values.
+clawREFORM by aegntic.ai loads `~/.clawreform/.env` into the process environment on every CLI invocation. System environment variables take priority over `.env` values.
 
 The `.env` file stores API keys and secrets:
 
@@ -1153,7 +1153,7 @@ Manage keys with the `config set-key` / `config delete-key` commands rather than
 # 1. Set your API key
 export GROQ_API_KEY="gsk_your_key_here"
 
-# 2. Initialize ClawReform
+# 2. Initialize clawREFORM by aegntic.ai
 clawreform init --quick
 
 # 3. Start the daemon

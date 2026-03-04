@@ -6,8 +6,8 @@
 //! - **Proactive**: Agent wakes when matching events fire (via the trigger engine).
 
 use crate::triggers::TriggerPattern;
-use dashmap::DashMap;
 use clawreform_types::agent::{AgentId, ScheduleMode};
+use dashmap::DashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::watch;

@@ -1,4 +1,4 @@
-//! System tray setup for the ClawReform desktop app.
+//! System tray setup for the clawREFORM by aegntic.ai desktop app.
 
 use clawreform_kernel::config::clawreform_home;
 use tauri::{
@@ -85,7 +85,13 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let sep3 = PredefinedMenuItem::separator(app)?;
 
-    let quit = MenuItem::with_id(app, "quit", "Quit ClawReform", true, None::<&str>)?;
+    let quit = MenuItem::with_id(
+        app,
+        "quit",
+        "Quit clawREFORM by aegntic.ai",
+        true,
+        None::<&str>,
+    )?;
 
     let menu = Menu::with_items(
         app,
@@ -111,7 +117,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let _tray = TrayIconBuilder::new()
         .icon(tray_icon)
         .menu(&menu)
-        .tooltip("ClawReform Agent OS")
+        .tooltip("clawREFORM by aegntic.ai")
         .on_menu_event(move |app, event| match event.id().as_ref() {
             "show" => {
                 if let Some(w) = app.get_webview_window("main") {
@@ -154,7 +160,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                                 .builder()
                                 .title("Installing Update...")
                                 .body(format!(
-                                    "Downloading ClawReform v{version}. App will restart shortly."
+                                    "Downloading clawREFORM by aegntic.ai v{version}. App will restart shortly."
                                 ))
                                 .show();
                             // Perform install
@@ -176,7 +182,7 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                                 .notification()
                                 .builder()
                                 .title("Up to Date")
-                                .body("You're running the latest version of ClawReform.")
+                                .body("You're running the latest version of clawREFORM by aegntic.ai.")
                                 .show();
                         }
                         Err(e) => {

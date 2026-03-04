@@ -6,7 +6,7 @@
 
 Hey there,
 
-Today, we're excited to announce **ClawReform 0.2.0**—the first AI agent framework that can safely modify and improve its own codebase through natural language.
+Today, we're excited to announce **ClawReform 0.2.1**—the first AI agent framework that can safely modify and improve its own codebase through natural language.
 
 ### 🔄 What's Self-Modification?
 

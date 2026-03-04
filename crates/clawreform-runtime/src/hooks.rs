@@ -7,8 +7,8 @@
 //! - `BeforePromptBuild`: Fires before system prompt construction. Observe-only.
 //! - `AgentLoopEnd`: Fires after the agent loop completes. Observe-only.
 
-use dashmap::DashMap;
 use clawreform_types::agent::HookEvent;
+use dashmap::DashMap;
 use std::sync::Arc;
 
 /// Context passed to hook handlers.

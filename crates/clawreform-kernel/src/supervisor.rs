@@ -1,7 +1,7 @@
 //! Process supervision — graceful shutdown, signal handling, and health monitoring.
 
-use dashmap::DashMap;
 use clawreform_types::agent::AgentId;
+use dashmap::DashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::watch;
 use tracing::{info, warn};

@@ -23,11 +23,21 @@ pub struct SelfModifyConfig {
     pub backup_retention_days: u32,
 }
 
-fn default_enabled() -> bool { true }
-fn default_max_files() -> usize { 5 }
-fn default_approval_threshold() -> usize { 100 }
-fn default_auto_rollback() -> bool { true }
-fn default_retention() -> u32 { 7 }
+fn default_enabled() -> bool {
+    true
+}
+fn default_max_files() -> usize {
+    5
+}
+fn default_approval_threshold() -> usize {
+    100
+}
+fn default_auto_rollback() -> bool {
+    true
+}
+fn default_retention() -> u32 {
+    7
+}
 
 impl Default for SelfModifyConfig {
     fn default() -> Self {
