@@ -1,5 +1,5 @@
 name = "orchestrator"
-version = "0.2.1"
+version = "0.2.2"
 description = "Meta-agent that decomposes complex tasks, delegates to specialist agents, and synthesizes results."
 author = "aegntic.ai"
 module = "builtin:chat"

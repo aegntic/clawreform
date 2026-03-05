@@ -1,5 +1,5 @@
 name = "writer"
-version = "0.2.1"
+version = "0.2.2"
 description = "Content and documentation writer. Creates articles, technical docs, README files, API docs, tutorials, and all forms of written content."
 author = "aegntic.ai"
 module = "builtin:chat"

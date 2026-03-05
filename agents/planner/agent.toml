@@ -1,5 +1,5 @@
 name = "planner"
-version = "0.2.1"
+version = "0.2.2"
 description = "Project planner. Creates project plans, breaks down epics, estimates effort, identifies risks and dependencies."
 author = "aegntic.ai"
 module = "builtin:chat"

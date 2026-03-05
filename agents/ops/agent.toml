@@ -1,5 +1,5 @@
 name = "ops"
-version = "0.2.1"
+version = "0.2.2"
 description = "DevOps and platform engineering agent. Manages CI/CD, infrastructure, deployments, monitoring, diagnostics, and incident response."
 author = "aegntic.ai"
 module = "builtin:chat"

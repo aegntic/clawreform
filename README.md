@@ -2,11 +2,11 @@
   <img src="assets/branding/clawreform-logo-v2.png" width="220" alt="clawREFORM by aegntic.ai v2 brand logo" />
 </p>
 
-<h1 align="center">CLAWREFORM by ae.ltd</h1>
+<h1 align="center">C L A W R E F O R M by ae.ltd</h1>
 <h3 align="center">The self-evolving agent operating system from aegntic.ai</h3>
 
 <p align="center">
-  <strong>clawREFORM by aegntic.ai with autonomous self-modification capabilities</strong><br/>
+  <strong>C L A W R E F O R M by aegntic.ai with autonomous self-modification capabilities</strong><br/>
   Built in Rust • 14 crates • robust test coverage • zero clippy warnings
 </p>
 
@@ -20,7 +20,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/language-Rust-orange?style=flat-square" alt="Rust" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT" />
-  <img src="https://img.shields.io/badge/version-0.2.1-purple?style=flat-square" alt="v0.2.1" />
+  <img src="https://img.shields.io/badge/version-0.2.2-purple?style=flat-square" alt="v0.2.2" />
   <img src="https://img.shields.io/badge/self--modify-enabled-brightgreen?style=flat-square" alt="Self-Modify" />
 </p>
 

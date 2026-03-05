@@ -1,5 +1,5 @@
 name = "health-tracker"
-version = "0.2.1"
+version = "0.2.2"
 description = "Wellness tracking agent for health metrics, medication reminders, fitness goals, and lifestyle habits."
 author = "aegntic.ai"
 module = "builtin:chat"

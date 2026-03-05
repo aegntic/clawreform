@@ -1,5 +1,5 @@
 name = "code-reviewer"
-version = "0.2.1"
+version = "0.2.2"
 description = "Senior code reviewer. Reviews PRs, identifies issues, suggests improvements with production standards."
 author = "aegntic.ai"
 module = "builtin:chat"

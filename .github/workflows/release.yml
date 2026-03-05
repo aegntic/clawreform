@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Container version tag without v (for docker publish), e.g. 0.2.2"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,6 +23,7 @@ jobs:
   # Produces: .msi, .exe (Windows) | .dmg, .app (macOS) | .AppImage, .deb (Linux)
   # Also generates and uploads latest.json (the auto-updater manifest)
   desktop:
+    if: github.event_name == 'push'
     name: Desktop / ${{ matrix.platform.name }}
     strategy:
       fail-fast: false
@@ -104,11 +111,11 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.MAC_NOTARIZE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "ClawReform ${{ github.ref_name }}"
+          releaseName: "clawREFORM by aegntic.ai ${{ github.ref_name }}"
           releaseBody: |
             ## What's New
 
-            See the [CHANGELOG](https://github.com/RightNow-AI/clawreform/blob/main/CHANGELOG.md) for full details.
+            See the [CHANGELOG](https://github.com/aegntic/clawreform/blob/main/CHANGELOG.md) for full details.
 
             ## Installation
 
@@ -121,7 +128,7 @@ jobs:
 
             **Docker**:
             ```bash
-            docker pull ghcr.io/rightnow-ai/clawreform:latest
+            docker pull ghcr.io/aegntic/clawreform:latest
             ```
 
             **Coming from OpenClaw?**
@@ -136,6 +143,7 @@ jobs:
 
   # ── CLI Binary (5 platforms) ──────────────────────────────────────────────
   cli:
+    if: github.event_name == 'push'
     name: CLI / ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -241,7 +249,12 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Extract version
         id: version
-        run: echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build and push (multi-arch)
         uses: docker/build-push-action@v6
         with:
@@ -249,7 +262,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/rightnow-ai/clawreform:latest
-            ghcr.io/rightnow-ai/clawreform:${{ steps.version.outputs.version }}
+            ghcr.io/aegntic/clawreform:latest
+            ghcr.io/aegntic/clawreform:${{ steps.version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -1,5 +1,5 @@
 name = "architect"
-version = "0.2.1"
+version = "0.2.2"
 description = "System architect. Designs software architectures, evaluates trade-offs, creates technical specifications."
 author = "aegntic.ai"
 module = "builtin:chat"

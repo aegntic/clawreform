@@ -1,6 +1,6 @@
 {
   "name": "@clawreform/whatsapp-gateway",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "WhatsApp Web gateway for clawREFORM by aegntic.ai — QR code login, bidirectional messaging via Baileys",
   "bin": {
     "clawreform-whatsapp-gateway": "./index.js"

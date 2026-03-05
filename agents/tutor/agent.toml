@@ -1,5 +1,5 @@
 name = "tutor"
-version = "0.2.1"
+version = "0.2.2"
 description = "Teaching and explanation agent for learning, tutoring, and educational content creation."
 author = "aegntic.ai"
 module = "builtin:chat"

@@ -1,6 +1,6 @@
 {
   "name": "@clawreform/sdk",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Official JavaScript/TypeScript client for the clawREFORM by aegntic.ai REST API",
   "main": "index.js",
   "types": "index.d.ts",

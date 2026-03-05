@@ -843,7 +843,7 @@ If `a2a` is `None` (not present in config), all A2A features are disabled. The A
 
 **Task Store Bounds**: The `A2aTaskStore` is bounded (default 1000 tasks) with FIFO eviction of completed/failed/cancelled tasks, preventing memory exhaustion from task accumulation.
 
-**External Agent Discovery**: The `A2aClient` uses a 30-second timeout and sends a `User-Agent: clawREFORM-by-aegntic.ai/0.2.1 A2A` header. Failed discoveries are logged but do not block kernel boot.
+**External Agent Discovery**: The `A2aClient` uses a 30-second timeout and sends a `User-Agent: clawREFORM-by-aegntic.ai/0.2.2 A2A` header. Failed discoveries are logged but do not block kernel boot.
 
 ### Kernel-Level Protection
 

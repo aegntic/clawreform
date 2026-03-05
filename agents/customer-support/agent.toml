@@ -1,5 +1,5 @@
 name = "customer-support"
-version = "0.2.1"
+version = "0.2.2"
 description = "Customer support agent for ticket handling, issue resolution, and customer communication."
 author = "aegntic.ai"
 module = "builtin:chat"
