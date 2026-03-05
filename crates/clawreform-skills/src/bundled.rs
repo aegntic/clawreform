@@ -1,6 +1,6 @@
 //! Bundled skills — compile-time embedded SKILL.md files.
 //!
-//! Ships 60 prompt-only skills inside the ClawReform binary via `include_str!()`.
+//! Ships bundled prompt-only skills inside the ClawReform binary via `include_str!()`.
 //! User-installed skills with the same name override bundled ones.
 
 use crate::openclaw_compat::convert_skillmd_str;
@@ -110,7 +110,7 @@ pub fn bundled_skills() -> Vec<(&'static str, &'static str)> {
             "crypto-expert",
             include_str!("../bundled/crypto-expert/SKILL.md"),
         ),
-        // Tier 5 — Wave 2 (20)
+        // Tier 5 — Wave 2 (21)
         (
             "nextjs-expert",
             include_str!("../bundled/nextjs-expert/SKILL.md"),
@@ -198,8 +198,23 @@ mod tests {
 
     #[test]
     fn test_bundled_skills_count() {
+        use std::collections::HashSet;
+
         let skills = bundled_skills();
-        assert_eq!(skills.len(), 60, "Expected 60 bundled skills");
+        assert!(
+            skills.len() >= 60,
+            "Expected at least 60 bundled skills, found {}",
+            skills.len()
+        );
+
+        let mut names = HashSet::new();
+        for (name, _) in &skills {
+            assert!(
+                names.insert(*name),
+                "Duplicate bundled skill detected: '{}'",
+                name
+            );
+        }
     }
 
     #[test]

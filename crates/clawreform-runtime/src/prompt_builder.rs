@@ -306,6 +306,7 @@ fn build_mcp_section(mcp_summary: &str) -> String {
     format!("## Connected Tool Servers (MCP)\n{}", mcp_summary.trim())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_core_organs_section(
     identity_md: Option<&str>,
     soul_md: Option<&str>,

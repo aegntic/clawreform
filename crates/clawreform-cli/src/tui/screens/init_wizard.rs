@@ -301,15 +301,15 @@ impl State {
         self.provider_order.clear();
         let gemini_via_google = has_nonempty_env_var("GOOGLE_API_KEY");
         for (i, p) in PROVIDERS.iter().enumerate() {
-            let detected = has_nonempty_env_var(p.env_var)
-                || (p.name == "gemini" && gemini_via_google);
+            let detected =
+                has_nonempty_env_var(p.env_var) || (p.name == "gemini" && gemini_via_google);
             if detected {
                 self.provider_order.push(i);
             }
         }
         for (i, p) in PROVIDERS.iter().enumerate() {
-            let detected = has_nonempty_env_var(p.env_var)
-                || (p.name == "gemini" && gemini_via_google);
+            let detected =
+                has_nonempty_env_var(p.env_var) || (p.name == "gemini" && gemini_via_google);
             if !detected {
                 self.provider_order.push(i);
             }

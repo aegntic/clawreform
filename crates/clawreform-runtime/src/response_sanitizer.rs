@@ -19,7 +19,11 @@ fn strip_tagged_block(text: &str, tag: &str) -> String {
         out.push_str(&remaining[..start]);
         let after_open = &remaining[start + open.len()..];
         if let Some(end) = after_open.find(&close) {
-            remaining = &after_open[end + close.len()..];
+            let mut after_close = &after_open[end + close.len()..];
+            if out.ends_with('\n') && after_close.starts_with('\n') {
+                after_close = &after_close[1..];
+            }
+            remaining = after_close;
         } else {
             remaining = &remaining[..start];
             break;

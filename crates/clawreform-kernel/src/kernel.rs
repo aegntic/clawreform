@@ -903,21 +903,20 @@ fn build_collective_ledger(
 
     let mut claims_by_fingerprint: HashMap<String, CollectiveClaim> = HashMap::new();
     for obs in observations {
-        let entry =
-            claims_by_fingerprint
-                .entry(obs.fingerprint.clone())
-                .or_insert_with(|| CollectiveClaim {
-                    fingerprint: obs.fingerprint.clone(),
-                    statement: obs.statement.clone(),
-                    dispatch_mentions: 0,
-                    summary_mentions: 0,
-                    evidence_count: 0,
-                    confidence: 0.0,
-                    project_ready: false,
-                    overview_ready: false,
-                    core_candidate: false,
-                    evidence_refs: Vec::new(),
-                });
+        let entry = claims_by_fingerprint
+            .entry(obs.fingerprint.clone())
+            .or_insert_with(|| CollectiveClaim {
+                fingerprint: obs.fingerprint.clone(),
+                statement: obs.statement.clone(),
+                dispatch_mentions: 0,
+                summary_mentions: 0,
+                evidence_count: 0,
+                confidence: 0.0,
+                project_ready: false,
+                overview_ready: false,
+                core_candidate: false,
+                evidence_refs: Vec::new(),
+            });
 
         if entry.statement == "No preview available."
             || (entry.statement.len() > obs.statement.len() && !obs.statement.is_empty())
@@ -952,7 +951,8 @@ fn build_collective_ledger(
         };
 
         claim.confidence =
-            (0.20 + dispatch_score + summary_score + recurrence_bonus + cross_source_bonus).min(0.99);
+            (0.20 + dispatch_score + summary_score + recurrence_bonus + cross_source_bonus)
+                .min(0.99);
         claim.project_ready = claim.confidence >= 0.45 && claim.evidence_count >= 1;
         claim.overview_ready =
             claim.confidence >= 0.70 && claim.dispatch_mentions > 0 && claim.summary_mentions > 0;
@@ -1007,10 +1007,10 @@ fn collect_collective_observations(
 fn claim_fingerprint(text: &str) -> Option<String> {
     const STOPWORDS: &[&str] = &[
         "the", "and", "for", "that", "with", "from", "into", "onto", "this", "those", "these",
-        "your", "their", "then", "than", "have", "has", "had", "were", "was", "are", "not",
-        "but", "you", "our", "out", "all", "any", "can", "should", "will", "would", "after",
-        "before", "about", "over", "under", "through", "between", "across", "latest", "recent",
-        "session", "summary", "dispatch", "project", "overview", "memory",
+        "your", "their", "then", "than", "have", "has", "had", "were", "was", "are", "not", "but",
+        "you", "our", "out", "all", "any", "can", "should", "will", "would", "after", "before",
+        "about", "over", "under", "through", "between", "across", "latest", "recent", "session",
+        "summary", "dispatch", "project", "overview", "memory",
     ];
 
     use std::collections::HashMap;
@@ -5858,13 +5858,16 @@ mod tests {
         let project = std::fs::read_to_string(dir.join("PROJECT.md")).unwrap();
         let overview = std::fs::read_to_string(dir.join("OVERVIEW.md")).unwrap();
         let collective = std::fs::read_to_string(dir.join("COLLECTIVE.md")).unwrap();
-        let ledger = std::fs::read_to_string(dir.join("memory").join("collective").join("ledger.json"))
-            .unwrap();
+        let ledger =
+            std::fs::read_to_string(dir.join("memory").join("collective").join("ledger.json"))
+                .unwrap();
 
         assert!(project.contains("Ratified Collective Truths"));
         assert!(overview.contains("Collective Direction"));
         assert!(collective.contains("Top Claims"));
-        assert!(collective.to_lowercase().contains("deployment reliability improved"));
+        assert!(collective
+            .to_lowercase()
+            .contains("deployment reliability improved"));
         assert!(ledger.contains("\"project_ready\": true"));
         assert!(ledger.contains("\"overview_ready\": true"));
 
