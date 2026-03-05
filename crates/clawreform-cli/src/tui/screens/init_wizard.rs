@@ -1144,7 +1144,7 @@ fn draw_welcome(f: &mut Frame, area: Rect) {
     .split(area);
 
     let logo = Paragraph::new(Line::from(vec![Span::styled(
-        "O P E N F A N G",
+        "c l a w R E F O R M",
         Style::default()
             .fg(theme::ACCENT)
             .add_modifier(Modifier::BOLD),

@@ -2575,8 +2575,7 @@ fn render_slash_prompt(frame: &mut ratatui::Frame, area: Rect, input: &str) {
 fn normalize_command_token(raw: &str) -> String {
     raw.trim()
         .trim_start_matches('/')
-        .replace('_', "-")
-        .replace(' ', "-")
+        .replace(['_', ' '], "-")
         .to_ascii_lowercase()
 }
 
