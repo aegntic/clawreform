@@ -207,9 +207,13 @@ impl ProcessManager {
             .remove(process_id)
             .ok_or_else(|| format!("Process '{}' not found", process_id))?;
 
-        if let Some(pid) = proc.child.id() {
-            debug!(process_id, pid, "Killing persistent process");
-            let _ = crate::subprocess_sandbox::kill_process_tree(pid, 3000).await;
+        let already_exited = matches!(proc.child.try_wait(), Ok(Some(_)));
+
+        if !already_exited {
+            if let Some(pid) = proc.child.id() {
+                debug!(process_id, pid, "Killing persistent process");
+                let _ = crate::subprocess_sandbox::kill_process_tree(pid, 3000).await;
+            }
         }
         let _ = proc.child.kill().await;
         Ok(())
