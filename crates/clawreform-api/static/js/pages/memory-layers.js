@@ -66,10 +66,10 @@ function memoryLayersPage() {
       try {
         var names = ['CORE.md', 'OVERVIEW.md', 'PROJECT.md', 'COLLECTIVE.md'];
         var labels = {
-          'CORE.md': 'Core Memory',
-          'OVERVIEW.md': 'Overview Memory',
-          'PROJECT.md': 'Project Memory',
-          'COLLECTIVE.md': 'Collective Conscience'
+          'CORE.md': 'Core Facts',
+          'OVERVIEW.md': 'Big Picture',
+          'PROJECT.md': 'Current Project',
+          'COLLECTIVE.md': 'Shared Signals'
         };
         var listResp = await ClawReformAPI.get('/api/agents/' + this.selectedAgentId + '/files');
         var fileList = (listResp && listResp.files) || [];

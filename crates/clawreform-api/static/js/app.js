@@ -102,6 +102,7 @@ document.addEventListener('alpine:init', function() {
     agentCount: 0,
     pendingAgent: null,
     focusMode: localStorage.getItem('clawreform-focus') === 'true',
+    developerMode: localStorage.getItem('clawreform-developer-mode') === 'true',
     showOnboarding: false,
     showAuthPrompt: false,
     showOpenRouterGate: true,
@@ -115,6 +116,15 @@ document.addEventListener('alpine:init', function() {
     toggleFocusMode() {
       this.focusMode = !this.focusMode;
       localStorage.setItem('clawreform-focus', this.focusMode);
+    },
+
+    toggleDeveloperMode(forceValue) {
+      var next = (typeof forceValue === 'boolean') ? forceValue : !this.developerMode;
+      this.developerMode = next;
+      localStorage.setItem('clawreform-developer-mode', next ? 'true' : 'false');
+      window.dispatchEvent(new CustomEvent('clawreform:developer-mode-changed', {
+        detail: { enabled: next }
+      }));
     },
 
     async refreshAgents() {
@@ -261,12 +271,38 @@ document.addEventListener('alpine:init', function() {
 
 // Main app component
 function app() {
+  var validPages = ['overview','agents','sessions','memory-layers','collective','obsidian','organism','approvals','workflows','scheduler','channels','skills','hands','analytics','logs','settings','wizard'];
+  var pageRedirects = {
+    'chat': 'agents',
+    'templates': 'agents',
+    'triggers': 'workflows',
+    'cron': 'scheduler',
+    'schedules': 'scheduler',
+    'memory': 'obsidian',
+    'memory-stack': 'memory-layers',
+    'memory-ladder': 'memory-layers',
+    'memory-graph': 'obsidian',
+    'obsidian-memory': 'obsidian',
+    'collective-consciousness': 'collective',
+    'collective-memory': 'collective',
+    'organs': 'organism',
+    'organ-system': 'organism',
+    'audit': 'logs',
+    'security': 'settings',
+    'peers': 'settings',
+    'migration': 'settings',
+    'usage': 'analytics',
+    'approval': 'approvals'
+  };
+  var advancedPages = ['sessions','memory-layers','collective','organism','approvals','workflows','scheduler','channels','skills','hands','analytics','logs'];
+
   return {
     page: 'agents',
     obsidianGraphUrl: localStorage.getItem('clawreform-obsidian-graph-url') || '',
-    themeMode: localStorage.getItem('clawreform-theme-mode') || 'system',
+    showObsidianVaultEditor: !!(localStorage.getItem('clawreform-obsidian-graph-url') || '').trim(),
+    themeMode: localStorage.getItem('clawreform-theme-mode') || 'dark',
     theme: (() => {
-      var mode = localStorage.getItem('clawreform-theme-mode') || 'system';
+      var mode = localStorage.getItem('clawreform-theme-mode') || 'dark';
       if (mode === 'system') return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       return mode;
     })(),
@@ -278,6 +314,21 @@ function app() {
     agentCount: 0,
 
     get agents() { return Alpine.store('app').agents; },
+    isAdvancedPage(pageName) {
+      return advancedPages.indexOf(pageName) >= 0;
+    },
+    normalizePage(rawPage) {
+      var page = rawPage || 'agents';
+      if (pageRedirects[page]) page = pageRedirects[page];
+      if (validPages.indexOf(page) < 0) page = 'agents';
+      if (!Alpine.store('app').developerMode && this.isAdvancedPage(page)) {
+        if (page === 'sessions' || page === 'memory-layers' || page === 'collective' || page === 'organism') {
+          return 'obsidian';
+        }
+        return 'overview';
+      }
+      return page;
+    },
 
     init() {
       var self = this;
@@ -286,43 +337,24 @@ function app() {
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
         if (self.themeMode === 'system') {
           self.theme = e.matches ? 'dark' : 'light';
+          document.body.setAttribute('data-theme', self.theme);
         }
       });
 
       // Hash routing
-      var validPages = ['overview','agents','sessions','memory-layers','collective','obsidian','organism','approvals','workflows','scheduler','channels','skills','hands','analytics','logs','settings','wizard'];
-      var pageRedirects = {
-        'chat': 'agents',
-        'templates': 'agents',
-        'triggers': 'workflows',
-        'cron': 'scheduler',
-        'schedules': 'scheduler',
-        'memory': 'sessions',
-        'memory-stack': 'memory-layers',
-        'memory-ladder': 'memory-layers',
-        'memory-graph': 'obsidian',
-        'obsidian-memory': 'obsidian',
-        'collective-consciousness': 'collective',
-        'collective-memory': 'collective',
-        'organs': 'organism',
-        'organ-system': 'organism',
-        'audit': 'logs',
-        'security': 'settings',
-        'peers': 'settings',
-        'migration': 'settings',
-        'usage': 'analytics',
-        'approval': 'approvals'
-      };
       function handleHash() {
-        var hash = window.location.hash.replace('#', '') || 'agents';
-        if (pageRedirects[hash]) {
-          hash = pageRedirects[hash];
-          window.location.hash = hash;
+        var current = window.location.hash.replace('#', '') || 'agents';
+        var normalized = self.normalizePage(current);
+        if (normalized !== current) {
+          window.location.hash = normalized;
+          return;
         }
-        if (validPages.indexOf(hash) >= 0) self.page = hash;
+        self.page = normalized;
       }
       window.addEventListener('hashchange', handleHash);
+      window.addEventListener('clawreform:developer-mode-changed', handleHash);
       handleHash();
+      document.body.setAttribute('data-theme', this.theme);
 
       // Keyboard shortcuts
       document.addEventListener('keydown', function(e) {
@@ -362,9 +394,15 @@ function app() {
     },
 
     navigate(p) {
-      this.page = p;
-      window.location.hash = p;
+      var target = this.normalizePage(p);
+      this.page = target;
+      window.location.hash = target;
       this.mobileMenuOpen = false;
+    },
+
+    get hasObsidianGraphLinked() {
+      var raw = (this.obsidianGraphUrl || '').trim();
+      return /^obsidian:\/\//i.test(raw) || /^https?:\/\//i.test(raw);
     },
 
     get obsidianEmbedUrl() {
@@ -375,7 +413,32 @@ function app() {
     },
 
     saveObsidianGraphUrl() {
-      localStorage.setItem('clawreform-obsidian-graph-url', (this.obsidianGraphUrl || '').trim());
+      var trimmed = (this.obsidianGraphUrl || '').trim();
+      this.obsidianGraphUrl = trimmed;
+      localStorage.setItem('clawreform-obsidian-graph-url', trimmed);
+      this.showObsidianVaultEditor = !!trimmed;
+    },
+
+    startAddObsidianVault() {
+      this.showObsidianVaultEditor = true;
+      setTimeout(function() {
+        var el = document.getElementById('obsidian-graph-url');
+        if (el) el.focus();
+      }, 20);
+    },
+
+    createObsidianVault() {
+      var vaultName = (localStorage.getItem('clawreform-obsidian-vault-name') || 'clawREFORM').trim();
+      if (!vaultName) vaultName = 'clawREFORM';
+      var encodedVault = encodeURIComponent(vaultName);
+      this.obsidianGraphUrl = 'obsidian://graph?vault=' + encodedVault;
+      this.saveObsidianGraphUrl();
+      this.showObsidianVaultEditor = true;
+      localStorage.setItem('clawreform-obsidian-vault-name', vaultName);
+      window.open('obsidian://open?vault=' + encodedVault, '_blank', 'noopener,noreferrer');
+      if (window.ClawReformToast && ClawReformToast.info) {
+        ClawReformToast.info('Vault flow started in Obsidian. Return here and click Open Graph.');
+      }
     },
 
     openObsidianGraph() {
@@ -397,6 +460,7 @@ function app() {
       } else {
         this.theme = mode;
       }
+      document.body.setAttribute('data-theme', this.theme);
     },
 
     toggleTheme() {

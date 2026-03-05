@@ -360,7 +360,7 @@ pub fn draw(f: &mut Frame, area: Rect, state: &mut ChatState) {
     let hints = if state.is_streaming {
         "    [Enter] Stage  [\u{2191}\u{2193}] Scroll  [Esc] Stop"
     } else {
-        "    [Enter] Send  [\u{2191}\u{2193}/PgUp/PgDn] Scroll  [Esc] Back"
+        "    [Enter] Send  [/...] Command  [\u{2191}\u{2193}/PgUp/PgDn] Scroll  [Esc] Back"
     };
     let hints = Paragraph::new(Line::from(vec![Span::styled(hints, theme::hint_style())]));
     f.render_widget(hints, chunks[3]);

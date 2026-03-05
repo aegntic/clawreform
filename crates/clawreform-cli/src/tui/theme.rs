@@ -1,6 +1,4 @@
-//! Color palette matching the ClawReform landing page design system.
-//!
-//! Core palette from globals.css + code syntax from constants.ts.
+//! Color palette for the clawREFORM forged-steel + burnished-gold brand system.
 
 #![allow(dead_code)] // Full palette — some colors reserved for future screens.
 
@@ -8,27 +6,28 @@ use ratatui::style::{Color, Modifier, Style};
 
 // ── Core Palette (dark mode for terminal) ───────────────────────────────────
 
-pub const ACCENT: Color = Color::Rgb(255, 92, 0); // #FF5C00 — ClawReform orange
-pub const ACCENT_DIM: Color = Color::Rgb(224, 82, 0); // #E05200
+pub const ACCENT: Color = Color::Rgb(204, 156, 68); // #CC9C44 — burnished gold
+pub const ACCENT_DIM: Color = Color::Rgb(181, 131, 47); // #B5832F
 
-pub const BG_PRIMARY: Color = Color::Rgb(15, 14, 14); // #0F0E0E — dark background
-pub const BG_CARD: Color = Color::Rgb(31, 29, 28); // #1F1D1C — dark surface
-pub const BG_HOVER: Color = Color::Rgb(42, 39, 37); // #2A2725 — dark hover
-pub const BG_CODE: Color = Color::Rgb(24, 22, 21); // #181615 — dark code block
+pub const BG_PRIMARY: Color = Color::Rgb(7, 12, 21); // #070C15 — forged steel base
+pub const BG_CARD: Color = Color::Rgb(27, 36, 51); // #1B2433 — elevated surface
+pub const BG_HOVER: Color = Color::Rgb(34, 45, 61); // #222D3D — hover state
+pub const BG_CODE: Color = Color::Rgb(15, 22, 34); // #0F1622 — code surface
 
-pub const TEXT_PRIMARY: Color = Color::Rgb(240, 239, 238); // #F0EFEE — light text on dark bg
-pub const TEXT_SECONDARY: Color = Color::Rgb(168, 162, 158); // #A8A29E — muted text
-pub const TEXT_TERTIARY: Color = Color::Rgb(120, 113, 108); // #78716C — dim text
+pub const TEXT_PRIMARY: Color = Color::Rgb(232, 237, 244); // #E8EDF4
+pub const TEXT_SECONDARY: Color = Color::Rgb(192, 204, 218); // #C0CCDA
+pub const TEXT_TERTIARY: Color = Color::Rgb(130, 149, 171); // #8295AB
+pub const TEXT_ON_ACCENT: Color = Color::Rgb(18, 19, 20); // #121314
 
-pub const BORDER: Color = Color::Rgb(63, 59, 56); // #3F3B38 — dark border
+pub const BORDER: Color = Color::Rgb(66, 82, 104); // #425268
 
 // ── Semantic Colors (brighter variants for dark background contrast) ────────
 
-pub const GREEN: Color = Color::Rgb(34, 197, 94); // #22C55E — success
-pub const BLUE: Color = Color::Rgb(59, 130, 246); // #3B82F6 — info
-pub const YELLOW: Color = Color::Rgb(234, 179, 8); // #EAB308 — warning
-pub const RED: Color = Color::Rgb(239, 68, 68); // #EF4444 — error
-pub const PURPLE: Color = Color::Rgb(168, 85, 247); // #A855F7 — decorators
+pub const GREEN: Color = Color::Rgb(87, 211, 155); // #57D39B — success
+pub const BLUE: Color = Color::Rgb(120, 176, 255); // #78B0FF — info
+pub const YELLOW: Color = Color::Rgb(242, 187, 88); // #F2BB58 — warning
+pub const RED: Color = Color::Rgb(240, 113, 120); // #F07178 — error
+pub const PURPLE: Color = Color::Rgb(177, 140, 255); // #B18CFF — accent-2
 
 // ── Backward-compat aliases ─────────────────────────────────────────────────
 
@@ -61,7 +60,7 @@ pub fn hint_style() -> Style {
 
 pub fn tab_active() -> Style {
     Style::default()
-        .fg(Color::White)
+        .fg(TEXT_ON_ACCENT)
         .bg(ACCENT)
         .add_modifier(Modifier::BOLD)
 }

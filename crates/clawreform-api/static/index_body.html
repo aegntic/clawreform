@@ -1,28 +1,28 @@
 <body x-data="app" :data-theme="theme">
 
 <!-- API Key Auth Prompt -->
-<div x-show="$store.app.showAuthPrompt" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)" x-data="{ apiKeyInput: '' }">
-  <div style="background:var(--bg-card,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:2rem;max-width:400px;width:90%">
+<div x-show="$store.app.showAuthPrompt" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--overlay-backdrop);backdrop-filter:blur(4px)" x-data="{ apiKeyInput: '' }">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:400px;width:90%">
     <h3 style="margin:0 0 0.5rem;font-size:1.1rem">API Key Required</h3>
-    <p style="color:var(--text-dim,#888);font-size:0.85rem;margin:0 0 1rem">This instance requires an API key. Enter the key from your <code>config.toml</code>.</p>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin:0 0 1rem">This instance requires an API key. Enter the key from your <code>config.toml</code>.</p>
     <form @submit.prevent="$store.app.submitApiKey(apiKeyInput)">
-      <input type="password" x-model="apiKeyInput" placeholder="Enter API key..." style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border,#333);background:var(--bg-input,#151520);color:var(--text,#e0e0e0);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.75rem">
-      <button type="submit" style="width:100%;padding:0.6rem;border-radius:6px;border:none;background:var(--accent,#7c3aed);color:#fff;font-weight:600;cursor:pointer;font-size:0.9rem">Unlock Dashboard</button>
+      <input type="password" x-model="apiKeyInput" placeholder="Enter API key..." style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.75rem">
+      <button type="submit" style="width:100%;padding:0.6rem;border-radius:6px;border:none;background:var(--accent);color:var(--text-on-accent);font-weight:600;cursor:pointer;font-size:0.9rem">Unlock Dashboard</button>
     </form>
   </div>
 </div>
 
 <!-- OpenRouter Setup Gate -->
-<div x-show="!$store.app.showAuthPrompt && $store.app.showOpenRouterGate" style="position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.68);backdrop-filter:blur(4px)">
-  <div style="background:var(--bg-card,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:1.25rem;max-width:520px;width:92%">
+<div x-show="!$store.app.showAuthPrompt && $store.app.showOpenRouterGate" style="position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:var(--overlay-backdrop-strong);backdrop-filter:blur(4px)">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;max-width:520px;width:92%">
     <h3 style="margin:0 0 0.4rem;font-size:1.05rem">OpenRouter Key Required</h3>
-    <p style="color:var(--text-dim,#888);font-size:0.85rem;line-height:1.55;margin:0 0 0.8rem">
+    <p style="color:var(--text-dim);font-size:0.85rem;line-height:1.55;margin:0 0 0.8rem">
       clawREFORM's lightweight in-house assistant path uses OpenRouter as the default provider.
       Add your key to continue.
     </p>
-    <div style="margin-bottom:0.7rem;font-size:0.8rem;color:var(--text-dim,#9aa)">
+    <div style="margin-bottom:0.7rem;font-size:0.8rem;color:var(--text-dim)">
       Get a key:
-      <a :href="$store.app.openRouterHelpUrl" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light,#9f7aea)">openrouter.ai/keys</a>
+      <a :href="$store.app.openRouterHelpUrl" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light)">openrouter.ai/keys</a>
     </div>
     <div x-show="$store.app.openRouterGateLoading" class="loading-state" style="margin:0.25rem 0 0.5rem">
       <div class="spinner"></div><span>Checking OpenRouter status...</span>
@@ -32,9 +32,9 @@
         type="password"
         x-model="$store.app.openRouterKeyInput"
         placeholder="Enter OpenRouter API key..."
-        style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border,#333);background:var(--bg-input,#151520);color:var(--text,#e0e0e0);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.65rem"
+        style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.65rem"
       >
-      <div x-show="$store.app.openRouterError" style="margin-bottom:0.65rem;padding:0.55rem;border-radius:6px;background:rgba(220,80,80,0.12);border:1px solid rgba(220,80,80,0.36);color:#f3b6b6;font-size:0.8rem" x-text="$store.app.openRouterError"></div>
+      <div x-show="$store.app.openRouterError" style="margin-bottom:0.65rem;padding:0.55rem;border-radius:6px;background:var(--error-subtle);border:1px solid var(--error-muted);color:var(--error);font-size:0.8rem" x-text="$store.app.openRouterError"></div>
       <div class="flex gap-2">
         <button type="submit" class="btn btn-primary" :disabled="$store.app.openRouterSaving" style="flex:1">
           <span x-show="!$store.app.openRouterSaving">Save OpenRouter Key</span>
@@ -68,11 +68,12 @@
 
     <div class="sidebar-status" :class="{ offline: !connected && !$store.app.booting }">
       <span class="status-dot"></span>
-      <span class="sidebar-label" x-show="connected" x-text="agentCount + ' agent(s) running'"></span>
+      <span class="sidebar-label" x-show="connected && !$store.app.developerMode">Ready to chat</span>
+      <span class="sidebar-label" x-show="connected && $store.app.developerMode" x-text="agentCount + ' agent(s) running'"></span>
       <span class="sidebar-label" x-show="$store.app.booting && !connected" class="conn-reconnecting">Connecting...</span>
       <span class="sidebar-label" x-show="!connected && !$store.app.booting && $store.app.connectionState === 'reconnecting'" class="conn-reconnecting">Reconnecting...</span>
       <span class="sidebar-label" x-show="!connected && !$store.app.booting && $store.app.connectionState !== 'reconnecting'" x-text="'disconnected' + ($store.app.lastError ? ' — ' + $store.app.lastError : '')">disconnected</span>
-      <span class="conn-badge sidebar-label" :class="wsConnected ? 'ws' : 'http'" x-text="wsConnected ? 'WS' : 'HTTP'" x-show="connected"></span>
+      <span class="conn-badge sidebar-label" :class="wsConnected ? 'ws' : 'http'" x-text="wsConnected ? 'WS' : 'HTTP'" x-show="connected && $store.app.developerMode"></span>
     </div>
 
     <div class="sidebar-nav" role="navigation" aria-label="Main navigation">
@@ -104,11 +105,11 @@
               <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>
               <span class="nav-label">Overview</span>
             </a>
-            <a class="nav-item" :class="{ active: page === 'analytics' }" @click="navigate('analytics')" :aria-current="page === 'analytics' ? 'page' : false">
+            <a class="nav-item" x-show="$store.app.developerMode" :class="{ active: page === 'analytics' }" @click="navigate('analytics')" :aria-current="page === 'analytics' ? 'page' : false">
               <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>
               <span class="nav-label">Analytics</span>
             </a>
-            <a class="nav-item" :class="{ active: page === 'logs' }" @click="navigate('logs')" :aria-current="page === 'logs' ? 'page' : false">
+            <a class="nav-item" x-show="$store.app.developerMode" :class="{ active: page === 'logs' }" @click="navigate('logs')" :aria-current="page === 'logs' ? 'page' : false">
               <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m4 17 6-6-6-6"/><path d="M12 19h8"/></svg></span>
               <span class="nav-label">Logs</span>
             </a>
@@ -124,28 +125,28 @@
         </div>
         <template x-if="!collapsed">
           <div x-transition>
-            <a class="nav-item" :class="{ active: page === 'sessions' }" @click="navigate('sessions')" :aria-current="page === 'sessions' ? 'page' : false">
+            <a class="nav-item" :class="{ active: page === 'obsidian' }" @click="navigate('obsidian')" :aria-current="page === 'obsidian' ? 'page' : false">
+              <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span>
+              <span class="nav-label">Memory Graph</span>
+            </a>
+            <a class="nav-item" x-show="$store.app.developerMode" :class="{ active: page === 'sessions' }" @click="navigate('sessions')" :aria-current="page === 'sessions' ? 'page' : false">
               <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m12 2-10 5 10 5 10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></span>
               <span class="nav-label">Agent Memory</span>
             </a>
-            <a class="nav-item" :class="{ active: page === 'memory-layers' }" @click="navigate('memory-layers')" :aria-current="page === 'memory-layers' ? 'page' : false">
+            <a class="nav-item" x-show="$store.app.developerMode" :class="{ active: page === 'memory-layers' }" @click="navigate('memory-layers')" :aria-current="page === 'memory-layers' ? 'page' : false">
               <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
               <span class="nav-label">Memory Layers</span>
             </a>
-            <a class="nav-item" :class="{ active: page === 'collective' }" @click="navigate('collective')" :aria-current="page === 'collective' ? 'page' : false">
+            <a class="nav-item" x-show="$store.app.developerMode" :class="{ active: page === 'collective' }" @click="navigate('collective')" :aria-current="page === 'collective' ? 'page' : false">
               <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v6"/><path d="M12 13.5l-5 3"/><path d="M12 13.5l5 3"/></svg></span>
               <span class="nav-label">Collective</span>
-            </a>
-            <a class="nav-item" :class="{ active: page === 'obsidian' }" @click="navigate('obsidian')" :aria-current="page === 'obsidian' ? 'page' : false">
-              <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span>
-              <span class="nav-label">Obsidian Graph</span>
             </a>
           </div>
         </template>
       </div>
 
       <!-- Automation -->
-      <div class="nav-section" x-data="{ collapsed: false }" aria-label="Automation">
+      <div class="nav-section" x-show="$store.app.developerMode" x-data="{ collapsed: false }" aria-label="Automation">
         <div class="nav-section-title" @click="collapsed = !collapsed">
           <span class="nav-label">Automation</span>
           <span class="nav-section-chevron" :style="collapsed ? '' : 'transform:rotate(90deg)'">&rsaquo;</span>
@@ -165,7 +166,7 @@
       </div>
 
       <!-- Organism -->
-      <div class="nav-section" x-data="{ collapsed: false }" aria-label="Organism">
+      <div class="nav-section" x-show="$store.app.developerMode" x-data="{ collapsed: false }" aria-label="Organism">
         <div class="nav-section-title" @click="collapsed = !collapsed">
           <span class="nav-label">Organism</span>
           <span class="nav-section-chevron" :style="collapsed ? '' : 'transform:rotate(90deg)'">&rsaquo;</span>
@@ -214,7 +215,7 @@
     </div>
 
     <div class="sidebar-footer">
-      <div class="sidebar-label text-xs text-dim" style="padding:0 16px 4px;letter-spacing:0.5px">Ctrl+K agents | Ctrl+N new</div>
+      <div class="sidebar-label text-xs text-dim" x-show="$store.app.developerMode" style="padding:0 16px 4px;letter-spacing:0.5px">Ctrl+K agents | Ctrl+N new</div>
     </div>
     <div class="sidebar-toggle" @click="toggleSidebar()" x-text="sidebarCollapsed ? '\u276F' : '\u276E'"></div>
   </nav>
@@ -310,14 +311,14 @@
                 </div>
                 <div>
                   <div class="stat-value" :class="(status.agent_count || 0) > 0 ? 'stat-value-success' : ''" x-text="status.agent_count || 0"></div>
-                  <div class="stat-label">Agents Running</div>
+                  <div class="stat-label" x-text="$store.app.developerMode ? 'Agents Running' : 'Agents Ready'"></div>
                 </div>
               </div>
             </div>
             <div class="stat-card stat-card-lg animate-entry stagger-2">
               <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:rgba(96,165,250,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2-10 5 10 5 10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--info-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2-10 5 10 5 10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
                 </div>
                 <div>
                   <div class="stat-value" x-text="formatNumber(usageSummary.total_tokens)"></div>
@@ -327,8 +328,8 @@
             </div>
             <div class="stat-card stat-card-lg animate-entry stagger-3">
               <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:rgba(74,222,128,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--success-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
                 <div>
                   <div class="stat-value stat-value-accent" x-text="formatCost(usageSummary.total_cost)"></div>
@@ -338,8 +339,8 @@
             </div>
             <div class="stat-card stat-card-lg animate-entry stagger-4">
               <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:rgba(168,85,247,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--purple-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                 </div>
                 <div>
                   <div class="stat-value" x-text="formatUptime(status.uptime_seconds)"></div>
@@ -351,11 +352,11 @@
 
           <!-- Secondary stats row -->
           <div class="stats-row animate-entry stagger-5" style="margin-bottom:16px">
-            <div class="stat-card" @click="location.hash='channels'" style="cursor:pointer">
+            <div class="stat-card" x-show="$store.app.developerMode" @click="location.hash='channels'" style="cursor:pointer">
               <div class="stat-value" style="font-size:18px" x-text="channels.length"></div>
               <div class="stat-label">Channels</div>
             </div>
-            <div class="stat-card" @click="location.hash='skills'" style="cursor:pointer">
+            <div class="stat-card" x-show="$store.app.developerMode" @click="location.hash='skills'" style="cursor:pointer">
               <div class="stat-value" style="font-size:18px" x-text="skillCount"></div>
               <div class="stat-label">Skills</div>
             </div>
@@ -467,15 +468,15 @@
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
                 New Agent
               </button>
-              <button class="btn btn-ghost btn-sm" @click="location.hash='skills'" style="display:flex;align-items:center;gap:4px">
+              <button class="btn btn-ghost btn-sm" x-show="$store.app.developerMode" @click="location.hash='skills'" style="display:flex;align-items:center;gap:4px">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
                 Browse Skills
               </button>
-              <button class="btn btn-ghost btn-sm" @click="location.hash='channels'" style="display:flex;align-items:center;gap:4px">
+              <button class="btn btn-ghost btn-sm" x-show="$store.app.developerMode" @click="location.hash='channels'" style="display:flex;align-items:center;gap:4px">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h16M4 15h16M10 3l-2 18M16 3l-2 18"/></svg>
                 Add Channel
               </button>
-              <button class="btn btn-ghost btn-sm" @click="location.hash='workflows'" style="display:flex;align-items:center;gap:4px">
+              <button class="btn btn-ghost btn-sm" x-show="$store.app.developerMode" @click="location.hash='workflows'" style="display:flex;align-items:center;gap:4px">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v12M18 9a9 9 0 0 1-9 9"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/></svg>
                 Create Workflow
               </button>
@@ -493,13 +494,13 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:4px;vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                 Recent Activity
               </div>
-              <a class="btn btn-ghost btn-sm" @click="location.hash='logs'" style="font-size:10px;padding:2px 8px">View All</a>
+              <a class="btn btn-ghost btn-sm" x-show="$store.app.developerMode" @click="location.hash='logs'" style="font-size:10px;padding:2px 8px">View All</a>
             </div>
             <div style="margin-top:12px;display:flex;flex-direction:column;gap:1px">
               <template x-for="(e, idx) in recentAudit" :key="e.seq">
                 <div class="detail-row" style="padding:8px 0;border-bottom:1px solid var(--border-subtle);animation:slideUp 0.2s var(--ease-spring)" :style="'animation-delay:' + (idx * 30) + 'ms'">
                   <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-                    <div style="width:24px;height:24px;border-radius:var(--radius-sm);background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-dim)" x-html="actionIcon(e.action)"></div>
+                    <div style="width:24px;height:24px;border-radius:var(--radius-sm);background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-dim)" x-html="actionIcon(e.action)"></div>
                     <div style="min-width:0;flex:1">
                       <div style="display:flex;align-items:center;gap:6px">
                         <span class="badge" :class="actionBadgeClass(e.action)" style="font-size:9px;padding:1px 6px" x-text="friendlyAction(e.action)"></span>
@@ -546,7 +547,7 @@
                 <div class="quick-action-desc">Set up an LLM provider</div>
               </div>
             </div>
-            <div class="quick-action-card" @click="location.hash='skills'">
+            <div class="quick-action-card" x-show="$store.app.developerMode" @click="location.hash='skills'">
               <div class="quick-action-icon" style="background:var(--info-subtle)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
               </div>
@@ -742,7 +743,7 @@
                     <span x-show="!att.preview" style="font-size:18px;width:32px;text-align:center">&#128196;</span>
                     <span class="text-xs truncate" style="max-width:100px" x-text="att.file.name"></span>
                     <span x-show="att.uploading" class="spinner" style="width:12px;height:12px;border-width:2px"></span>
-                    <button @click="removeAttachment(aidx)" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--danger);color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1">&times;</button>
+                    <button @click="removeAttachment(aidx)" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--danger);color:var(--text-on-accent);border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1">&times;</button>
                   </div>
                 </template>
               </div>
@@ -1911,7 +1912,7 @@
 
                     <!-- QR: Gateway available — show QR code -->
                     <div x-show="!qr.loading && qr.available && qr.dataUrl && !qr.connected" style="text-align:center">
-                      <div style="background:#fff;display:inline-block;padding:1rem;border-radius:12px;margin:0.5rem 0">
+                      <div style="background:var(--qr-surface);display:inline-block;padding:1rem;border-radius:12px;margin:0.5rem 0">
                         <img :src="qr.dataUrl" alt="WhatsApp QR Code" style="width:256px;height:256px;image-rendering:pixelated">
                       </div>
                       <ol style="text-align:left;font-size:0.85rem;margin:1rem 0;padding-left:1.5rem;opacity:0.8">
@@ -1932,20 +1933,20 @@
 
                     <!-- QR: Gateway not available — show setup hint -->
                     <div x-show="!qr.loading && !qr.available" style="padding:1rem 0">
-                      <div style="background:var(--bg-secondary,#1a1a2e);border-radius:8px;padding:1.25rem;text-align:center">
+                      <div style="background:var(--bg-secondary);border-radius:8px;padding:1.25rem;text-align:center">
                         <div style="font-size:2rem;margin-bottom:0.5rem;opacity:0.5">&#128241;</div>
                         <p class="text-sm" x-text="qr.message || 'WhatsApp Web gateway not available'"></p>
                         <p class="text-xs text-dim mt-2" x-show="qr.help" x-text="qr.help"></p>
-                        <p class="text-xs text-dim mt-1" x-show="qr.error" style="color:var(--red,#ef4444)" x-text="qr.error"></p>
+                        <p class="text-xs text-dim mt-1" x-show="qr.error" style="color:var(--red)" x-text="qr.error"></p>
                       </div>
                       <p class="text-xs text-dim mt-3" style="text-align:center">
-                        Or use the <button class="btn-link" @click="showBusinessApi = true" style="font-size:inherit;text-decoration:underline;cursor:pointer;background:none;border:none;color:var(--accent,#818cf8);padding:0">Business API</button> with a Meta developer account.
+                        Or use the <button class="btn-link" @click="showBusinessApi = true" style="font-size:inherit;text-decoration:underline;cursor:pointer;background:none;border:none;color:var(--accent);padding:0">Business API</button> with a Meta developer account.
                       </p>
                     </div>
 
                     <!-- QR: Switch to Business API link (always visible when gateway is available) -->
                     <div x-show="!qr.loading && qr.available" class="text-xs text-dim mt-2" style="text-align:center">
-                      Have a Meta Business account? <button class="btn-link" @click="showBusinessApi = true" style="font-size:inherit;text-decoration:underline;cursor:pointer;background:none;border:none;color:var(--accent,#818cf8);padding:0">Use Business API instead</button>
+                      Have a Meta Business account? <button class="btn-link" @click="showBusinessApi = true" style="font-size:inherit;text-decoration:underline;cursor:pointer;background:none;border:none;color:var(--accent);padding:0">Use Business API instead</button>
                     </div>
 
                     <!-- Action buttons for QR mode -->
@@ -1955,7 +1956,7 @@
                               :disabled="testing[setupModal.name]"
                               x-text="testing[setupModal.name] ? 'Testing...' : 'Test Connection'">
                       </button>
-                      <button class="btn btn-ghost" style="color:var(--red,#ef4444)" x-show="setupModal.configured" @click="removeChannel()">Remove</button>
+                      <button class="btn btn-ghost" style="color:var(--red)" x-show="setupModal.configured" @click="removeChannel()">Remove</button>
                     </div>
                   </div>
                 </template>
@@ -2046,7 +2047,7 @@
                               :disabled="testing[setupModal.name]"
                               x-text="testing[setupModal.name] ? 'Testing...' : 'Test'">
                       </button>
-                      <button class="btn btn-ghost" style="color:var(--red,#ef4444)" x-show="setupModal.configured" @click="removeChannel()">Remove</button>
+                      <button class="btn btn-ghost" style="color:var(--red)" x-show="setupModal.configured" @click="removeChannel()">Remove</button>
                     </div>
                   </div>
                 </template>
@@ -2910,17 +2911,45 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             <button class="btn btn-ghost btn-sm" @click="loadData()">Retry</button>
           </div>
           <div x-show="!loading && !loadError">
+          <div class="card mb-4" style="border-left:3px solid var(--accent)">
+            <div class="font-bold" style="font-size:13px;margin-bottom:4px">Experience Mode</div>
+            <div class="text-sm text-dim" style="line-height:1.6;margin-bottom:10px">
+              Simple Mode keeps only the essentials visible. Turn on Developer Mode to unlock advanced pages, layered memory tools, automation, and deep system controls.
+            </div>
+            <label class="form-checkbox" style="display:flex;align-items:center;gap:8px">
+              <input type="checkbox" :checked="$store.app.developerMode" @change="$store.app.toggleDeveloperMode($event.target.checked); if (!$event.target.checked && tab !== 'providers') tab = 'providers'">
+              <span style="font-size:13px">Developer Mode</span>
+            </label>
+          </div>
           <div class="tabs" role="tablist">
             <div class="tab" role="tab" :class="{ active: tab === 'providers' }" @click="tab = 'providers'">Providers</div>
-            <div class="tab" role="tab" :class="{ active: tab === 'models' }" @click="tab = 'models'">Models</div>
-            <div class="tab" role="tab" :class="{ active: tab === 'config' }" @click="tab = 'config'; if (!configSchema) loadConfigSchema()">Config</div>
-            <div class="tabs-separator"></div>
-            <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'tools' }" @click="tab = 'tools'">Tools</div>
-            <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'security' }" @click="tab = 'security'; if (!securityData && !secLoading) loadSecurity()">Security</div>
-            <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'network' }" @click="tab = 'network'; if (!peers.length && !peersLoading) { loadPeers(); startPeerPolling(); }">Network</div>
-            <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'budget' }" @click="tab = 'budget'">Budget</div>
-            <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'info' }" @click="tab = 'info'">System</div>
-            <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'migration' }" @click="tab = 'migration'">Migration</div>
+            <template x-if="$store.app.developerMode">
+              <div class="tab" role="tab" :class="{ active: tab === 'models' }" @click="tab = 'models'">Models</div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tab" role="tab" :class="{ active: tab === 'config' }" @click="tab = 'config'; if (!configSchema) loadConfigSchema()">Config</div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tabs-separator"></div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'tools' }" @click="tab = 'tools'">Tools</div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'security' }" @click="tab = 'security'; if (!securityData && !secLoading) loadSecurity()">Security</div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'network' }" @click="tab = 'network'; if (!peers.length && !peersLoading) { loadPeers(); startPeerPolling(); }">Network</div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'budget' }" @click="tab = 'budget'">Budget</div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'info' }" @click="tab = 'info'">System</div>
+            </template>
+            <template x-if="$store.app.developerMode">
+              <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'migration' }" @click="tab = 'migration'">Migration</div>
+            </template>
           </div>
 
           <!-- Providers tab -->
@@ -2985,7 +3014,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- Models tab -->
-          <div x-show="tab === 'models'">
+          <div x-show="tab === 'models' && $store.app.developerMode">
             <div class="info-card">
               <h4>Model Catalog</h4>
               <p>Browse all available models across providers. Models marked "Available" have their provider configured and ready to use.</p>
@@ -3030,7 +3059,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- Tools tab -->
-          <div x-show="tab === 'tools'">
+          <div x-show="tab === 'tools' && $store.app.developerMode">
             <div class="search-input mb-4">
               <span style="color:var(--text-muted)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
               <input placeholder="Search tools..." x-model="toolSearch">
@@ -3052,7 +3081,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- System Info tab -->
-          <div x-show="tab === 'info'">
+          <div x-show="tab === 'info' && $store.app.developerMode">
             <div class="stats-row">
               <div class="stat-card"><div class="stat-value" x-text="sysInfo.version || '-'"></div><div class="stat-label">Version</div></div>
               <div class="stat-card"><div class="stat-value" x-text="sysInfo.platform || '-'"></div><div class="stat-label">Platform</div></div>
@@ -3066,7 +3095,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- Config tab -->
-          <div x-show="tab === 'config'">
+          <div x-show="tab === 'config' && $store.app.developerMode">
             <div class="info-card">
               <h4>Runtime Configuration</h4>
               <p>View and edit the active configuration. Changes are applied immediately. For advanced edits, modify <code style="color:var(--accent-light);background:var(--bg);padding:1px 4px;border-radius:2px">config.toml</code> in your clawREFORM by aegntic.ai data directory.</p>
@@ -3133,7 +3162,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- Security tab -->
-          <div x-show="tab === 'security'">
+          <div x-show="tab === 'security' && $store.app.developerMode">
             <div x-show="secLoading" class="loading-state"><div class="spinner"></div><span>Loading security data...</span></div>
             <div x-show="!secLoading">
             <div class="security-hero">
@@ -3243,7 +3272,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- Network tab -->
-          <div x-show="tab === 'network'" x-data="{
+          <div x-show="tab === 'network' && $store.app.developerMode" x-data="{
             netStatus: null, a2aAgents: [], a2aDiscoverUrl: '', a2aDiscovering: false,
             async loadNetStatus() { try { this.netStatus = await (await fetch('/api/network/status')).json(); } catch(e) {} },
             async loadA2aAgents() { try { let r = await (await fetch('/api/a2a/agents')).json(); this.a2aAgents = r.agents || []; } catch(e) {} },
@@ -3328,7 +3357,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- Budget tab -->
-          <div x-show="tab === 'budget'" x-data="{
+          <div x-show="tab === 'budget' && $store.app.developerMode" x-data="{
             budgetData: null, agentRanking: [], budgetLoading: true,
             editMode: false,
             editHourly: '', editDaily: '', editMonthly: '', editAlert: '',
@@ -3367,7 +3396,14 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
               } catch(e) { alert('Failed to save: ' + e); }
               this.saving = false;
             },
-            pctColor(pct) { return pct >= 0.8 ? '#ef4444' : pct >= 0.5 ? '#eab308' : '#22c55e'; },
+            pctColor(pct) {
+              const css = getComputedStyle(document.body);
+              return pct >= 0.8
+                ? css.getPropertyValue('--error').trim()
+                : pct >= 0.5
+                  ? css.getPropertyValue('--warning').trim()
+                  : css.getPropertyValue('--success').trim();
+            },
             fmtUsd(v) { return v > 0 ? '$' + v.toFixed(4) : 'unlimited'; }
           }" x-init="loadBudget()">
             <div class="info-card" style="display:flex;justify-content:space-between;align-items:start">
@@ -3457,7 +3493,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           </div>
 
           <!-- Migration tab -->
-          <div x-show="tab === 'migration'">
+          <div x-show="tab === 'migration' && $store.app.developerMode">
             <div class="card mb-4" style="border-left:3px solid var(--accent)" x-show="migStep === 'intro'">
               <div class="font-bold" style="font-size:14px;margin-bottom:6px">Migrate from OpenClaw</div>
               <div class="text-sm text-dim" style="line-height:1.7">
@@ -3498,7 +3534,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             </div>
 
             <div x-show="migStep === 'preview' && scanResult">
-              <div class="card mb-4" style="border-left:3px solid var(--success, #22c55e)">
+              <div class="card mb-4" style="border-left:3px solid var(--success)">
                 <div class="flex justify-between items-center mb-2">
                   <div class="font-bold" style="font-size:14px">OpenClaw Workspace Found</div>
                   <span class="badge badge-connected">Ready to Migrate</span>
@@ -3521,7 +3557,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             </div>
 
             <div x-show="migStep === 'result' && migResult">
-              <div class="card mb-4" :style="'border-left:3px solid ' + (migResult.status === 'completed' ? 'var(--success, #22c55e)' : 'var(--error)')">
+              <div class="card mb-4" :style="'border-left:3px solid ' + (migResult.status === 'completed' ? 'var(--success)' : 'var(--error)')">
                 <div class="flex justify-between items-center mb-2">
                   <div class="font-bold" style="font-size:14px" x-text="migResult.dry_run ? 'Dry Run Complete' : 'Migration Complete!'"></div>
                   <span class="badge" :class="migResult.status === 'completed' ? 'badge-connected' : 'badge-crashed'" x-text="migResult.status === 'completed' ? 'SUCCESS' : 'FAILED'"></span>
@@ -3534,7 +3570,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
               </div>
             </div>
 
-            <div class="card" x-show="migStep === 'not_found'" style="border-left:3px solid var(--warning, #f59e0b)">
+            <div class="card" x-show="migStep === 'not_found'" style="border-left:3px solid var(--warning)">
               <div class="font-bold mb-2" style="font-size:14px">OpenClaw Not Found</div>
               <div class="text-sm text-dim">Could not auto-detect an OpenClaw installation.</div>
               <div class="flex gap-2 mt-4">
@@ -3931,7 +3967,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
     <template x-if="page === 'memory-layers'">
       <div x-data="memoryLayersPage()" x-init="loadData()">
         <div class="page-header">
-          <h2>Memory Layers</h2>
+          <h2>Memory Layers (Advanced)</h2>
           <div class="flex gap-2 items-center">
             <select class="form-select" style="width:260px" x-model="selectedAgentId" @change="loadLayers()">
               <option value="">Select agent...</option>
@@ -3946,7 +3982,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
           <div class="card mb-4" style="border-left:3px solid var(--accent)">
             <div class="font-bold" style="font-size:13px;margin-bottom:4px">Layered memory tracker</div>
             <div class="text-sm text-dim" style="line-height:1.6">
-              View the live ladder in one place: <code>CORE.md</code> (durable truths), <code>OVERVIEW.md</code> (direction), <code>PROJECT.md</code> (active ledger), and <code>COLLECTIVE.md</code> (ratification and promotion).
+              Developer view of the full ladder: <code>CORE.md</code> (durable truths), <code>OVERVIEW.md</code> (direction), <code>PROJECT.md</code> (active ledger), and <code>COLLECTIVE.md</code> (promotion checks).
             </div>
           </div>
 
@@ -3977,7 +4013,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 <div class="font-bold" x-text="activeLayer ? activeLayer.label : ''"></div>
                 <span class="badge badge-muted" x-text="activeLayer ? activeLayer.name : ''"></span>
               </div>
-              <div class="markdown-body" style="max-height:58vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2)" x-html="renderMarkdown(activeLayerRender)"></div>
+              <div class="markdown-body" style="max-height:58vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface2)" x-html="renderMarkdown(activeLayerRender)"></div>
             </div>
           </div>
 
@@ -4029,19 +4065,19 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 <div class="text-xs text-dim">Project-Ready</div>
                 <div class="font-bold" style="font-size:1.25rem" x-text="projectReady"></div>
                 <div class="text-xs text-dim" x-text="ratio(projectReady) + '%'"></div>
-                <div style="margin-top:6px;background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:var(--accent);border-radius:4px" :style="'width:' + ratio(projectReady) + '%'"></div></div>
+                <div style="margin-top:6px;background:var(--surface2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:var(--accent);border-radius:4px" :style="'width:' + ratio(projectReady) + '%'"></div></div>
               </div>
               <div class="card">
                 <div class="text-xs text-dim">Overview-Ready</div>
                 <div class="font-bold" style="font-size:1.25rem" x-text="overviewReady"></div>
                 <div class="text-xs text-dim" x-text="ratio(overviewReady) + '%'"></div>
-                <div style="margin-top:6px;background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:#2ca58d;border-radius:4px" :style="'width:' + ratio(overviewReady) + '%'"></div></div>
+                <div style="margin-top:6px;background:var(--surface2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:var(--success);border-radius:4px" :style="'width:' + ratio(overviewReady) + '%'"></div></div>
               </div>
               <div class="card">
                 <div class="text-xs text-dim">Core Candidates</div>
                 <div class="font-bold" style="font-size:1.25rem" x-text="coreCandidates"></div>
                 <div class="text-xs text-dim" x-text="ratio(coreCandidates) + '%'"></div>
-                <div style="margin-top:6px;background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:#6f8df5;border-radius:4px" :style="'width:' + ratio(coreCandidates) + '%'"></div></div>
+                <div style="margin-top:6px;background:var(--surface2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:var(--info);border-radius:4px" :style="'width:' + ratio(coreCandidates) + '%'"></div></div>
               </div>
             </div>
 
@@ -4072,7 +4108,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
 
             <div class="card">
               <h4 class="mb-2">Raw Auto Snapshot</h4>
-              <div class="markdown-body" style="max-height:45vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2)" x-html="renderMarkdown(autoSection || '_No auto snapshot found in COLLECTIVE.md_')"></div>
+              <div class="markdown-body" style="max-height:45vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface2)" x-html="renderMarkdown(autoSection || '_No auto snapshot found in COLLECTIVE.md_')"></div>
             </div>
           </div>
         </div>
@@ -4083,20 +4119,34 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
     <template x-if="page === 'obsidian'">
       <div>
         <div class="page-header">
-          <h2>Obsidian Memory Graph</h2>
+          <h2>Memory Graph</h2>
         </div>
         <div class="page-body">
           <div class="card mb-4" style="border-left:3px solid var(--accent)">
-            <div class="font-bold" style="font-size:13px;margin-bottom:4px">Live memory map</div>
+            <div class="font-bold" style="font-size:13px;margin-bottom:4px">One live memory map</div>
             <div class="text-sm text-dim" style="line-height:1.6">
-              Connect your Obsidian graph URL so you can jump from clawREFORM by aegntic.ai dashboard memory into your live knowledge graph.
+              This is the default memory view. Connect your Obsidian graph URL to see all memory context in one place.
             </div>
           </div>
 
-          <div class="card mb-4">
+          <template x-if="!hasObsidianGraphLinked && !showObsidianVaultEditor">
+            <div class="card mb-4">
+              <div class="font-bold" style="font-size:13px;margin-bottom:4px">No active Obsidian vault linked</div>
+              <div class="text-sm text-dim" style="line-height:1.6;margin-bottom:12px">
+                Pick one path. Create Vault starts a fresh vault flow in Obsidian with a default clawREFORM link. Add Vault lets you paste an existing vault/graph URL.
+              </div>
+              <div class="flex gap-2">
+                <button class="btn btn-primary btn-sm" @click="createObsidianVault()">Create Vault</button>
+                <button class="btn btn-ghost btn-sm" @click="startAddObsidianVault()">Add Vault</button>
+                <button class="btn btn-ghost btn-sm" x-show="$store.app.developerMode" @click="navigate('memory-layers')">Open Advanced Memory</button>
+              </div>
+            </div>
+          </template>
+
+          <div class="card mb-4" x-show="showObsidianVaultEditor || hasObsidianGraphLinked">
             <div class="form-group">
               <label>Obsidian Graph URL</label>
-              <input class="form-input" x-model="obsidianGraphUrl" placeholder="obsidian://graph?vault=YourVault or https://graph-view.local">
+              <input id="obsidian-graph-url" class="form-input" x-model="obsidianGraphUrl" placeholder="obsidian://graph?vault=YourVault or https://graph-view.local">
               <div class="text-xs text-dim mt-2">
                 Use an <code style="color:var(--accent-light);background:var(--bg);padding:1px 4px;border-radius:2px">obsidian://</code> link to open the app, or an <code style="color:var(--accent-light);background:var(--bg);padding:1px 4px;border-radius:2px">http(s)://</code> URL for in-dashboard embed.
               </div>
@@ -4104,7 +4154,8 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             <div class="flex gap-2">
               <button class="btn btn-primary btn-sm" @click="saveObsidianGraphUrl()">Save URL</button>
               <button class="btn btn-ghost btn-sm" @click="openObsidianGraph()">Open Graph</button>
-              <button class="btn btn-ghost btn-sm" @click="navigate('sessions')">Open Agent Memory</button>
+              <button class="btn btn-ghost btn-sm" x-show="!hasObsidianGraphLinked" @click="showObsidianVaultEditor = false">Back</button>
+              <button class="btn btn-ghost btn-sm" x-show="$store.app.developerMode" @click="navigate('memory-layers')">Open Advanced Memory</button>
             </div>
           </div>
 
@@ -4115,7 +4166,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             </div>
           </template>
 
-          <template x-if="!obsidianEmbedUrl">
+          <template x-if="hasObsidianGraphLinked && !obsidianEmbedUrl">
             <div class="empty-state">
               <h4>Embed unavailable for this URL</h4>
               <p class="hint">Set an <code>http(s)://</code> graph URL to embed here, or use Open Graph to launch Obsidian directly.</p>
@@ -4164,7 +4215,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                     <span class="badge badge-muted" x-text="existingCount(group) + '/' + group.files.length"></span>
                   </div>
                   <div class="text-xs text-dim mb-2" x-text="completion(group) + '% complete'"></div>
-                  <div style="background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden;margin-bottom:10px">
+                  <div style="background:var(--surface2);border-radius:4px;height:10px;overflow:hidden;margin-bottom:10px">
                     <div style="height:100%;background:var(--accent);border-radius:4px" :style="'width:' + completion(group) + '%'"></div>
                   </div>
                   <div class="flex" style="flex-wrap:wrap;gap:6px">
@@ -4186,7 +4237,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 <span class="error-icon">!</span>
                 <p x-text="fileError"></p>
               </div>
-              <div class="markdown-body" x-show="!fileLoading && !fileError && selectedFile" style="max-height:58vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2)" x-html="renderMarkdown(fileContent || '_File is empty._')"></div>
+              <div class="markdown-body" x-show="!fileLoading && !fileError && selectedFile" style="max-height:58vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface2)" x-html="renderMarkdown(fileContent || '_File is empty._')"></div>
             </div>
           </div>
         </div>
@@ -4494,7 +4545,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 <template x-for="(tpl, i) in filteredTemplates" :key="tpl.id">
                   <div class="card wizard-template-card" :class="{ 'wizard-template-selected': selectedTemplate === templates.indexOf(tpl) }" @click="selectTemplate(templates.indexOf(tpl))" style="cursor:pointer">
                     <div class="flex items-center gap-2 mb-2">
-                      <span class="channel-icon" style="background:var(--accent);color:var(--bg-primary);font-weight:700" x-text="tpl.icon"></span>
+                      <span class="channel-icon" style="background:var(--accent);color: var(--text-on-accent);font-weight:700" x-text="tpl.icon"></span>
                       <div>
                         <span class="font-bold" style="font-size:13px" x-text="tpl.name"></span>
                         <span class="category-badge" style="margin-left:6px" x-text="tpl.category"></span>

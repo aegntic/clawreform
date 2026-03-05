@@ -15,6 +15,9 @@ use screens::{
     agents, audit, channels, chat, dashboard, extensions, hands, logs, memory, peers, security,
     sessions, settings, skills, templates, triggers, usage, welcome, wizard, workflows,
 };
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use std::fs;
 use std::path::PathBuf;
 use std::sync::{mpsc, Arc};
 use std::time::Duration;
@@ -22,7 +25,7 @@ use std::time::Duration;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::Style;
 use ratatui::text::{Line, Span};
-use ratatui::widgets::Paragraph;
+use ratatui::widgets::{Block, Borders, Clear, Paragraph};
 
 // ─── Core types ──────────────────────────────────────────────────────────────
 
@@ -108,6 +111,72 @@ impl Tab {
     fn index(self) -> usize {
         TABS.iter().position(|&t| t == self).unwrap_or(0)
     }
+
+    fn slug(self) -> &'static str {
+        match self {
+            Tab::Dashboard => "dashboard",
+            Tab::Agents => "agents",
+            Tab::Chat => "chat",
+            Tab::Sessions => "sessions",
+            Tab::Workflows => "workflows",
+            Tab::Triggers => "triggers",
+            Tab::Memory => "memory",
+            Tab::Channels => "channels",
+            Tab::Skills => "skills",
+            Tab::Hands => "hands",
+            Tab::Extensions => "extensions",
+            Tab::Templates => "templates",
+            Tab::Peers => "peers",
+            Tab::Security => "security",
+            Tab::Audit => "audit",
+            Tab::Usage => "usage",
+            Tab::Settings => "settings",
+            Tab::Logs => "logs",
+        }
+    }
+
+    fn from_slug(raw: &str) -> Option<Self> {
+        match normalize_command_token(raw).as_str() {
+            "dashboard" | "dash" | "home" | "overview" => Some(Tab::Dashboard),
+            "agents" | "agent" => Some(Tab::Agents),
+            "chat" => Some(Tab::Chat),
+            "sessions" | "session" => Some(Tab::Sessions),
+            "workflows" | "workflow" | "flow" => Some(Tab::Workflows),
+            "triggers" | "trigger" => Some(Tab::Triggers),
+            "memory" | "mem" => Some(Tab::Memory),
+            "channels" | "channel" => Some(Tab::Channels),
+            "skills" | "skill" => Some(Tab::Skills),
+            "hands" | "hand" => Some(Tab::Hands),
+            "extensions" | "extension" | "ext" | "integration" | "integrations" => {
+                Some(Tab::Extensions)
+            }
+            "templates" | "template" => Some(Tab::Templates),
+            "peers" | "peer" | "network" => Some(Tab::Peers),
+            "security" | "sec" => Some(Tab::Security),
+            "audit" => Some(Tab::Audit),
+            "usage" | "analytics" | "cost" | "costs" => Some(Tab::Usage),
+            "settings" | "setting" | "config" => Some(Tab::Settings),
+            "logs" | "log" => Some(Tab::Logs),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CommandSource {
+    Chat,
+    Global,
+}
+
+#[derive(Default, Serialize, Deserialize)]
+struct ShortcutFile {
+    aliases: BTreeMap<String, String>,
+}
+
+struct CommandFeedback {
+    msg: String,
+    is_error: bool,
+    expires_at_tick: usize,
 }
 
 enum Backend {
@@ -171,6 +240,12 @@ struct App {
     peers: peers::PeersState,
     logs: logs::LogsState,
 
+    slash_mode: bool,
+    slash_input: String,
+    custom_shortcuts: BTreeMap<String, Tab>,
+    nav_help_visible: bool,
+    command_feedback: Option<CommandFeedback>,
+
     kernel_booting: bool,
     kernel_boot_error: Option<String>,
 }
@@ -179,6 +254,7 @@ struct App {
 
 impl App {
     fn new(config_path: Option<PathBuf>, event_tx: mpsc::Sender<AppEvent>) -> Self {
+        let custom_shortcuts = load_custom_shortcuts();
         Self {
             phase: Phase::Boot(BootScreen::Welcome),
             active_tab: Tab::Dashboard,
@@ -208,6 +284,11 @@ impl App {
             settings: settings::SettingsState::new(),
             peers: peers::PeersState::new(),
             logs: logs::LogsState::new(),
+            slash_mode: false,
+            slash_input: String::new(),
+            custom_shortcuts,
+            nav_help_visible: false,
+            command_feedback: None,
             kernel_booting: false,
             kernel_boot_error: None,
             ctrl_c_pending: false,
@@ -612,6 +693,57 @@ impl App {
 
         // ── Global: Ctrl+Q quit from Main phase ─────────────────────────────
         if matches!(self.phase, Phase::Main) {
+            // Global slash command mode (available on all non-chat tabs)
+            if self.slash_mode {
+                match key.code {
+                    KeyCode::Esc => {
+                        self.slash_mode = false;
+                        self.slash_input.clear();
+                    }
+                    KeyCode::Enter => {
+                        let input = self.slash_input.trim().to_string();
+                        self.slash_mode = false;
+                        self.slash_input.clear();
+                        if !input.is_empty() {
+                            let cmd = if input.starts_with('/') {
+                                input
+                            } else {
+                                format!("/{input}")
+                            };
+                            self.handle_slash_command_from(&cmd, CommandSource::Global);
+                        }
+                    }
+                    KeyCode::Backspace => {
+                        self.slash_input.pop();
+                    }
+                    KeyCode::Char(c) => {
+                        self.slash_input.push(c);
+                    }
+                    _ => {}
+                }
+                return;
+            }
+
+            // Nav overlay toggle
+            if key.modifiers.is_empty() && key.code == KeyCode::Char('?') {
+                self.nav_help_visible = !self.nav_help_visible;
+                return;
+            }
+            if self.nav_help_visible && key.code == KeyCode::Esc {
+                self.nav_help_visible = false;
+                return;
+            }
+
+            // Start global slash mode from any non-chat tab
+            if self.active_tab != Tab::Chat
+                && key.modifiers.is_empty()
+                && key.code == KeyCode::Char('/')
+            {
+                self.slash_mode = true;
+                self.slash_input.clear();
+                return;
+            }
+
             if key.code == KeyCode::Char('q') && key.modifiers.contains(KeyModifiers::CONTROL) {
                 self.should_quit = true;
                 return;
@@ -877,6 +1009,14 @@ impl App {
         self.settings.tick();
         self.peers.tick();
         self.logs.tick();
+
+        if self
+            .command_feedback
+            .as_ref()
+            .is_some_and(|f| self.tick_count >= f.expires_at_tick)
+        {
+            self.command_feedback = None;
+        }
 
         // Auto-poll for active tabs
         if self.phase == Phase::Main {
@@ -1692,7 +1832,7 @@ impl App {
         });
         self.chat.push_message(
             chat::Role::System,
-            "/help for commands \u{2022} /exit to quit".to_string(),
+            "/help commands \u{2022} /go <tab> navigate \u{2022} /exit quit".to_string(),
         );
         self.active_tab = Tab::Chat;
     }
@@ -1718,7 +1858,7 @@ impl App {
         });
         self.chat.push_message(
             chat::Role::System,
-            "/help for commands \u{2022} /exit to quit".to_string(),
+            "/help commands \u{2022} /go <tab> navigate \u{2022} /exit quit".to_string(),
         );
         self.active_tab = Tab::Chat;
     }
@@ -1791,23 +1931,121 @@ impl App {
     // ─── Slash commands ──────────────────────────────────────────────────────
 
     fn handle_slash_command(&mut self, cmd: &str) {
-        let parts: Vec<&str> = cmd.splitn(2, ' ').collect();
-        match parts[0] {
-            "/exit" | "/quit" => self.handle_chat_action(chat::ChatAction::Back),
-            "/help" => {
-                self.chat.push_message(
-                    chat::Role::System,
-                    [
-                        "/help    \u{2014} show this help",
-                        "/status  \u{2014} connection & agent info",
-                        "/agents  \u{2014} list running agents",
-                        "/model   \u{2014} show current model",
-                        "/clear   \u{2014} clear chat history",
-                        "/kill    \u{2014} kill the current agent",
-                        "/exit    \u{2014} end chat session",
-                    ]
-                    .join("\n"),
-                );
+        self.handle_slash_command_from(cmd, CommandSource::Chat);
+    }
+
+    fn handle_slash_command_from(&mut self, cmd: &str, source: CommandSource) {
+        let parts: Vec<&str> = cmd.split_whitespace().collect();
+        if parts.is_empty() {
+            return;
+        }
+
+        // In global slash mode, allow direct one-word tab jumps: `/agents`, `/logs`, etc.
+        if matches!(source, CommandSource::Global) && parts.len() == 1 {
+            if let Some(tab) = self.resolve_tab_command(parts[0]) {
+                self.switch_tab(tab);
+                self.show_command_output(source, format!("Opened {}.", tab.label()), false);
+                return;
+            }
+        }
+
+        let head = parts[0].to_ascii_lowercase();
+        match head.as_str() {
+            "/exit" | "/quit" => {
+                if matches!(source, CommandSource::Global) {
+                    self.should_quit = true;
+                } else {
+                    self.handle_chat_action(chat::ChatAction::Back);
+                }
+            }
+            "/help" | "/menu" => {
+                if matches!(source, CommandSource::Global) {
+                    self.nav_help_visible = true;
+                    self.show_command_output(source, "Opened navigation help (? to close).", false);
+                } else {
+                    self.show_command_output(source, self.navigation_help_text(), false);
+                }
+            }
+            "/go" | "/tab" => {
+                if parts.len() < 2 {
+                    self.show_command_output(
+                        source,
+                        "Usage: /go <tab>. Example: /go workflows",
+                        true,
+                    );
+                    return;
+                }
+                if let Some(tab) = self.resolve_tab_command(parts[1]) {
+                    self.switch_tab(tab);
+                    self.show_command_output(source, format!("Opened {}.", tab.label()), false);
+                } else {
+                    self.show_command_output(
+                        source,
+                        format!("Unknown tab: {}. Try /menu", parts[1]),
+                        true,
+                    );
+                }
+            }
+            "/aliases" => {
+                self.show_command_output(source, self.custom_shortcuts_text(), false);
+            }
+            "/alias" => {
+                if parts.len() < 2 {
+                    self.show_command_output(
+                        source,
+                        "Usage: /alias add <name> <tab> | /alias rm <name> | /aliases",
+                        true,
+                    );
+                    return;
+                }
+                let sub = parts[1].to_ascii_lowercase();
+                match sub.as_str() {
+                    "add" | "set" => {
+                        if parts.len() < 4 {
+                            self.show_command_output(
+                                source,
+                                "Usage: /alias add <name> <tab>",
+                                true,
+                            );
+                            return;
+                        }
+                        let target = match self.resolve_tab_command(parts[3]) {
+                            Some(t) => t,
+                            None => {
+                                self.show_command_output(
+                                    source,
+                                    format!("Unknown tab: {}. Try /menu", parts[3]),
+                                    true,
+                                );
+                                return;
+                            }
+                        };
+                        match self.upsert_custom_shortcut(parts[2], target) {
+                            Ok(msg) => self.show_command_output(source, msg, false),
+                            Err(err) => self.show_command_output(source, err, true),
+                        }
+                    }
+                    "rm" | "del" | "remove" => {
+                        if parts.len() < 3 {
+                            self.show_command_output(source, "Usage: /alias rm <name>", true);
+                            return;
+                        }
+                        match self.remove_custom_shortcut(parts[2]) {
+                            Ok(msg) => self.show_command_output(source, msg, false),
+                            Err(err) => self.show_command_output(source, err, true),
+                        }
+                    }
+                    "list" => {
+                        self.show_command_output(source, self.custom_shortcuts_text(), false);
+                    }
+                    _ => {
+                        self.show_command_output(
+                            source,
+                            "Usage: /alias add <name> <tab> | /alias rm <name>",
+                            true,
+                        );
+                    }
+                }
             }
             "/status" => {
                 let mut s = Vec::new();
@@ -1827,9 +2065,14 @@ impl App {
                     }
                     Backend::None => s.push("Mode: disconnected".to_string()),
                 }
-                self.chat.push_message(chat::Role::System, s.join("\n"));
+                self.show_command_output(source, s.join("\n"), false);
             }
             "/agents" => {
+                if matches!(source, CommandSource::Global) {
+                    self.switch_tab(Tab::Agents);
+                    self.show_command_output(source, "Opened Agents.", false);
+                    return;
+                }
                 let mut lines = Vec::new();
                 match &self.backend {
                     Backend::Daemon { base_url } => {
@@ -1864,9 +2107,13 @@ impl App {
                 } else {
                     lines.join("\n")
                 };
-                self.chat.push_message(chat::Role::System, msg);
+                self.show_command_output(source, msg, false);
             }
             "/clear" => {
+                if matches!(source, CommandSource::Global) {
+                    self.show_command_output(source, "Use /go chat, then run /clear there.", true);
+                    return;
+                }
                 let name = self.chat.agent_name.clone();
                 let model = self.chat.model_label.clone();
                 let mode = self.chat.mode_label.clone();
@@ -1874,8 +2121,7 @@ impl App {
                 self.chat.agent_name = name;
                 self.chat.model_label = model;
                 self.chat.mode_label = mode;
-                self.chat
-                    .push_message(chat::Role::System, "Chat history cleared.".to_string());
+                self.show_command_output(source, "Chat history cleared.", false);
             }
             "/kill" => {
                 if let Some(ref target) = self.chat_target {
@@ -1887,15 +2133,17 @@ impl App {
                                 let url = format!("{base_url}/api/agents/{id}");
                                 match client.delete(&url).send() {
                                     Ok(r) if r.status().is_success() => {
-                                        self.chat.push_message(
-                                            chat::Role::System,
+                                        self.show_command_output(
+                                            source,
                                             format!("Agent \"{name}\" killed."),
+                                            false,
                                         );
                                     }
                                     _ => {
-                                        self.chat.push_message(
-                                            chat::Role::System,
+                                        self.show_command_output(
+                                            source,
                                             format!("Failed to kill agent \"{name}\"."),
+                                            true,
                                         );
                                     }
                                 }
@@ -1905,33 +2153,35 @@ impl App {
                             if let Some(id) = target.agent_id_inprocess {
                                 match kernel.kill_agent(id) {
                                     Ok(()) => {
-                                        self.chat.push_message(
-                                            chat::Role::System,
+                                        self.show_command_output(
+                                            source,
                                             format!("Agent \"{name}\" killed."),
+                                            false,
                                         );
                                     }
                                     Err(e) => {
-                                        self.chat.push_message(
-                                            chat::Role::System,
+                                        self.show_command_output(
+                                            source,
                                             format!("Kill failed: {e}"),
+                                            true,
                                         );
                                     }
                                 }
                             }
                         }
                         Backend::None => {
-                            self.chat.push_message(
-                                chat::Role::System,
-                                "No backend connected.".to_string(),
-                            );
+                            self.show_command_output(source, "No backend connected.", true);
                         }
                     }
+                } else {
+                    self.show_command_output(source, "No active chat agent to kill.", true);
                 }
             }
             "/model" => {
-                self.chat.push_message(
-                    chat::Role::System,
+                self.show_command_output(
+                    source,
                     format!("Model: {}", self.chat.model_label),
+                    false,
                 );
             }
             "/hands" => match &self.backend {
@@ -1960,23 +2210,128 @@ impl App {
                             ));
                         }
                     }
-                    self.chat.push_message(chat::Role::System, msg);
+                    self.show_command_output(source, msg, false);
                 }
                 _ => {
-                    self.chat.push_message(
-                        chat::Role::System,
-                        "Hands info requires in-process mode. Use the Hands tab instead."
-                            .to_string(),
+                    self.show_command_output(
+                        source,
+                        "Hands info requires in-process mode. Use /go hands instead.",
+                        true,
                     );
                 }
             },
             _ => {
-                self.chat.push_message(
-                    chat::Role::System,
+                if parts.len() == 1 {
+                    if let Some(tab) = self.resolve_tab_command(parts[0]) {
+                        self.switch_tab(tab);
+                        self.show_command_output(source, format!("Opened {}.", tab.label()), false);
+                        return;
+                    }
+                }
+                self.show_command_output(
+                    source,
                     format!("Unknown command: {}. Type /help", parts[0]),
+                    true,
                 );
             }
         }
+    }
+
+    fn show_command_output(
+        &mut self,
+        source: CommandSource,
+        msg: impl Into<String>,
+        is_error: bool,
+    ) {
+        let msg = msg.into();
+        match source {
+            CommandSource::Chat => self.chat.push_message(chat::Role::System, msg),
+            CommandSource::Global => {
+                let line = msg.lines().next().unwrap_or("").trim();
+                let final_line = if line.is_empty() { "Done." } else { line };
+                self.set_command_feedback(final_line.to_string(), is_error);
+            }
+        }
+    }
+
+    fn set_command_feedback(&mut self, msg: String, is_error: bool) {
+        self.command_feedback = Some(CommandFeedback {
+            msg,
+            is_error,
+            expires_at_tick: self.tick_count.saturating_add(120),
+        });
+    }
+
+    fn resolve_tab_command(&self, raw: &str) -> Option<Tab> {
+        let key = normalize_command_token(raw);
+        if key.is_empty() {
+            return None;
+        }
+        if let Some(tab) = self.custom_shortcuts.get(&key).copied() {
+            return Some(tab);
+        }
+        Tab::from_slug(&key)
+    }
+
+    fn upsert_custom_shortcut(&mut self, alias_raw: &str, target: Tab) -> Result<String, String> {
+        let alias = normalize_alias_key(alias_raw);
+        if alias.is_empty() {
+            return Err("Alias must contain letters or numbers.".to_string());
+        }
+        if Tab::from_slug(&alias).is_some() {
+            return Err("Alias conflicts with a built-in tab command.".to_string());
+        }
+        self.custom_shortcuts.insert(alias.clone(), target);
+        save_custom_shortcuts(&self.custom_shortcuts)?;
+        Ok(format!("Saved alias: /{} -> /{}", alias, target.slug()))
+    }
+
+    fn remove_custom_shortcut(&mut self, alias_raw: &str) -> Result<String, String> {
+        let alias = normalize_alias_key(alias_raw);
+        if alias.is_empty() {
+            return Err("Alias name is required.".to_string());
+        }
+        if self.custom_shortcuts.remove(&alias).is_none() {
+            return Err(format!("Alias not found: /{alias}"));
+        }
+        save_custom_shortcuts(&self.custom_shortcuts)?;
+        Ok(format!("Removed alias: /{alias}"))
+    }
+
+    fn custom_shortcuts_text(&self) -> String {
+        if self.custom_shortcuts.is_empty() {
+            return "No custom shortcuts yet. Add one with /alias add <name> <tab>.".to_string();
+        }
+        let mut lines = vec![format!(
+            "Custom shortcuts ({}):",
+            self.custom_shortcuts.len()
+        )];
+        for (alias, tab) in &self.custom_shortcuts {
+            lines.push(format!("  /{} -> /{}", alias, tab.slug()));
+        }
+        lines.join("\n")
+    }
+
+    fn navigation_help_text(&self) -> String {
+        let mut lines = vec![
+            "Slash Navigation".to_string(),
+            String::new(),
+            "Core tabs: /dashboard /agents /chat /sessions /memory".to_string(),
+            "Builder tabs: /workflows /triggers /skills /templates /extensions /hands".to_string(),
+            "Ops tabs: /channels /peers /security /audit /usage /settings /logs".to_string(),
+            String::new(),
+            "Jump commands: /go <tab>  |  /tab <tab>".to_string(),
+            "Custom aliases: /alias add <name> <tab>  |  /alias rm <name>  |  /aliases".to_string(),
+            String::new(),
+            "Chat commands: /status /agents /model /clear /kill /exit".to_string(),
+            "Global mode: press / on any non-chat tab, then type a command.".to_string(),
+            "Quick help overlay: press ? in main TUI.".to_string(),
+        ];
+        if !self.custom_shortcuts.is_empty() {
+            lines.push(String::new());
+            lines.push(self.custom_shortcuts_text());
+        }
+        lines.join("\n")
     }
 
     // ─── Drawing ─────────────────────────────────────────────────────────────
@@ -2031,6 +2386,20 @@ impl App {
                     Tab::Peers => peers::draw(frame, chunks[1], &mut self.peers),
                     Tab::Logs => logs::draw(frame, chunks[1], &mut self.logs),
                 }
+
+                if self.nav_help_visible {
+                    render_nav_overlay(frame, area, &self.navigation_help_text());
+                }
+                if self.slash_mode {
+                    render_slash_prompt(frame, area, &self.slash_input);
+                } else if let Some(ref fb) = self.command_feedback {
+                    let color = if fb.is_error {
+                        theme::RED
+                    } else {
+                        theme::GREEN
+                    };
+                    render_toast(frame, area, &format!(" {}", fb.msg), color);
+                }
             }
         }
     }
@@ -2053,7 +2422,7 @@ impl App {
         let hint = if self.ctrl_c_pending {
             "Press Ctrl+C again to quit"
         } else {
-            "Ctrl+C×2 quit  Tab/Ctrl+\u{2190}\u{2192} switch"
+            "Ctrl+C×2 quit  Tab/Ctrl+\u{2190}\u{2192} switch  / command  ? help"
         };
         let hint_width = hint.len() + 2;
         let available = width.saturating_sub(hint_width + 2);
@@ -2150,6 +2519,138 @@ impl App {
 
         let bar = Paragraph::new(Line::from(spans)).style(Style::default().bg(theme::BG_CARD));
         frame.render_widget(bar, area);
+    }
+}
+
+fn centered_rect(area: Rect, width_pct: u16, height_pct: u16) -> Rect {
+    let width = area
+        .width
+        .saturating_mul(width_pct)
+        .saturating_div(100)
+        .max(20);
+    let height = area
+        .height
+        .saturating_mul(height_pct)
+        .saturating_div(100)
+        .max(6);
+    let x = area.x.saturating_add(area.width.saturating_sub(width) / 2);
+    let y = area
+        .y
+        .saturating_add(area.height.saturating_sub(height) / 2);
+    Rect::new(x, y, width, height)
+}
+
+fn render_nav_overlay(frame: &mut ratatui::Frame, area: Rect, text: &str) {
+    let popup = centered_rect(area, 78, 62);
+    frame.render_widget(Clear, popup);
+    let block = Block::default()
+        .title(" Navigation Help ")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(theme::ACCENT));
+    let inner = block.inner(popup);
+    frame.render_widget(block, popup);
+    frame.render_widget(
+        Paragraph::new(text).style(Style::default().fg(theme::TEXT_PRIMARY)),
+        inner,
+    );
+}
+
+fn render_slash_prompt(frame: &mut ratatui::Frame, area: Rect, input: &str) {
+    let prompt = format!("/{}█", input);
+    let width = (prompt.len() as u16).saturating_add(8).min(area.width);
+    let x = area.x.saturating_add(area.width.saturating_sub(width) / 2);
+    let y = area.y.saturating_add(area.height.saturating_sub(2));
+    let prompt_area = Rect::new(x, y, width, 1);
+    frame.render_widget(Clear, prompt_area);
+    frame.render_widget(
+        Paragraph::new(Line::from(vec![
+            Span::styled(" cmd ", Style::default().fg(theme::YELLOW)),
+            Span::styled(prompt, Style::default().fg(theme::ACCENT)),
+        ]))
+        .style(Style::default().bg(theme::BG_CARD)),
+        prompt_area,
+    );
+}
+
+fn normalize_command_token(raw: &str) -> String {
+    raw.trim()
+        .trim_start_matches('/')
+        .replace(['_', ' '], "-")
+        .to_ascii_lowercase()
+}
+
+fn normalize_alias_key(raw: &str) -> String {
+    normalize_command_token(raw)
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '-')
+        .collect()
+}
+
+fn shortcuts_file_path() -> Option<PathBuf> {
+    dirs::home_dir().map(|h| h.join(".clawreform").join("tui-shortcuts.json"))
+}
+
+fn load_custom_shortcuts() -> BTreeMap<String, Tab> {
+    let Some(path) = shortcuts_file_path() else {
+        return BTreeMap::new();
+    };
+    let Ok(raw) = fs::read_to_string(path) else {
+        return BTreeMap::new();
+    };
+    let Ok(file) = serde_json::from_str::<ShortcutFile>(&raw) else {
+        return BTreeMap::new();
+    };
+    let mut out = BTreeMap::new();
+    for (alias, tab_name) in file.aliases {
+        let alias_key = normalize_alias_key(&alias);
+        if alias_key.is_empty() {
+            continue;
+        }
+        if let Some(tab) = Tab::from_slug(&tab_name) {
+            out.insert(alias_key, tab);
+        }
+    }
+    out
+}
+
+fn save_custom_shortcuts(shortcuts: &BTreeMap<String, Tab>) -> Result<(), String> {
+    let Some(path) = shortcuts_file_path() else {
+        return Err("Could not resolve home directory for shortcut storage.".to_string());
+    };
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed creating shortcut directory: {e}"))?;
+    }
+    let mut aliases = BTreeMap::new();
+    for (alias, tab) in shortcuts {
+        aliases.insert(alias.clone(), tab.slug().to_string());
+    }
+    let payload = ShortcutFile { aliases };
+    let raw = serde_json::to_string_pretty(&payload)
+        .map_err(|e| format!("Failed serializing shortcuts: {e}"))?;
+    fs::write(&path, raw).map_err(|e| format!("Failed writing {}: {e}", path.display()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tab_aliases_resolve() {
+        assert!(matches!(Tab::from_slug("dashboard"), Some(Tab::Dashboard)));
+        assert!(matches!(Tab::from_slug("home"), Some(Tab::Dashboard)));
+        assert!(matches!(Tab::from_slug("agent"), Some(Tab::Agents)));
+        assert!(matches!(Tab::from_slug("workflow"), Some(Tab::Workflows)));
+        assert!(matches!(Tab::from_slug("network"), Some(Tab::Peers)));
+        assert!(matches!(Tab::from_slug("sec"), Some(Tab::Security)));
+        assert!(Tab::from_slug("unknown").is_none());
+    }
+
+    #[test]
+    fn command_token_normalization() {
+        assert_eq!(normalize_command_token("/Go Workflows"), "go-workflows");
+        assert_eq!(normalize_alias_key("/My_Custom!Alias"), "my-customalias");
+        assert_eq!(normalize_alias_key("  /ops-logs  "), "ops-logs");
     }
 }
 

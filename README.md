@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/branding/clawreform-logo.png" width="160" alt="clawREFORM by aegntic.ai Logo" />
+  <img src="assets/branding/clawreform-logo-v2.png" width="220" alt="clawREFORM by aegntic.ai v2 brand logo" />
 </p>
 
 <h1 align="center">clawREFORM by aegntic.ai</h1>
@@ -73,6 +73,14 @@ clawreform start
 ```
 
 When the dashboard opens, it asks for your OpenRouter API key first, then unlocks the full app.
+
+## Theme System
+
+clawREFORM ships with a dual-mode premium theme system inspired by the v2 metallic-C logo:
+
+- **Dark-first default**: forged-steel surfaces, layered depth, and burnished-gold accents.
+- **Elegant light mode**: a handcrafted brushed-metal light palette (not a simple inversion).
+- **Shared visual language**: the same accent hue, spacing rhythm, and typography stack (`Manrope` + `IBM Plex Mono`) across both modes.
 
 ## Architecture Maps & Flowcharts
 

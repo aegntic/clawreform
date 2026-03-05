@@ -40,7 +40,7 @@
   align-items: center;
   justify-content: space-between;
   min-height: 60px;
-  background: var(--metal-sheen, transparent);
+  background: var(--metal-sheen);
 }
 
 .sidebar-logo {
@@ -53,7 +53,7 @@
   width: 28px;
   height: 28px;
   opacity: 0.9;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  filter: drop-shadow(0 2px 4px var(--logo-shadow));
   transition:
     opacity 0.2s,
     transform 0.2s;
@@ -112,11 +112,11 @@
 }
 .conn-badge.ws {
   background: var(--success);
-  color: #000;
+  color: var(--text-on-accent);
 }
 .conn-badge.http {
   background: var(--warning);
-  color: #000;
+  color: var(--text-on-accent);
 }
 
 /* Navigation */
@@ -171,11 +171,9 @@
 
 .nav-item.active {
   background: var(--accent);
-  color: var(--bg-primary);
+  color: var(--text-on-accent);
   font-weight: 600;
-  box-shadow:
-    var(--shadow-sm),
-    0 2px 8px rgba(200, 146, 42, 0.3);
+  box-shadow: var(--shadow-sm), var(--shadow-accent);
 }
 
 .nav-icon {
@@ -260,7 +258,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--overlay-backdrop);
   z-index: 99;
 }
 

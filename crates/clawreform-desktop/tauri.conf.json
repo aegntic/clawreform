@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "OpenFang",
-  "version": "0.1.0",
-  "identifier": "ai.openfang.desktop",
+  "productName": "clawREFORM by aegntic.ai",
+  "version": "0.2.1",
+  "identifier": "ai.aegntic.clawreform.desktop",
   "build": {},
   "app": {
     "windows": [],
@@ -14,7 +14,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJDOTE5MDhCRDNGMTUyMEQKUldRTlV2SFRpNUNSdkZRZDcvektwZkN6bUsyM0NJZC9OeXhHRU5id1FnZWllQmNlZGRoSGRQOHkK",
       "endpoints": [
-        "https://github.com/RightNow-AI/openfang/releases/latest/download/latest.json"
+        "https://github.com/aegntic/clawreform/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"
@@ -33,7 +33,7 @@
     ],
     "category": "Productivity",
     "shortDescription": "Self-Evolving Agent OS",
-    "longDescription": "OpenFang is an open-source Agent Operating System — run, orchestrate, and extend AI agents across every channel from your desktop.",
+    "longDescription": "clawREFORM by aegntic.ai is an open-source Agent Operating System — run, orchestrate, and extend AI agents across every channel from your desktop.",
     "linux": {
       "deb": {
         "depends": []
