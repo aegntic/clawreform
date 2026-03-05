@@ -253,6 +253,7 @@ fn ensure_workspace(workspace: &Path) -> KernelResult<()> {
         "memory/working",
         "memory/dispatches",
         "memory/summaries",
+        "memory/collective",
     ] {
         std::fs::create_dir_all(workspace.join(subdir)).map_err(|e| {
             KernelError::ClawReform(ClawReformError::Internal(format!(
@@ -376,6 +377,21 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
          - Skills this agent is refining:\n\
          - Skills this agent should avoid unless necessary:\n";
 
+    let collective_content = format!(
+        "# Collective Conscience\n\
+         <!-- Shared memory ratification and promotion control surface for this workspace. -->\n\n\
+         ## Auto Snapshot\n\
+         {start}\n\
+         _No collective evidence has been ratified yet._\n\
+         {end}\n\n\
+         ## Human Ratification\n\
+         - Mark stable project truths that deserve long-term visibility.\n\
+         - Promote only validated direction changes into overview.\n\
+         - Keep core memory high-friction and human-reviewed.\n",
+        start = AUTO_SECTION_START,
+        end = AUTO_SECTION_END
+    );
+
     let agents_content = "# Agent Behavioral Guidelines\n\n\
          ## Core Principles\n\
          - Act first, narrate second. Use tools to accomplish tasks rather than describing what you'd do.\n\
@@ -440,6 +456,7 @@ fn generate_identity_files(workspace: &Path, manifest: &AgentManifest) {
         ("OVERVIEW.md", &overview_content),
         ("PROJECT.md", &project_content),
         ("SKILLS.md", skills_content),
+        ("COLLECTIVE.md", &collective_content),
         ("AGENTS.md", agents_content),
         ("BOOTSTRAP.md", &bootstrap_content),
         ("IDENTITY.md", &identity_content),
@@ -506,6 +523,40 @@ struct NoteSnapshot {
     stem: String,
     title: String,
     preview: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CollectiveSourceKind {
+    Dispatch,
+    Summary,
+}
+
+#[derive(Debug, Clone)]
+struct CollectiveObservation {
+    fingerprint: String,
+    statement: String,
+    source: CollectiveSourceKind,
+    evidence_ref: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+struct CollectiveClaim {
+    fingerprint: String,
+    statement: String,
+    dispatch_mentions: usize,
+    summary_mentions: usize,
+    evidence_count: usize,
+    confidence: f32,
+    project_ready: bool,
+    overview_ready: bool,
+    core_candidate: bool,
+    evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+struct CollectiveLedger {
+    updated_at: String,
+    claims: Vec<CollectiveClaim>,
 }
 
 /// Append workspace memory artifacts for an assistant response.
@@ -641,18 +692,45 @@ fn refresh_memory_views(workspace: &Path) {
             end = AUTO_SECTION_END
         ),
     );
+    let _ = write_or_preserve_default(
+        &workspace.join("COLLECTIVE.md"),
+        &format!(
+            "# Collective Conscience\n\
+             <!-- Shared memory ratification and promotion control surface for this workspace. -->\n\n\
+             ## Auto Snapshot\n\
+             {start}\n\
+             _No collective evidence has been ratified yet._\n\
+             {end}\n\n\
+             ## Human Ratification\n\
+             - Promote only validated truths that keep helping over time.\n\
+             - Move direction-level truths into overview, not raw chatter.\n\
+             - Keep core memory manual and high-friction.\n",
+            start = AUTO_SECTION_START,
+            end = AUTO_SECTION_END
+        ),
+    );
 
-    let dispatches = collect_recent_note_snapshots(&workspace.join("memory").join("dispatches"), 5);
-    let summaries = collect_recent_note_snapshots(&workspace.join("memory").join("summaries"), 5);
+    let dispatches =
+        collect_recent_note_snapshots(&workspace.join("memory").join("dispatches"), 24);
+    let summaries = collect_recent_note_snapshots(&workspace.join("memory").join("summaries"), 24);
+    let collective = build_collective_ledger(&dispatches, &summaries);
 
-    let project_auto = build_project_auto_snapshot(&dispatches, &summaries);
-    let overview_auto = build_overview_auto_snapshot(&dispatches, &summaries);
+    persist_collective_ledger(workspace, &collective);
+
+    let project_auto = build_project_auto_snapshot(&dispatches, &summaries, &collective);
+    let overview_auto = build_overview_auto_snapshot(&dispatches, &summaries, &collective);
+    let collective_auto = build_collective_auto_snapshot(&collective);
 
     let _ = update_managed_section(&workspace.join("PROJECT.md"), &project_auto);
     let _ = update_managed_section(&workspace.join("OVERVIEW.md"), &overview_auto);
+    let _ = update_managed_section(&workspace.join("COLLECTIVE.md"), &collective_auto);
 }
 
-fn build_project_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSnapshot]) -> String {
+fn build_project_auto_snapshot(
+    dispatches: &[NoteSnapshot],
+    summaries: &[NoteSnapshot],
+    collective: &CollectiveLedger,
+) -> String {
     let mut lines = vec![format!(
         "_Last updated: {}_",
         chrono::Utc::now().to_rfc3339()
@@ -665,7 +743,7 @@ fn build_project_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSna
 
     if !dispatches.is_empty() {
         lines.push("\n### Recent Dispatches".to_string());
-        for item in dispatches {
+        for item in dispatches.iter().take(5) {
             lines.push(format!(
                 "- `{}` — **{}**: {}",
                 item.stem, item.title, item.preview
@@ -675,7 +753,7 @@ fn build_project_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSna
 
     if !summaries.is_empty() {
         lines.push("\n### Recent Session Summaries".to_string());
-        for item in summaries {
+        for item in summaries.iter().take(5) {
             lines.push(format!(
                 "- `{}` — **{}**: {}",
                 item.stem, item.title, item.preview
@@ -683,10 +761,32 @@ fn build_project_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSna
         }
     }
 
+    let project_truths: Vec<&CollectiveClaim> = collective
+        .claims
+        .iter()
+        .filter(|claim| claim.project_ready)
+        .take(5)
+        .collect();
+    if !project_truths.is_empty() {
+        lines.push("\n### Ratified Collective Truths".to_string());
+        for claim in project_truths {
+            lines.push(format!(
+                "- {} _(confidence {:.2}, evidence {})_",
+                truncate_chars_preserving_boundary(&claim.statement, 180),
+                claim.confidence,
+                claim.evidence_count
+            ));
+        }
+    }
+
     lines.join("\n")
 }
 
-fn build_overview_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSnapshot]) -> String {
+fn build_overview_auto_snapshot(
+    dispatches: &[NoteSnapshot],
+    summaries: &[NoteSnapshot],
+    collective: &CollectiveLedger,
+) -> String {
     let mut lines = vec![format!(
         "_Last updated: {}_",
         chrono::Utc::now().to_rfc3339()
@@ -719,7 +819,240 @@ fn build_overview_auto_snapshot(dispatches: &[NoteSnapshot], summaries: &[NoteSn
         lines.push("- Current active arc: none yet".to_string());
     }
 
+    let overview_truths: Vec<&CollectiveClaim> = collective
+        .claims
+        .iter()
+        .filter(|claim| claim.overview_ready)
+        .take(3)
+        .collect();
+    if !overview_truths.is_empty() {
+        lines.push("\n### Collective Direction".to_string());
+        for claim in overview_truths {
+            lines.push(format!(
+                "- {} _(confidence {:.2})_",
+                truncate_chars_preserving_boundary(&claim.statement, 180),
+                claim.confidence
+            ));
+        }
+    }
+
     lines.join("\n")
+}
+
+fn build_collective_auto_snapshot(ledger: &CollectiveLedger) -> String {
+    let mut lines = vec![
+        format!("_Last updated: {}_", ledger.updated_at),
+        format!("- Total tracked claims: {}", ledger.claims.len()),
+        format!(
+            "- Project-ready truths: {}",
+            ledger.claims.iter().filter(|c| c.project_ready).count()
+        ),
+        format!(
+            "- Overview-ready truths: {}",
+            ledger.claims.iter().filter(|c| c.overview_ready).count()
+        ),
+        format!(
+            "- Core candidates: {}",
+            ledger.claims.iter().filter(|c| c.core_candidate).count()
+        ),
+    ];
+
+    if ledger.claims.is_empty() {
+        lines.push("\nNo collective claims observed yet.".to_string());
+        return lines.join("\n");
+    }
+
+    lines.push("\n### Top Claims".to_string());
+    for claim in ledger.claims.iter().take(8) {
+        let scope = if claim.core_candidate {
+            "core-candidate"
+        } else if claim.overview_ready {
+            "overview-ready"
+        } else if claim.project_ready {
+            "project-ready"
+        } else {
+            "observed"
+        };
+        lines.push(format!(
+            "- [{}] {} _(confidence {:.2}, evidence {})_",
+            scope,
+            truncate_chars_preserving_boundary(&claim.statement, 180),
+            claim.confidence,
+            claim.evidence_count
+        ));
+    }
+
+    lines.join("\n")
+}
+
+fn build_collective_ledger(
+    dispatches: &[NoteSnapshot],
+    summaries: &[NoteSnapshot],
+) -> CollectiveLedger {
+    use std::collections::{HashMap, HashSet};
+
+    let mut observations: Vec<CollectiveObservation> = Vec::new();
+    observations.extend(collect_collective_observations(
+        dispatches,
+        CollectiveSourceKind::Dispatch,
+    ));
+    observations.extend(collect_collective_observations(
+        summaries,
+        CollectiveSourceKind::Summary,
+    ));
+
+    let mut claims_by_fingerprint: HashMap<String, CollectiveClaim> = HashMap::new();
+    for obs in observations {
+        let entry = claims_by_fingerprint
+            .entry(obs.fingerprint.clone())
+            .or_insert_with(|| CollectiveClaim {
+                fingerprint: obs.fingerprint.clone(),
+                statement: obs.statement.clone(),
+                dispatch_mentions: 0,
+                summary_mentions: 0,
+                evidence_count: 0,
+                confidence: 0.0,
+                project_ready: false,
+                overview_ready: false,
+                core_candidate: false,
+                evidence_refs: Vec::new(),
+            });
+
+        if entry.statement == "No preview available."
+            || (entry.statement.len() > obs.statement.len() && !obs.statement.is_empty())
+        {
+            entry.statement = obs.statement.clone();
+        }
+
+        match obs.source {
+            CollectiveSourceKind::Dispatch => entry.dispatch_mentions += 1,
+            CollectiveSourceKind::Summary => entry.summary_mentions += 1,
+        }
+
+        if !entry.evidence_refs.contains(&obs.evidence_ref) {
+            entry.evidence_refs.push(obs.evidence_ref);
+        }
+    }
+
+    let mut claims: Vec<CollectiveClaim> = claims_by_fingerprint.into_values().collect();
+    for claim in &mut claims {
+        let unique_evidence: HashSet<String> = claim.evidence_refs.iter().cloned().collect();
+        claim.evidence_count = unique_evidence.len();
+        claim.evidence_refs = unique_evidence.into_iter().collect();
+        claim.evidence_refs.sort();
+
+        let recurrence_bonus = ((claim.evidence_count.saturating_sub(1)) as f32 * 0.08).min(0.24);
+        let dispatch_score = (claim.dispatch_mentions.min(4) as f32) * 0.11;
+        let summary_score = (claim.summary_mentions.min(4) as f32) * 0.14;
+        let cross_source_bonus = if claim.dispatch_mentions > 0 && claim.summary_mentions > 0 {
+            0.20
+        } else {
+            0.0
+        };
+
+        claim.confidence =
+            (0.20 + dispatch_score + summary_score + recurrence_bonus + cross_source_bonus)
+                .min(0.99);
+        claim.project_ready = claim.confidence >= 0.45 && claim.evidence_count >= 1;
+        claim.overview_ready =
+            claim.confidence >= 0.70 && claim.dispatch_mentions > 0 && claim.summary_mentions > 0;
+        claim.core_candidate = claim.confidence >= 0.90
+            && claim.evidence_count >= 4
+            && claim.dispatch_mentions >= 2
+            && claim.summary_mentions >= 2;
+    }
+
+    claims.sort_by(|a, b| {
+        b.confidence
+            .total_cmp(&a.confidence)
+            .then_with(|| b.evidence_count.cmp(&a.evidence_count))
+            .then_with(|| a.statement.cmp(&b.statement))
+    });
+    if claims.len() > 30 {
+        claims.truncate(30);
+    }
+
+    CollectiveLedger {
+        updated_at: chrono::Utc::now().to_rfc3339(),
+        claims,
+    }
+}
+
+fn collect_collective_observations(
+    snapshots: &[NoteSnapshot],
+    source: CollectiveSourceKind,
+) -> Vec<CollectiveObservation> {
+    snapshots
+        .iter()
+        .filter_map(|snapshot| {
+            let statement = if snapshot.preview.trim().is_empty() {
+                snapshot.title.clone()
+            } else {
+                snapshot.preview.clone()
+            };
+            // Fingerprint from the normalized statement so the same claim from
+            // dispatch + summary collapses into one collective claim.
+            let fingerprint = claim_fingerprint(&statement)?;
+
+            Some(CollectiveObservation {
+                fingerprint,
+                statement: truncate_chars_preserving_boundary(&statement, 220),
+                source,
+                evidence_ref: snapshot.stem.clone(),
+            })
+        })
+        .collect()
+}
+
+fn claim_fingerprint(text: &str) -> Option<String> {
+    const STOPWORDS: &[&str] = &[
+        "the", "and", "for", "that", "with", "from", "into", "onto", "this", "those", "these",
+        "your", "their", "then", "than", "have", "has", "had", "were", "was", "are", "not", "but",
+        "you", "our", "out", "all", "any", "can", "should", "will", "would", "after", "before",
+        "about", "over", "under", "through", "between", "across", "latest", "recent", "session",
+        "summary", "dispatch", "project", "overview", "memory",
+    ];
+
+    use std::collections::HashMap;
+
+    let mut freq: HashMap<String, usize> = HashMap::new();
+    for raw in text.split(|c: char| !c.is_alphanumeric()) {
+        let token = raw.trim().to_lowercase();
+        if token.len() < 3 || STOPWORDS.contains(&token.as_str()) {
+            continue;
+        }
+        if token.chars().all(|c| c.is_ascii_digit()) {
+            continue;
+        }
+        *freq.entry(token).or_insert(0) += 1;
+    }
+
+    if freq.len() < 2 {
+        return None;
+    }
+
+    let mut tokens: Vec<(String, usize)> = freq.into_iter().collect();
+    tokens.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+    let canonical = tokens
+        .into_iter()
+        .take(6)
+        .map(|(token, _)| token)
+        .collect::<Vec<_>>()
+        .join("_");
+
+    if canonical.is_empty() {
+        None
+    } else {
+        Some(canonical)
+    }
+}
+
+fn persist_collective_ledger(workspace: &Path, ledger: &CollectiveLedger) {
+    let dir = workspace.join("memory").join("collective");
+    let _ = std::fs::create_dir_all(&dir);
+    if let Ok(json) = serde_json::to_string_pretty(ledger) {
+        let _ = std::fs::write(dir.join("ledger.json"), json);
+    }
 }
 
 fn collect_recent_note_snapshots(dir: &Path, limit: usize) -> Vec<NoteSnapshot> {
@@ -1808,6 +2141,10 @@ impl ClawReformKernel {
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "PROJECT.md")),
+                collective_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "COLLECTIVE.md")),
                 user_md: manifest
                     .workspace
                     .as_ref()
@@ -2284,6 +2621,10 @@ impl ClawReformKernel {
                     .workspace
                     .as_ref()
                     .and_then(|w| read_identity_file(w, "PROJECT.md")),
+                collective_md: manifest
+                    .workspace
+                    .as_ref()
+                    .and_then(|w| read_identity_file(w, "COLLECTIVE.md")),
                 user_md: manifest
                     .workspace
                     .as_ref()
@@ -5431,6 +5772,7 @@ mod tests {
             "CORE.md",
             "OVERVIEW.md",
             "PROJECT.md",
+            "COLLECTIVE.md",
             "USER.md",
             "TOOLS.md",
             "MEMORY.md",
@@ -5447,6 +5789,7 @@ mod tests {
         let core = std::fs::read_to_string(dir.join("CORE.md")).unwrap();
         let overview = std::fs::read_to_string(dir.join("OVERVIEW.md")).unwrap();
         let project = std::fs::read_to_string(dir.join("PROJECT.md")).unwrap();
+        let collective = std::fs::read_to_string(dir.join("COLLECTIVE.md")).unwrap();
         let memory = std::fs::read_to_string(dir.join("MEMORY.md")).unwrap();
         let skills = std::fs::read_to_string(dir.join("SKILLS.md")).unwrap();
 
@@ -5455,6 +5798,7 @@ mod tests {
         assert!(core.contains("High-friction durable truths"));
         assert!(overview.contains("## Auto Snapshot"));
         assert!(project.contains("## Auto Snapshot"));
+        assert!(collective.contains("## Auto Snapshot"));
         assert!(memory.contains("## Core"));
         assert!(memory.contains("## Projects"));
         assert!(skills.contains("## Core doctrine"));
@@ -5493,6 +5837,39 @@ mod tests {
         assert!(project.contains("Recent Dispatches"));
         assert!(project.contains("updated the project ledger"));
         assert!(overview.contains("Latest movement"));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn test_collective_conscience_promotes_claims_across_layers() {
+        let dir = std::env::temp_dir().join(format!(
+            "clawreform_collective_memory_{}",
+            uuid::Uuid::new_v4()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        ensure_workspace(&dir).unwrap();
+
+        let evidence = "Deployment reliability improved after the retry policy and observability checks were applied.";
+        append_workspace_memory_artifacts(&dir, "architect", evidence);
+        write_session_summary_note(&dir, "deploy-reliability", evidence);
+        refresh_memory_views(&dir);
+
+        let project = std::fs::read_to_string(dir.join("PROJECT.md")).unwrap();
+        let overview = std::fs::read_to_string(dir.join("OVERVIEW.md")).unwrap();
+        let collective = std::fs::read_to_string(dir.join("COLLECTIVE.md")).unwrap();
+        let ledger =
+            std::fs::read_to_string(dir.join("memory").join("collective").join("ledger.json"))
+                .unwrap();
+
+        assert!(project.contains("Ratified Collective Truths"));
+        assert!(overview.contains("Collective Direction"));
+        assert!(collective.contains("Top Claims"));
+        assert!(collective
+            .to_lowercase()
+            .contains("deployment reliability improved"));
+        assert!(ledger.contains("\"project_ready\": true"));
+        assert!(ledger.contains("\"overview_ready\": true"));
 
         let _ = std::fs::remove_dir_all(&dir);
     }

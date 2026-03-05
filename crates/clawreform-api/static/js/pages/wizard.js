@@ -20,6 +20,17 @@ function wizardPage() {
     // Step 3: Agent creation
     templates: [
       {
+        id: 'copilot-lite',
+        name: 'In-House Copilot Lite',
+        description: 'A compact coding copilot tuned for practical edits, terminal commands, and fast iteration.',
+        icon: 'CL',
+        category: 'Development',
+        provider: 'openrouter',
+        model: 'openrouter/auto',
+        profile: 'precise',
+        system_prompt: 'You are a lightweight in-house coding copilot. Focus on practical code edits, short commands, and clear diffs. Keep answers concise, validate assumptions quickly, and prioritize low-cost models unless quality requires escalation.'
+      },
+      {
         id: 'assistant',
         name: 'General Assistant',
         description: 'A versatile helper for everyday tasks, answering questions, and providing recommendations.',
@@ -306,9 +317,11 @@ function wizardPage() {
           return p.auth_status !== 'configured' && p.api_key_env;
         });
         if (unconfigured.length > 0) {
-          this.selectedProvider = unconfigured[0].id;
+          var openrouter = unconfigured.filter(function(p) { return p.id === 'openrouter'; })[0];
+          this.selectedProvider = openrouter ? openrouter.id : unconfigured[0].id;
         } else if (this.providers.length > 0) {
-          this.selectedProvider = this.providers[0].id;
+          var fallback = this.providers.filter(function(p) { return p.id === 'openrouter'; })[0];
+          this.selectedProvider = fallback ? fallback.id : this.providers[0].id;
         }
       } catch(e) { this.providers = []; }
     },
@@ -320,7 +333,7 @@ function wizardPage() {
     },
 
     get popularProviders() {
-      var popular = ['anthropic', 'openai', 'gemini', 'groq', 'deepseek', 'openrouter'];
+      var popular = ['openrouter', 'anthropic', 'openai', 'gemini', 'groq', 'deepseek'];
       return this.providers.filter(function(p) {
         return popular.indexOf(p.id) >= 0;
       }).sort(function(a, b) {
@@ -329,7 +342,7 @@ function wizardPage() {
     },
 
     get otherProviders() {
-      var popular = ['anthropic', 'openai', 'gemini', 'groq', 'deepseek', 'openrouter'];
+      var popular = ['openrouter', 'anthropic', 'openai', 'gemini', 'groq', 'deepseek'];
       return this.providers.filter(function(p) {
         return popular.indexOf(p.id) < 0;
       });
@@ -349,6 +362,7 @@ function wizardPage() {
         gemini: { url: 'https://aistudio.google.com/apikey', text: 'Get your key from Google AI Studio' },
         groq: { url: 'https://console.groq.com/keys', text: 'Get your key from the Groq Console (free tier available)' },
         deepseek: { url: 'https://platform.deepseek.com/api_keys', text: 'Get your key from the DeepSeek Platform (very affordable)' },
+        minimax: { url: 'https://intl.minimaxi.com/platform/user-center/basic-information/interface-key', text: 'Get your key from the MiniMax Platform' },
         openrouter: { url: 'https://openrouter.ai/keys', text: 'Get your key from OpenRouter (access 100+ models with one key)' },
         mistral: { url: 'https://console.mistral.ai/api-keys', text: 'Get your key from the Mistral Console' },
         together: { url: 'https://api.together.xyz/settings/api-keys', text: 'Get your key from Together AI' },
@@ -468,6 +482,7 @@ function wizardPage() {
         gemini: 'gemini-2.5-flash',
         groq: 'llama-3.3-70b-versatile',
         deepseek: 'deepseek-chat',
+        minimax: 'minimax-text-01',
         openrouter: 'openrouter/auto',
         mistral: 'mistral-large-latest',
         together: 'meta-llama/Llama-3-70b-chat-hf',

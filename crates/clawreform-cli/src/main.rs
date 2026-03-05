@@ -1198,24 +1198,36 @@ fn detect_best_provider() -> (&'static str, &'static str, &'static str) {
     let providers = provider_list();
 
     for (p, env_var, m, display) in &providers {
-        if std::env::var(env_var).is_ok() {
+        if has_nonempty_env_var(env_var) {
             ui::success(&format!("Detected {display} ({env_var})"));
             return (p, env_var, m);
         }
     }
     // Also check GOOGLE_API_KEY
-    if std::env::var("GOOGLE_API_KEY").is_ok() {
+    if has_nonempty_env_var("GOOGLE_API_KEY") {
         ui::success("Detected Gemini (GOOGLE_API_KEY)");
         return ("gemini", "GOOGLE_API_KEY", "gemini-2.5-flash");
     }
     ui::hint("No LLM provider API keys found");
-    ui::hint("Groq offers a free tier: https://console.groq.com");
-    ("groq", "GROQ_API_KEY", "llama-3.3-70b-versatile")
+    ui::hint("OpenRouter quick start: https://openrouter.ai/keys");
+    ("openrouter", "OPENROUTER_API_KEY", "openrouter/auto")
+}
+
+fn has_nonempty_env_var(name: &str) -> bool {
+    std::env::var(name)
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
 }
 
 /// Static list of supported providers: (id, env_var, default_model, display_name).
 fn provider_list() -> Vec<(&'static str, &'static str, &'static str, &'static str)> {
     vec![
+        (
+            "openrouter",
+            "OPENROUTER_API_KEY",
+            "openrouter/auto",
+            "OpenRouter",
+        ),
         ("groq", "GROQ_API_KEY", "llama-3.3-70b-versatile", "Groq"),
         ("gemini", "GEMINI_API_KEY", "gemini-2.5-flash", "Gemini"),
         ("deepseek", "DEEPSEEK_API_KEY", "deepseek-chat", "DeepSeek"),
@@ -1226,12 +1238,6 @@ fn provider_list() -> Vec<(&'static str, &'static str, &'static str, &'static st
             "Anthropic",
         ),
         ("openai", "OPENAI_API_KEY", "gpt-4o", "OpenAI"),
-        (
-            "openrouter",
-            "OPENROUTER_API_KEY",
-            "openrouter/auto",
-            "OpenRouter",
-        ),
     ]
 }
 
@@ -1865,18 +1871,14 @@ fn cmd_doctor(json: bool, repair: bool) {
                             ui::check_ok(".env file (permissions fixed to 0600)");
                         }
                         repaired = true;
-                    } else {
-                        if !json {
-                            ui::check_warn(&format!(
-                                ".env file has loose permissions ({:o}), should be 0600",
-                                mode
-                            ));
-                        }
+                    } else if !json {
+                        ui::check_warn(&format!(
+                            ".env file has loose permissions ({:o}), should be 0600",
+                            mode
+                        ));
                     }
-                } else {
-                    if !json {
-                        ui::check_ok(".env file");
-                    }
+                } else if !json {
+                    ui::check_ok(".env file");
                 }
             }
             #[cfg(not(unix))]
@@ -2128,6 +2130,7 @@ decay_rate = 0.05
         ("ANTHROPIC_API_KEY", "Anthropic", "anthropic"),
         ("OPENAI_API_KEY", "OpenAI", "openai"),
         ("DEEPSEEK_API_KEY", "DeepSeek", "deepseek"),
+        ("MINIMAX_API_KEY", "MiniMax", "minimax"),
         ("GEMINI_API_KEY", "Gemini", "gemini"),
         ("GOOGLE_API_KEY", "Google", "google"),
         ("TOGETHER_API_KEY", "Together", "together"),
@@ -2137,7 +2140,7 @@ decay_rate = 0.05
 
     let mut any_key_set = false;
     for (env_var, name, provider_id) in &provider_keys {
-        let set = std::env::var(env_var).is_ok();
+        let set = has_nonempty_env_var(env_var);
         if set {
             // --- Check 9: Live key validation ---
             let valid = test_api_key(provider_id, env_var);
@@ -3338,7 +3341,7 @@ fn cmd_channel_list() {
         let env_set = if env_var.is_empty() {
             true
         } else {
-            std::env::var(env_var).is_ok()
+            has_nonempty_env_var(env_var)
         };
 
         let status = match (configured, env_set) {
@@ -3733,6 +3736,7 @@ fn provider_to_env_var(provider: &str) -> String {
         "google" => "GOOGLE_API_KEY".to_string(),
         "deepseek" => "DEEPSEEK_API_KEY".to_string(),
         "openrouter" => "OPENROUTER_API_KEY".to_string(),
+        "minimax" => "MINIMAX_API_KEY".to_string(),
         "together" => "TOGETHER_API_KEY".to_string(),
         "mistral" => "MISTRAL_API_KEY".to_string(),
         "fireworks" => "FIREWORKS_API_KEY".to_string(),
@@ -3754,6 +3758,9 @@ pub(crate) fn test_api_key(provider: &str, env_var: &str) -> bool {
         Ok(k) => k,
         Err(_) => return false,
     };
+    if key.trim().is_empty() {
+        return false;
+    }
 
     let client = match reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
@@ -3788,6 +3795,10 @@ pub(crate) fn test_api_key(provider: &str, env_var: &str) -> bool {
             .send(),
         "openrouter" => client
             .get("https://openrouter.ai/api/v1/models")
+            .bearer_auth(&key)
+            .send(),
+        "minimax" => client
+            .get("https://api.minimax.io/v1/models")
             .bearer_auth(&key)
             .send(),
         _ => return true, // unknown provider — skip test
@@ -4139,7 +4150,7 @@ fn cmd_config_delete_key(provider: &str) {
 fn cmd_config_test_key(provider: &str) {
     let env_var = provider_to_env_var(provider);
 
-    if std::env::var(&env_var).is_err() {
+    if !has_nonempty_env_var(&env_var) {
         ui::error(&format!("{env_var} not set"));
         ui::hint(&format!("Set it: clawreform config set-key {provider}"));
         std::process::exit(1);

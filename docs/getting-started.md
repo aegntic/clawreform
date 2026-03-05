@@ -173,7 +173,7 @@ Agent spawned successfully!
   Name: hello-world
 ```
 
-Each new workspace also gets a first-class organ set, including `IDENTITY.md`, `SOUL.md`, `HANDS.md`, `MEMORY.md`, `SKILLS.md`, `TOOLS.md`, `AGENTS.md`, plus the memory views `CORE.md`, `OVERVIEW.md`, and `PROJECT.md`. These files give you an editable constitutional layer, action doctrine, memory law, procedural doctrine, and visible memory ladder for the agent.
+Each new workspace also gets a first-class organ set, including `IDENTITY.md`, `SOUL.md`, `HANDS.md`, `MEMORY.md`, `SKILLS.md`, `TOOLS.md`, `AGENTS.md`, and `COLLECTIVE.md`, plus the memory views `CORE.md`, `OVERVIEW.md`, and `PROJECT.md`. These files give you an editable constitutional layer, action doctrine, memory law, procedural doctrine, collective ratification surface, and visible memory ladder for the agent.
 
 ### Using a Custom Manifest
 

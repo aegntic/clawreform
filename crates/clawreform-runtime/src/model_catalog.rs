@@ -14,6 +14,12 @@ use clawreform_types::model_catalog::{
 };
 use std::collections::HashMap;
 
+fn has_nonempty_env_var(name: &str) -> bool {
+    std::env::var(name)
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+}
+
 /// The model catalog — registry of all known models and providers.
 pub struct ModelCatalog {
     models: Vec<ModelCatalogEntry>,
@@ -48,11 +54,11 @@ impl ModelCatalog {
         for provider in &mut self.providers {
             if !provider.key_required {
                 provider.auth_status = AuthStatus::NotRequired;
-            } else if std::env::var(&provider.api_key_env).is_ok() {
+            } else if has_nonempty_env_var(&provider.api_key_env) {
                 provider.auth_status = AuthStatus::Configured;
             } else {
                 // Special case: Gemini also accepts GOOGLE_API_KEY
-                if provider.id == "gemini" && std::env::var("GOOGLE_API_KEY").is_ok() {
+                if provider.id == "gemini" && has_nonempty_env_var("GOOGLE_API_KEY") {
                     provider.auth_status = AuthStatus::Configured;
                 } else {
                     provider.auth_status = AuthStatus::Missing;

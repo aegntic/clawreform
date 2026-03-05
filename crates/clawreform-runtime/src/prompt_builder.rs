@@ -35,6 +35,8 @@ pub struct PromptContext {
     pub overview_md: Option<String>,
     /// PROJECT.md content (workspace ledger).
     pub project_md: Option<String>,
+    /// COLLECTIVE.md content (shared ratification state).
+    pub collective_md: Option<String>,
     /// USER.md content.
     pub user_md: Option<String>,
     /// TOOLS.md content (local tool notes and constraints).
@@ -121,6 +123,7 @@ pub fn build_system_prompt(ctx: &PromptContext) -> String {
         ctx.core_md.as_deref(),
         ctx.overview_md.as_deref(),
         ctx.project_md.as_deref(),
+        ctx.collective_md.as_deref(),
         ctx.user_md.as_deref(),
         ctx.tools_md.as_deref(),
         ctx.memory_md.as_deref(),
@@ -303,6 +306,7 @@ fn build_mcp_section(mcp_summary: &str) -> String {
     format!("## Connected Tool Servers (MCP)\n{}", mcp_summary.trim())
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_core_organs_section(
     identity_md: Option<&str>,
     soul_md: Option<&str>,
@@ -310,6 +314,7 @@ fn build_core_organs_section(
     core_md: Option<&str>,
     overview_md: Option<&str>,
     project_md: Option<&str>,
+    collective_md: Option<&str>,
     user_md: Option<&str>,
     tools_md: Option<&str>,
     memory_md: Option<&str>,
@@ -359,6 +364,15 @@ fn build_core_organs_section(
     if let Some(project) = project_md {
         if !project.trim().is_empty() {
             parts.push(format!("## Project Memory\n{}", cap_str(project, 900)));
+        }
+    }
+
+    if let Some(collective) = collective_md {
+        if !collective.trim().is_empty() {
+            parts.push(format!(
+                "## Collective Conscience\n{}",
+                cap_str(collective, 900)
+            ));
         }
     }
 
@@ -815,11 +829,21 @@ mod tests {
     }
 
     #[test]
+    fn test_core_organs_section_includes_collective_conscience() {
+        let mut ctx = basic_ctx();
+        ctx.collective_md = Some("Top claims and ratification state.".to_string());
+        let prompt = build_system_prompt(&ctx);
+        assert!(prompt.contains("## Collective Conscience"));
+        assert!(prompt.contains("Top claims and ratification state."));
+    }
+
+    #[test]
     fn test_core_organs_soul_capped_at_1000() {
         let long_soul = "x".repeat(2000);
         let section = build_core_organs_section(
             None,
             Some(&long_soul),
+            None,
             None,
             None,
             None,

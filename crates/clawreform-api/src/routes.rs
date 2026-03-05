@@ -7204,6 +7204,7 @@ const KNOWN_IDENTITY_FILES: &[&str] = &[
     "CORE.md",
     "OVERVIEW.md",
     "PROJECT.md",
+    "COLLECTIVE.md",
     "IDENTITY.md",
     "USER.md",
     "TOOLS.md",

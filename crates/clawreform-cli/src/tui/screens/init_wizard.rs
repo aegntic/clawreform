@@ -29,6 +29,14 @@ struct ProviderInfo {
 
 const PROVIDERS: &[ProviderInfo] = &[
     ProviderInfo {
+        name: "openrouter",
+        display: "OpenRouter",
+        env_var: "OPENROUTER_API_KEY",
+        default_model: "openrouter/auto",
+        needs_key: true,
+        hint: "one key, many models",
+    },
+    ProviderInfo {
         name: "groq",
         display: "Groq",
         env_var: "GROQ_API_KEY",
@@ -53,6 +61,14 @@ const PROVIDERS: &[ProviderInfo] = &[
         hint: "cheap",
     },
     ProviderInfo {
+        name: "minimax",
+        display: "MiniMax",
+        env_var: "MINIMAX_API_KEY",
+        default_model: "minimax-text-01",
+        needs_key: true,
+        hint: "",
+    },
+    ProviderInfo {
         name: "anthropic",
         display: "Anthropic",
         env_var: "ANTHROPIC_API_KEY",
@@ -65,14 +81,6 @@ const PROVIDERS: &[ProviderInfo] = &[
         display: "OpenAI",
         env_var: "OPENAI_API_KEY",
         default_model: "gpt-4o",
-        needs_key: true,
-        hint: "",
-    },
-    ProviderInfo {
-        name: "openrouter",
-        display: "OpenRouter",
-        env_var: "OPENROUTER_API_KEY",
-        default_model: "openrouter/auto",
         needs_key: true,
         hint: "",
     },
@@ -117,6 +125,12 @@ const PROVIDERS: &[ProviderInfo] = &[
         hint: "local",
     },
 ];
+
+fn has_nonempty_env_var(name: &str) -> bool {
+    std::env::var(name)
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+}
 
 // ── Public result type ─────────────────────────────────────────────────────
 
@@ -285,17 +299,17 @@ impl State {
 
     fn build_provider_order(&mut self) {
         self.provider_order.clear();
-        let gemini_via_google = std::env::var("GOOGLE_API_KEY").is_ok();
+        let gemini_via_google = has_nonempty_env_var("GOOGLE_API_KEY");
         for (i, p) in PROVIDERS.iter().enumerate() {
             let detected =
-                std::env::var(p.env_var).is_ok() || (p.name == "gemini" && gemini_via_google);
+                has_nonempty_env_var(p.env_var) || (p.name == "gemini" && gemini_via_google);
             if detected {
                 self.provider_order.push(i);
             }
         }
         for (i, p) in PROVIDERS.iter().enumerate() {
             let detected =
-                std::env::var(p.env_var).is_ok() || (p.name == "gemini" && gemini_via_google);
+                has_nonempty_env_var(p.env_var) || (p.name == "gemini" && gemini_via_google);
             if !detected {
                 self.provider_order.push(i);
             }
@@ -334,8 +348,8 @@ impl State {
 
     fn is_provider_detected(&self, prov_idx: usize) -> bool {
         let p = &PROVIDERS[prov_idx];
-        std::env::var(p.env_var).is_ok()
-            || (p.name == "gemini" && std::env::var("GOOGLE_API_KEY").is_ok())
+        has_nonempty_env_var(p.env_var)
+            || (p.name == "gemini" && has_nonempty_env_var("GOOGLE_API_KEY"))
     }
 
     /// Populate model_entries from the catalog for the selected provider.
