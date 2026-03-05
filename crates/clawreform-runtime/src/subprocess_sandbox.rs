@@ -217,7 +217,7 @@ async fn kill_tree_unix(pid: u32, grace_ms: u64) -> Result<bool, String> {
         .output()
         .await;
 
-    if group_kill.is_err() {
+    if !matches!(group_kill, Ok(output) if output.status.success()) {
         // Fallback: kill just the process.
         let _ = Command::new("kill")
             .args(["-TERM", &pid.to_string()])
@@ -331,6 +331,12 @@ pub async fn kill_child_tree(
     child: &mut tokio::process::Child,
     grace_ms: u64,
 ) -> Result<bool, String> {
+    match child.try_wait() {
+        Ok(Some(_)) => return Ok(false),
+        Ok(None) => {}
+        Err(e) => return Err(format!("Failed to poll child status: {e}")),
+    }
+
     match child.id() {
         Some(pid) => kill_process_tree(pid, grace_ms).await,
         None => Ok(false), // Process already exited.
