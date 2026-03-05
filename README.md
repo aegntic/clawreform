@@ -42,7 +42,7 @@ clawREFORM by aegntic.ai is an enhanced fork of [ClawReform](https://github.com/
 | **Self-Modification** | Ask clawREFORM by aegntic.ai to add features and it modifies its own codebase |
 | **Tailscale Mesh**    | Secure P2P networking across all your devices                   |
 | **MCP Servers**       | 23+ Model Context Protocol servers for extended capabilities    |
-| **60 Bundled Skills** | Pre-built skills for common tasks                               |
+| **60+ Bundled Skills** | Pre-built skills for common tasks                              |
 | **7 Hands**           | Browser, Clip, Lead, Collector, Predictor, Researcher, Twitter  |
 
 ## Repository Structure
@@ -58,14 +58,84 @@ clawREFORM by aegntic.ai is an enhanced fork of [ClawReform](https://github.com/
 └── xtask/              # Custom build and automation tasks
 ```
 
+## Very Simple Install
+
+```bash
+# macOS / Linux
+curl -fsSL https://clawreform.sh/install | sh
+
+# Windows PowerShell
+irm https://clawreform.sh/install.ps1 | iex
+
+# Start + open dashboard
+clawreform start
+# http://127.0.0.1:4332
+```
+
+When the dashboard opens, it asks for your OpenRouter API key first, then unlocks the full app.
+
+## Architecture Maps & Flowcharts
+
+### System Map
+
+```mermaid
+flowchart LR
+    U["You"] --> CLI["CLI / TUI"]
+    U --> WEB["Web Dashboard (:4332)"]
+    WEB --> API["API Daemon"]
+    CLI --> K["Kernel Orchestrator"]
+    API --> K
+    K --> PB["Prompt Builder (Core Organs)"]
+    PB --> LLM["LLM Providers (OpenRouter-first + others)"]
+    K --> MCP["Tools + MCP Servers"]
+    K --> CH["Channels + Hands"]
+    K --> MEM["Memory Pipeline"]
+    MEM --> CORE["CORE.md"]
+    MEM --> OVER["OVERVIEW.md"]
+    MEM --> PROJ["PROJECT.md"]
+    MEM --> COLL["COLLECTIVE.md + ledger.json"]
+```
+
+### Request Flow
+
+```mermaid
+flowchart TD
+    A["Open dashboard or run command"] --> B{"Dashboard?"}
+    B -- "No" --> C["CLI/TUI request enters kernel"]
+    B -- "Yes" --> D{"OpenRouter key configured?"}
+    D -- "No" --> E["Show OpenRouter setup gate"]
+    E --> F["Save + test OPENROUTER_API_KEY"]
+    F --> G["Load main dashboard"]
+    D -- "Yes" --> G
+    G --> H["Request enters kernel"]
+    C --> H
+    H --> I["Build context from IDENTITY/SOUL/HANDS/MEMORY/SKILLS/COLLECTIVE"]
+    I --> J["Model + tool/MCP loop"]
+    J --> K["Write output + update memory layers"]
+```
+
+### Memory Promotion Flow
+
+```mermaid
+flowchart TD
+    D["Dispatches"] --> X["Collective claim extraction"]
+    S["Session summaries"] --> X
+    X --> Y["Score claims (evidence + recurrence + cross-source)"]
+    Y --> L["Update COLLECTIVE.md + memory/collective/ledger.json"]
+    Y --> Z{"Promotion threshold met?"}
+    Z -- "Project-ready" --> P["PROJECT.md"]
+    Z -- "Overview-ready" --> O["OVERVIEW.md"]
+    Z -- "Core-candidate" --> C["CORE.md"]
+```
+
 ## Quick Start
 
 ```bash
-# Install clawREFORM by aegntic.ai
-curl -fsSL https://clawreform.com/install.sh | sh
+# Initialize config + provider setup
+clawreform init
 
 # Start the daemon
-clawreform daemon
+clawreform start
 
 # Ask it to modify itself
 clawreform chat "Add a /api/health endpoint"
