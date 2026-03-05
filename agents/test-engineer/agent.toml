@@ -1,5 +1,5 @@
 name = "test-engineer"
-version = "0.2.1"
+version = "0.2.2"
 description = "Quality assurance engineer. Designs test strategies, writes tests, validates correctness."
 author = "aegntic.ai"
 module = "builtin:chat"

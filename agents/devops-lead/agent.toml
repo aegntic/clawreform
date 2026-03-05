@@ -1,5 +1,5 @@
 name = "devops-lead"
-version = "0.2.1"
+version = "0.2.2"
 description = "DevOps lead agent. Manages infrastructure, CI/CD pipelines, deployments, monitoring, and system reliability."
 author = "aegntic.ai"
 module = "builtin:chat"

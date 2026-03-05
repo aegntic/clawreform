@@ -1,5 +1,5 @@
 name = "translator"
-version = "0.2.1"
+version = "0.2.2"
 description = "Multi-language translation agent for document translation, localization, and cross-cultural communication."
 author = "aegntic.ai"
 module = "builtin:chat"

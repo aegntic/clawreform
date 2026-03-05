@@ -1,5 +1,5 @@
 name = "personal-finance"
-version = "0.2.1"
+version = "0.2.2"
 description = "Personal finance agent for budget tracking, expense analysis, savings goals, and financial planning."
 author = "aegntic.ai"
 module = "builtin:chat"

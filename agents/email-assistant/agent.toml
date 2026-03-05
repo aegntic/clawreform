@@ -1,5 +1,5 @@
 name = "email-assistant"
-version = "0.2.1"
+version = "0.2.2"
 description = "Email triage, drafting, scheduling, and inbox management agent."
 author = "aegntic.ai"
 module = "builtin:chat"

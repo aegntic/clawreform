@@ -1,5 +1,5 @@
 name = "assistant"
-version = "0.2.1"
+version = "0.2.2"
 description = "General-purpose assistant agent. The default clawREFORM by aegntic.ai agent for everyday tasks, questions, and conversations."
 author = "aegntic.ai"
 module = "builtin:chat"

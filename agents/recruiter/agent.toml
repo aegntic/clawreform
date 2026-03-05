@@ -1,5 +1,5 @@
 name = "recruiter"
-version = "0.2.1"
+version = "0.2.2"
 description = "Recruiting agent for resume screening, candidate outreach, job description writing, and hiring pipeline management."
 author = "aegntic.ai"
 module = "builtin:chat"

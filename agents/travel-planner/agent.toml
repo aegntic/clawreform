@@ -1,5 +1,5 @@
 name = "travel-planner"
-version = "0.2.1"
+version = "0.2.2"
 description = "Trip planning agent for itinerary creation, booking research, budget estimation, and travel logistics."
 author = "aegntic.ai"
 module = "builtin:chat"

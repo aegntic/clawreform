@@ -1,5 +1,5 @@
 name = "home-automation"
-version = "0.2.1"
+version = "0.2.2"
 description = "Smart home control agent for IoT device management, automation rules, and home monitoring."
 author = "aegntic.ai"
 module = "builtin:chat"

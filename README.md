@@ -20,7 +20,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/language-Rust-orange?style=flat-square" alt="Rust" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT" />
-  <img src="https://img.shields.io/badge/version-0.2.1-purple?style=flat-square" alt="v0.2.1" />
+  <img src="https://img.shields.io/badge/version-0.2.2-purple?style=flat-square" alt="v0.2.2" />
   <img src="https://img.shields.io/badge/self--modify-enabled-brightgreen?style=flat-square" alt="Self-Modify" />
 </p>
 

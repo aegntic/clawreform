@@ -3,7 +3,7 @@
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║                    🦾 CLAWREFORM 0.2.1                        ║"
+echo "║                    🦾 CLAWREFORM 0.2.2                        ║"
 echo "║              Self-Evolving AI Agent Framework                 ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""

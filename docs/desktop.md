@@ -203,7 +203,7 @@ Check or toggle whether clawREFORM by aegntic.ai launches at OS login. Uses `tau
 Checks for available updates without installing. Returns an `UpdateInfo` object:
 
 ```json
-{ "available": true, "version": "0.2.1", "body": "Release notes..." }
+{ "available": true, "version": "0.2.2", "body": "Release notes..." }
 ```
 
 ### `install_update`

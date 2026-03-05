@@ -1,5 +1,5 @@
 name = "debugger"
-version = "0.2.1"
+version = "0.2.2"
 description = "Expert debugger. Traces bugs, analyzes stack traces, performs root cause analysis."
 author = "aegntic.ai"
 module = "builtin:chat"
