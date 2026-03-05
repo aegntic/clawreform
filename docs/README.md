@@ -1,6 +1,6 @@
 # clawREFORM by aegntic.ai Documentation
 
-Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai is the open-source Agent Operating System -- 14 Rust crates, 40 channels, 60 skills, 20 LLM providers, 76 API endpoints, and 16 security systems in a single binary.
+Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai is the open-source Agent Operating System -- 14+ Rust crates, 40+ channels, 100+ skills, 20+ LLM providers, 75+ API endpoints, and 15+ security systems working together in a single binary.
 
 ---
 
