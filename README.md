@@ -2,7 +2,7 @@
   <img src="assets/branding/clawreform-logo-v2.png" width="220" alt="clawREFORM by aegntic.ai v2 brand logo" />
 </p>
 
-<h1 align="center">clawREFORM by aegntic.ai</h1>
+<h1 align="center">CLAWREFORM by ae.ltd</h1>
 <h3 align="center">The self-evolving agent operating system from aegntic.ai</h3>
 
 <p align="center">
@@ -169,5 +169,5 @@ MIT or Apache-2.0 - your choice.
 ---
 
 <p align="center">
-  <strong>Built with 🦀 by ae.ltd for aegntic.ai</strong>
+  <strong>Built by aegntic.ai reserach for ae.ltd</strong>
 </p>
