@@ -4,38 +4,44 @@
 
 ---
 
-🦾 **Introducing ClawReform - The Self-Evolving Agent OS**
+🦾 **clawREFORM by aegntic.ai — the Agent OS that rewrites itself**
 
 Hey everyone! 👋
 
-Excited to introduce **ClawReform** to this community!
+Really excited to introduce **clawREFORM by aegntic.ai** to the autoclaw community. If you've been watching the AI agent space, this is the thing you've been waiting for.
 
-## What is ClawReform?
+## What is clawREFORM?
 
-ClawReform is a fork of OpenFang with **autonomous self-modification capabilities**. It's an Agent Operating System built in Rust that can literally rewrite its own code based on natural language requests.
+clawREFORM is a **self-evolving Agent Operating System** built entirely in Rust. It's not a wrapper on top of Python libs — it's a proper 14-crate Rust workspace with 1,744+ tests and zero clippy warnings.
 
-## ✨ Key Features
+The headline capability: **it can modify its own code through natural language.**
 
-- **🦾 Self-Modification** - Ask it to add features and it modifies its own codebase safely
-- **🔌 23+ MCP Servers** - Extended capabilities via Model Context Protocol
-- **🌐 Tailscale Mesh** - Secure P2P networking across all devices
-- **📚 60 Bundled Skills** - Pre-built skills for common tasks
-- **🤖 7 Hands** - Browser, Clip, Lead, Collector, Predictor, Researcher, Twitter
+Tell it "add a caching layer to the API" → it analyzes the codebase, writes the code, validates with cargo build + test + clippy, and rolls back if anything breaks. Automatically.
 
-## 🚀 What Can It Do?
+## ✨ What's inside
 
-- Modify its own code through natural language
-- Self-improve by adding features, fixing bugs, refactoring
-- Validate changes with automatic build/test/clippy checks
-- Rollback safely when modifications fail
+- **🦾 Self-Modification Kernel** — safe autonomous code evolution with full rollback
+- **🔌 23+ MCP Servers** — GitHub, GitLab, Playwright, Supabase, memory & more
+- **🌐 Tailscale Mesh** — encrypted P2P networking, works across all your devices
+- **📚 60+ Bundled Skills** — DevOps, security, data, dev workflows
+- **🤖 7 Hands** — Browser, Clip, Lead, Collector, Predictor, Researcher, Twitter
+- **🛡️ Enterprise Security** — human approval workflows, audit logs, capability-based auth
+
+## 🚀 What can you do with it?
+
+- Describe a feature in plain English → it ships the code
+- Self-improve: fix bugs, refactor, add endpoints — all via chat
+- Automate your DevOps, security scanning, data pipelines
+- Build multi-agent systems that talk to each other via A2A protocol
 
 ## 🔗 Links
 
-- GitHub: https://github.com/aegntic/clawreform
-- X/Twitter: @clawreform
+- GitHub: https://github.com/aegntic/clawreform ⭐
+- Website: https://clawreform.com
+- X/Twitter: https://x.com/clawreform
 
-We're just getting started! Would love to hear your thoughts and ideas. 🙌
+Drop your questions below — I'm happy to walk through anything! 🙌
 
-#ClawReform #AI #SelfEvolving #AgentOS #Rust #OpenSource
+#clawREFORM #aegntic #AI #SelfEvolving #AgentOS #Rust #OpenSource
 
 ---

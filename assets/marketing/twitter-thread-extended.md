@@ -2,161 +2,164 @@
 
 ---
 
-## Thread: ClawReform - The Self-Evolving AI Agent Framework
+## Thread: clawREFORM — The Agent OS That Rewrites Itself
 
 1/12
-🦾 Introducing ClawReform: The first AI agent framework that can modify its own codebase through natural language
+🦾 We built an AI agent framework that can modify its own codebase.
 
-Open source. Rust-based. Self-evolving.
+In Rust. Open source. With guardrails.
 
-Here's what makes it special: 🧵
+Here's exactly how it works and why it matters 🧵
 
 ---
 
 2/12
 🔄 THE SELF-MODIFICATION KERNEL
 
-Tell ClawReform: "Add caching to improve response times"
+Tell clawREFORM: "Add caching to improve response times"
 
 It will:
-✅ Analyze its codebase
-✅ Design the solution
-✅ Create backups
-✅ Apply changes safely
-✅ Validate & rollback if needed
+✅ Map affected modules across the codebase
+✅ Risk-score the change before writing a line
+✅ Create an atomic snapshot
+✅ Apply a scoped, validated diff
+✅ Run cargo build + test + clippy
+✅ Auto-rollback from snapshot if anything fails
 
-No other framework does this.
+No other framework does this. Not in Python. Not in anything.
 
 ---
 
 3/12
-📦 WHAT'S INCLUDED
+📦 WHAT SHIPS OUT OF THE BOX
 
-• 61 bundled skills (Docker, K8s, AWS, security...)
-• 7 specialized hands (browser, research, prediction...)
-• 25+ communication channels (Slack, Discord, Telegram...)
-• 23+ MCP servers (filesystem, memory, GitHub...)
+• 60+ bundled skills (Docker, K8s, AWS, security audits...)
+• 7 specialised hands (browser, research, prediction, lead gen...)
+• 25+ communication channels (Slack, Discord, Telegram, WhatsApp...)
+• 23+ MCP servers (filesystem, memory, GitHub, Playwright...)
+• Tailscale mesh networking — encrypted P2P across all devices
 
-Batteries included. 🧰
+Batteries included. Production-ready. 🧰
 
 ---
 
 4/12
-🔒 ENTERPRISE SECURITY
+🔒 SAFETY IS NOT AN AFTERTHOUGHT
 
-Self-modification sounds dangerous. That's why we built:
+Self-modification sounds dangerous. Here's what we built:
 
-• Human approval workflows
-• Complete audit trails
-• Capability-based permissions
-• Sandboxed execution
-• One-click rollback
+• Human approval workflows — gate critical changes behind a ✅
+• Complete audit trails — every diff, every decision, timestamped
+• Capability-based permissions — surgically scope what can change
+• Sandboxed validation — test in isolation before touching prod
+• One-click rollback — atomic restore from any snapshot
 
-Safe evolution. ✅
+Safe evolution is the only kind we ship.
 
 ---
 
 5/12
-⚡ BUILT WITH RUST
+⚡ BUILT IN RUST FOR A REASON
 
-• 13 modular crates
-• Low memory footprint
-• Fast startup
-• Native concurrency
-• Production-ready
+• 14 modular crates — clear separation of concerns
+• 1,744+ tests — zero compromise on coverage
+• Zero clippy warnings — the bar is high
+• Low memory, fast startup, native concurrency
+• No GIL, no Python overhead, no runtime surprises
 
-Python wrappers available for rapid prototyping.
+If you want something you can trust in production, you build it in Rust.
 
 ---
 
 6/12
-🌐 COMMUNICATION CHANNELS
+🌐 MEET USERS WHERE THEY ARE
 
-Meet users where they are:
+25+ communication channels, wired up and ready:
 
 Slack • Discord • Telegram • WhatsApp
-Teams • Matrix • Email • IRC
+Microsoft Teams • Matrix • Email • IRC
 Bluesky • Mastodon • LinkedIn
 And 15+ more...
+
+One agent. Every channel.
 
 ---
 
 7/12
-🤖 MULTI-AGENT SUPPORT
+🤖 MULTI-AGENT ARCHITECTURE
 
-clawREFORM by aegntic.ai supports:
+clawREFORM supports:
 
-• Single agent workflows
-• Multi-agent collaboration
-• A2A (Agent-to-Agent) protocol
-• Hierarchical agent structures
+• Single-agent workflows — simple and powerful
+• Multi-agent collaboration — agents delegating to agents
+• A2A (Agent-to-Agent) protocol — standard inter-agent communication
+• Hierarchical structures — orchestrators + specialists
 
-Build complex AI systems easily.
+Build AI systems that are more than the sum of their parts.
 
 ---
 
 8/12
-🎯 USE CASES
+🎯 WHAT CAN YOU ACTUALLY BUILD?
 
-• DevOps automation
-• Security auditing
-• Code review & testing
-• Data pipeline management
-• Customer support automation
-• Content generation
+• DevOps automation — infra, deploys, incident response
+• Security pipelines — vuln scanning, compliance, threat analysis
+• Code review bots — PR summaries, test coverage, documentation
+• Data workflows — ETL, ML pipelines, dashboards
+• Customer support automation — triage, respond, escalate
+• Content & research workflows
 
-What would you automate?
+What would you automate first?
 
 ---
 
 9/12
-💻 GET STARTED IN MINUTES
+💻 ZERO TO RUNNING IN 3 COMMANDS
 
 ```bash
-curl -fsSL https://clawreform.ai/install.sh | sh
+curl -fsSL https://clawreform.com/install | sh
 clawreform start
 clawreform chat "Hello!"
 ```
 
-That's it. No complex setup required.
+Dashboard at http://127.0.0.1:4332
+No complex setup. No API key hoops. Just run.
 
 ---
 
 10/12
-🔗 LINKS
+🔗 EVERYTHING YOU NEED
 
-• GitHub: github.com/aegntic/clawreform
-• Docs: docs.clawreform.ai
+• GitHub: github.com/aegntic/clawreform ⭐
+• Website: clawreform.com
 • Community: skool.com/autoclaw
-• Demo: See reply ↓
+• Docs + demo: see replies ↓
 
 ---
 
 11/12
-🎬 DEMO VIDEO
+🎬 SEE THE SELF-MODIFICATION IN ACTION
 
-Watch ClawReform in action:
+[Embed clawreform-final-demo.mp4]
 
-[Embed demo video]
-
-See the self-modification system work in real-time.
+Watch the kernel analyze, patch, validate, and deploy — all from a single chat message. No developer in the loop.
 
 ---
 
 12/12
-🦾 THE FUTURE
+🦾 THE CASE FOR SELF-EVOLVING AI
 
-AI systems shouldn't be static.
+Static AI systems become stale. They can't adapt.
+The frameworks of 2024 are already showing their age.
 
-They should evolve, learn, and improve.
+clawREFORM is built for a future where AI systems get better over time — autonomously, safely, and openly.
 
-ClawReform makes this possible. Safely.
-
-Star us on GitHub: github.com/aegntic/clawreform ⭐
+Star us: github.com/aegntic/clawreform ⭐
+Join us: skool.com/autoclaw
 
 ---
 
-*ClawReform 0.2.1 - Where AI Meets Evolution*
+*clawREFORM by aegntic.ai — The self-evolving Agent OS*
 
-#AI #OpenSource #DevOps #Automation #Rust #MachineLearning
+#AI #OpenSource #Rust #DevOps #Automation #AgentOS #SelfModifying #MCP
 

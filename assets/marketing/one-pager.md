@@ -1,73 +1,84 @@
-# CLAWREFORM
-## The Self-Evolving AI Agent Framework
+# clawREFORM by aegntic.ai
+## The Self-Evolving Agent OS
 
 ---
 
-### 🎯 Elevator Pitch
+### 🎯 The One-Line Pitch
 
-ClawReform is the first AI agent framework that can safely modify and improve its own codebase through natural language commands, enabling continuous autonomous evolution.
+clawREFORM is the first open-source Agent Operating System that can safely rewrite its own code through natural language — built in Rust, production-ready from day one.
 
 ---
 
 ### 🔄 The Problem
 
-- AI agents are static after deployment
-- Improvements require developer time
-- Systems can't adapt to new requirements autonomously
-- Manual updates are slow and expensive
+Today's AI agent frameworks are stuck in 2023:
+- ❌ Static after deployment — can't improve without developers
+- ❌ Python-based — memory bloat, GIL limits, slow startup
+- ❌ Bolt-on security — audit logs and approvals are afterthoughts
+- ❌ Shallow skill sets — you build everything from scratch
+
+The average team spends $200K–500K/year maintaining AI systems that can't maintain themselves.
 
 ---
 
-### 💡 Our Solution
+### 💡 Our Answer: The Self-Modification Kernel
 
-**Self-Modification Kernel** - ClawReform can:
+clawREFORM can:
 
-1. Analyze its own codebase
-2. Propose improvements via natural language
-3. Create automatic backups
-4. Apply and validate changes
-5. Rollback if needed
+1. **Receive** a natural language request ("add caching to the API")
+2. **Analyse** the codebase — map affected modules, estimate risk
+3. **Snapshot** — atomic backup before touching a line
+4. **Apply** a scoped, validated diff
+5. **Validate** — `cargo build + test + clippy`, zero-tolerance
+6. **Rollback** — auto-restore from snapshot if anything fails
 
-All with human-in-the-loop approval workflows.
+No human in the loop required. Full audit trail if you want it.
 
 ---
 
 ### 📦 What's Included
 
 | Component | Count | Examples |
-|-----------|-------|----------|
-| Skills | 61 | Docker, Kubernetes, AWS, Security Audit |
-| Hands | 7 | Browser, Researcher, Twitter, Predictor |
-| Channels | 25+ | Slack, Discord, Telegram, WhatsApp |
-| MCP Servers | 23+ | Filesystem, Memory, GitHub |
+|-----------|-------|---------|
+| Skills | 60+ | Docker, K8s, AWS, GCP, security audit, Ansible |
+| Hands | 7 | Browser, Clip, Lead, Collector, Predictor, Researcher, Twitter |
+| Channels | 25+ | Slack, Discord, Telegram, WhatsApp, Teams, Matrix |
+| MCP Servers | 23+ | GitHub, GitLab, Playwright, Supabase, memory, filesystem |
 
 ---
 
-### 🎯 Target Markets
+### 🏗️ Technical Foundation
 
-1. **DevOps Teams** - Automate infrastructure, deployments, monitoring
-2. **Security Teams** - Vulnerability scanning, compliance, incident response
-3. **Development Teams** - Code reviews, testing, documentation
-4. **Data Teams** - Pipelines, analysis, ML workflows
-5. **Startups** - Build AI-powered products faster
-
----
-
-### 💰 Business Model
-
-- **Open Source** (MIT/Apache 2.0) - Free forever
-- **Cloud (Coming Soon)** - Managed hosting, $49-499/month
-- **Enterprise** - Custom deployment, SLA, support
+| Metric | Value |
+|--------|-------|
+| Language | Rust |
+| Crates | 14 modular crates |
+| Tests | 1,744+ |
+| Clippy warnings | 0 |
+| Networking | Tailscale mesh (P2P) |
+| Multi-agent | A2A protocol |
+| License | MIT / Apache-2.0 |
 
 ---
 
-### 🚀 Traction
+### 🎯 Target Users
 
-- ✅ 13 modular crates
-- ✅ 61 bundled skills
-- ✅ Self-modification working
-- ✅ Active GitHub repository
-- ✅ Growing community
+1. **DevOps Engineers** — automate infra, deploys, and incident response
+2. **Security Teams** — continuous vuln scanning, compliance, threat analysis
+3. **Developers** — code review bots, test generation, documentation
+4. **Data Teams** — ETL pipelines, ML workflows, dashboards
+5. **Startups** — ship AI-powered products without Python overhead
+
+---
+
+### 🚀 Get Running in 3 Commands
+
+```bash
+curl -fsSL https://clawreform.com/install | sh
+clawreform start
+clawreform chat "Hello!"
+# Dashboard → http://127.0.0.1:4332
+```
 
 ---
 
@@ -76,19 +87,19 @@ All with human-in-the-loop approval workflows.
 | Resource | URL |
 |----------|-----|
 | GitHub | github.com/aegntic/clawreform |
-| Docs | docs.clawreform.ai |
+| Website | clawreform.com |
 | Community | skool.com/autoclaw |
-| Twitter | @clawreform |
+| X / Twitter | x.com/clawreform |
 
 ---
 
 ### 📞 Contact
 
-- Email: hello@clawreform.ai
-- Twitter: @clawreform
-- Discord: discord.gg/clawreform
+- Email: hello@clawreform.com
+- X/Twitter: @clawreform
+- Community: skool.com/autoclaw
 
 ---
 
-*ClawReform 0.2.1 - Where AI Meets Evolution* 🦾
+*clawREFORM by aegntic.ai — The self-evolving Agent OS* 🦾
 

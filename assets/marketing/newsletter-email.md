@@ -1,80 +1,86 @@
-# ClawReform Newsletter - March 2026
+# clawREFORM by aegntic.ai — Launch Newsletter
 
-## 🦾 Introducing ClawReform: The Self-Evolving AI Agent Framework
+## Subject: We built an AI agent OS that rewrites its own code 🦾
 
 ---
 
-Hey there,
+Hey,
 
-Today, we're excited to announce **ClawReform 0.2.1**—the first AI agent framework that can safely modify and improve its own codebase through natural language.
+Most AI tools ship features. We shipped something different: an AI system that ships its own features.
 
-### 🔄 What's Self-Modification?
+**clawREFORM by aegntic.ai** is now open source — an Agent Operating System built in Rust that can safely modify and improve its own codebase through natural language.
 
-Imagine telling your AI: 
+---
 
-> "Add caching to improve response times for repeated queries"
+### 🔄 What is self-modification, actually?
 
-And ClawReform actually does it:
+You describe what you want. clawREFORM does the rest:
 
-✅ Analyzes its codebase structure  
-✅ Designs the optimal caching strategy  
-✅ Creates automatic backups  
-✅ Implements the changes  
-✅ Validates everything works  
-✅ Rolls back if anything breaks  
+> `"Add caching to improve response times for repeated queries"`
 
-All with full audit trails and human approval workflows.
+✅ Maps affected modules, estimates risk
+✅ Creates an atomic snapshot
+✅ Writes and applies a scoped code diff
+✅ Runs cargo build + 1,744 tests + clippy
+✅ Rolls back from snapshot automatically if anything fails
 
-### 📦 What's in the Box?
+No developer. No PR. No deploy pipeline. The system handles it.
 
-| Feature | Count | Details |
-|---------|-------|---------|
-| **Skills** | 61 | DevOps, security, development, data... |
-| **Hands** | 7 | Browser, research, prediction, social... |
-| **Channels** | 25+ | Slack, Discord, Telegram, WhatsApp... |
-| **MCP Servers** | 23+ | Filesystem, memory, GitHub, thinking... |
+---
 
-### 🚀 Quick Start
+### 📦 What's in the box
+
+| Component | Count | What It Does |
+|-----------|-------|--------------|
+| **Skills** | 60+ | Docker, K8s, AWS, security, data pipelines |
+| **Hands** | 7 | Browser, research, prediction, lead gen |
+| **Channels** | 25+ | Slack, Discord, Telegram, WhatsApp, Teams |
+| **MCP Servers** | 23+ | GitHub, Playwright, Supabase, memory, filesystem |
+
+Built in Rust. 14 crates. Zero clippy warnings.
+
+---
+
+### 🚀 Try it in 3 commands
 
 ```bash
-# Install ClawReform
-curl -fsSL https://clawreform.ai/install.sh | sh
-
-# Start the daemon
+curl -fsSL https://clawreform.com/install | sh
 clawreform start
-
-# Ask it to improve itself!
-clawreform chat "Add a health check endpoint to the API"
+clawreform chat "Hello!"
 ```
+
+Dashboard at http://127.0.0.1:4332
+
+---
+
+### 🔒 Safety is the architecture
+
+Self-modification without guardrails is a bad idea. Here's what we built in:
+
+- 🔒 Atomic snapshots before every change
+- ✅ Full validation pipeline — build, test, lint
+- ⏪ Instant rollback if anything breaks
+- 📋 Complete, queryable audit trails
+- 👥 Human approval workflows for high-risk changes
+
+---
 
 ### 🔗 Links
 
-- 📖 **Documentation:** docs.clawreform.ai
-- 💻 **GitHub:** github.com/aegntic/clawreform  
-- 💬 **Community:** skool.com/autoclaw  
-- 🐦 **Twitter:** @clawreform  
+- 💻 **GitHub:** [github.com/aegntic/clawreform](https://github.com/aegntic/clawreform) ⭐
+- 🌐 **Website:** [clawreform.com](https://clawreform.com)
+- 💬 **Community:** [skool.com/autoclaw](https://skool.com/autoclaw)
+- 🐦 **X/Twitter:** [x.com/clawreform](https://x.com/clawreform)
 
 ---
 
-**Why ClawReform?**
+Static AI systems have a ceiling. clawREFORM doesn't.
 
-We built ClawReform because we believe AI systems should be able to evolve. But evolution needs guardrails. Our framework makes self-improvement safe with:
+Come build with us.
 
-- 🔒 Automatic backups before any change
-- ✅ Validation pipelines
-- ⏪ One-click rollback
-- 📋 Complete audit trails
-- 👥 Human approval workflows
+— The aegntic.ai team
 
 ---
 
-**Star us on GitHub:** [github.com/aegntic/clawreform](https://github.com/aegntic/clawreform) ⭐
-
-Happy evolving! 🦾
-
-The ClawReform Team
-
----
-
-*You're receiving this because you signed up for ClawReform updates. [Unsubscribe](mailto:unsubscribe@clawreform.ai)*
+*You're receiving this because you signed up for clawREFORM updates. [Unsubscribe](mailto:unsubscribe@clawreform.com)*
 

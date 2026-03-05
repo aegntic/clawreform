@@ -4,17 +4,19 @@
 
 ---
 
-🧵 How ClawReform's Self-Modification Works:
+🧵 How clawREFORM actually modifies its own code (step by step):
 
-1️⃣ Analyze request → Identify affected files
-2️⃣ Create plan → Estimate complexity & risk
-3️⃣ Backup files → Full snapshot before changes
-4️⃣ Apply modifications → Safe code generation
-5️⃣ Validate → cargo build + test + clippy
-6️⃣ Rollback if failed → Auto-restore from backup
+1️⃣ Parse request → map to affected modules
+2️⃣ Risk analysis → estimate blast radius
+3️⃣ Snapshot → atomic backup before touching anything
+4️⃣ Diff + patch → safe, scoped code generation
+5️⃣ cargo build + test + clippy → zero tolerance
+6️⃣ Auto-rollback → restore from snapshot if anything fails
 
-All triggered by natural language! 🗣️
+No human hand-holding required. But full audit trails if you want them.
 
-#ClawReform #AI #Rust
+What other framework does this in Rust with 1,744+ passing tests? 👇
+
+#clawREFORM #AI #Rust #SelfModifying
 
 ---

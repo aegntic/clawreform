@@ -4,20 +4,20 @@
 
 ---
 
-🦾 Introducing ClawReform - The Self-Evolving Agent OS
+🦾 We built an AI agent OS that can rewrite its own code.
 
-Built in Rust • 14 crates • 1,767+ tests
+In Rust. Open source. With guardrails.
 
-✨ What makes it special?
-• Self-modification via natural language
-• 23+ MCP servers
-• Tailscale mesh networking
-• 60 bundled skills
+clawREFORM by aegntic.ai:
+• Tell it to add a feature → it does it
+• 14 Rust crates • 1,744+ tests • zero clippy warnings
+• 60+ bundled skills • 23+ MCP servers
+• Tailscale mesh for secure P2P
 
-Ask it to add a feature → It rewrites its own code safely
+This is what self-evolving AI actually looks like.
 
-🔗 github.com/aegntic/clawreform
+↓ github.com/aegntic/clawreform
 
-#ClawReform #AI #Rust #SelfEvolving
+#AI #Rust #OpenSource #AgentOS
 
 ---

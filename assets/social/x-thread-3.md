@@ -4,17 +4,21 @@
 
 ---
 
-🔌 ClawReform comes with 23+ MCP servers out of the box:
+🔌 clawREFORM ships with 23+ MCP servers on day one:
 
-• GitHub, GitLab, Linear integrations
-• Slack, Asana for team collaboration
-• Firebase, Supabase backends
-• Playwright browser automation
-• Memory & sequential thinking
-• And more!
+• GitHub, GitLab, Linear → code & project ops
+• Slack, Asana → team workflows
+• Firebase, Supabase → backend services
+• Playwright → headless browser automation
+• Memory + sequential thinking → persistent context
+• Filesystem, web search, and more
 
-Plus Tailscale mesh for secure P2P networking 🔐
+Plus Tailscale mesh networking for encrypted P2P across every device 🔐
 
-#ClawReform #MCP #AI
+All wired up. Nothing to configure. Just run and go.
+
+github.com/aegntic/clawreform ⭐
+
+#clawREFORM #MCP #AI #Rust #OpenSource
 
 ---

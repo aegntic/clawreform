@@ -8,20 +8,19 @@
 ### One-Line Install
 
 ```bash
-curl -fsSL https://clawreform.ai/install.sh | sh
+# macOS / Linux
+curl -fsSL https://clawreform.com/install | sh
+
+# Windows PowerShell
+irm https://clawreform.com/install.ps1 | iex
 ```
 
-### Manual Install
+### Manual Build
 
 ```bash
-# Clone the repository
 git clone https://github.com/aegntic/clawreform.git
 cd clawreform
-
-# Build with Cargo
 cargo build --release
-
-# Run
 ./target/release/clawreform start
 ```
 
@@ -34,6 +33,8 @@ docker run -d \
   -v clawreform-data:/data \
   ghcr.io/aegntic/clawreform:latest
 ```
+
+Dashboard at http://127.0.0.1:4332
 ```
 
 ---
@@ -45,13 +46,16 @@ docker run -d \
 
 | Feature | Description |
 |---------|-------------|
-| 🔄 **Self-Modification** | Modify and improve codebase through natural language |
-| 🎯 **61 Skills** | Pre-built capabilities for DevOps, security, development |
-| 🤖 **7 Hands** | Specialized automation for browser, research, prediction |
-| 📡 **25+ Channels** | Native integrations with Slack, Discord, Telegram, WhatsApp |
-| 🔌 **23+ MCP Servers** | Extended capabilities via Model Context Protocol |
-| 🧠 **Persistent Memory** | Learn and remember across sessions |
-| 🛡️ **Enterprise Security** | Approval workflows, audit logs, capability-based auth |
+| 🔄 **Self-Modification** | Rewrite and improve the codebase through natural language — with snapshots and auto-rollback |
+| ⚡ **Rust Core** | 14 modular crates · 1,744+ tests · zero clippy warnings |
+| 🎯 **60+ Skills** | DevOps, cloud, security, data, and development workflows — batteries included |
+| 🤖 **7 Hands** | Browser, lead gen, research, prediction, social media, and more |
+| 📡 **25+ Channels** | Slack, Discord, Telegram, WhatsApp, Teams, Matrix, and more |
+| 🔌 **23+ MCP Servers** | GitHub, GitLab, Playwright, Supabase, memory, filesystem, and more |
+| 🌐 **Tailscale Mesh** | Encrypted P2P networking across all your devices — no VPN config |
+| 🤝 **A2A Protocol** | Multi-agent collaboration via the Agent-to-Agent standard |
+| 🧠 **Persistent Memory** | Learns and remembers context across sessions |
+| 🛡️ **Enterprise Security** | Capability-based auth, approval workflows, full audit logs |
 ```
 
 ---
@@ -61,22 +65,23 @@ docker run -d \
 ```markdown
 ## 🎬 Demo
 
-Watch ClawReform in action:
+Watch clawREFORM in action:
 
-[![ClawReform Demo](demo/preview-frames/final-demo-preview.png)](demo/clawreform-final-demo.mp4)
+[![clawREFORM Demo](assets/media/frames/preview.png)](assets/media/clawreform-final-demo.mp4)
 
 ### Self-Modification Demo
 
 ```bash
-# Ask ClawReform to improve itself
-clawreform chat "Add a /health endpoint to the API"
+# Ask clawREFORM to improve itself
+clawreform chat "Add a /metrics endpoint to the API"
 
-# Watch as ClawReform:
-# 1. Analyzes the API structure
-# 2. Proposes the implementation
-# 3. Creates a backup
-# 4. Applies the changes
-# 5. Validates everything works
+# The system will:
+# 1. Map the API module structure
+# 2. Risk-score the change (low: new endpoint, no breaking changes)
+# 3. Create an atomic snapshot
+# 4. Generate and apply the diff
+# 5. Run cargo build + test + clippy
+# 6. Ship it — or roll back cleanly if anything fails
 ```
 ```
 
@@ -89,7 +94,8 @@ clawreform chat "Add a /health endpoint to the API"
 [![GitHub forks](https://img.shields.io/github/forks/aegntic/clawreform?style=social)](https://github.com/aegntic/clawreform/network/members)
 [![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue)](LICENSE-MIT)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange)](rust-toolchain.toml)
-[![Discord](https://img.shields.io/discord/clawreform?color=7289da)](https://discord.gg/clawreform)
+[![Tests](https://img.shields.io/badge/tests-1744%2B-brightgreen)](https://github.com/aegntic/clawreform)
+[![Clippy](https://img.shields.io/badge/clippy-0%20warnings-brightgreen)](https://github.com/aegntic/clawreform)
 ```
 
 ---
@@ -97,18 +103,17 @@ clawreform chat "Add a /health endpoint to the API"
 ## Sponsors Section
 
 ```markdown
-## 💖 Sponsors
+## 💖 Support the Project
 
-Support ClawReform development:
+clawREFORM is free and open source. If it's useful to you, consider supporting development:
 
 - [GitHub Sponsors](https://github.com/sponsors/aegntic)
-- [Open Collective](https://opencollective.com/clawreform)
 
 ### Sponsor Tiers
 
 | Tier | Price | Benefits |
-|------|-------|----------|
-| ☕ Coffee | $5/mo | Discord role, early access |
-| 🚀 Supporter | $25/mo | Above + priority support |
-| 🏢 Enterprise | $100/mo | Above + logo on README |
+|------|-------|---------|
+| ☕ Supporter | $5/mo | Community role, early access to announcements |
+| 🚀 Builder | $25/mo | Above + priority support in community |
+| 🏢 Partner | $100/mo | Above + logo on README |
 ```

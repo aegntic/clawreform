@@ -1,96 +1,137 @@
-# Building the Self-Evolving AI: Inside ClawReform's Self-Modification System
+# The Agent OS That Rewrites Itself: Inside clawREFORM's Self-Modification Kernel
 
-*How we built an AI agent framework that can safely modify its own codebase*
+*How aegntic.ai built an AI system that can safely modify and improve its own codebase*
 
 ---
 
-The future of AI isn't just about smarter models—it's about systems that can improve themselves.
+The question everyone avoids: what happens when an AI system's biggest bottleneck is itself?
 
-Today, we're open-sourcing **ClawReform**, an AI agent framework with a revolutionary capability: **self-modification**. ClawReform can analyze its own codebase, propose improvements, and safely apply changes—all through natural language requests.
+Current AI agent frameworks are frozen the moment they're deployed. Every improvement, every new capability, every bug fix requires a human developer to re-enter the loop — write code, test it, ship it. In a world where AI is supposed to accelerate everything, the frameworks themselves are the slowest part.
 
-## The Problem with Static AI Systems
+We decided to fix that.
 
-Current AI agent frameworks have a fundamental limitation: they're static. Once deployed, they can't improve without human developers writing code, testing, and deploying updates.
+**clawREFORM by aegntic.ai** is an open-source Agent Operating System that can safely modify and improve its own codebase through natural language. Not a chatbot answer. Not a diff suggestion you have to apply manually. Real code, real validation, real deployment — all autonomous.
 
-But what if AI systems could evolve like biological systems? What if they could identify their own weaknesses and fix them?
+Here's exactly how we built it, and why we made every decision we did.
 
-## Enter ClawReform
+---
 
-ClawReform introduces a **Self-Modification Kernel** that enables safe, autonomous code evolution:
+## Why Rust?
+
+Most AI tooling is Python. We chose Rust for three reasons:
+
+**Performance and reliability.** Our self-modification kernel needs to analyze code, generate diffs, validate builds, and roll back on failure — all in a tight feedback loop. Python's GIL and memory overhead would make this sluggish and unpredictable. Rust gives us native concurrency, deterministic memory, and fast cold starts.
+
+**Correctness matters at the kernel level.** When you're building a system that modifies itself, a memory corruption bug in the modification layer could be catastrophic. Rust's ownership model makes an entire class of bugs compile-time impossible.
+
+**Longevity.** We're not building a demo. The 14-crate modular architecture we've shipped is designed to be maintained and extended for years, by a community. Rust's strong type system and zero-cost abstractions make that viable.
+
+---
+
+## The Self-Modification Kernel
+
+The core of clawREFORM is the self-modification kernel. Here's how it works:
 
 ```rust
 pub struct SelfModifyKernel {
-    analyzer: CodeAnalyzer,
-    backup_manager: BackupManager,
-    modifier: CodeModifier,
-    validator: ChangeValidator,
+    module_mapper: ModuleMapper,
+    risk_analyser: RiskAnalyser,
+    snapshot_manager: SnapshotManager,
+    diff_generator: DiffGenerator,
+    validation_pipeline: ValidationPipeline,
 }
 ```
 
-### How It Works
+### Phase 1: Module Mapping
 
-1. **Analysis Phase**: ClawReform analyzes its codebase structure, understanding dependencies and impact zones.
+Before writing a line of code, the kernel maps the request to affected modules across the 14-crate workspace. It builds a dependency graph and identifies the blast radius of the proposed change. High-risk changes (core types, API contracts, security layers) are flagged for human approval before proceeding.
 
-2. **Proposal Phase**: Based on natural language requests, it proposes specific code changes with full context.
+### Phase 2: Risk Scoring
 
-3. **Backup Phase**: Before any modification, automatic backups are created.
+Every proposed change gets a risk score based on: lines of code affected, number of dependent crates, test coverage of affected modules, and whether the change touches public API surfaces. Changes above a threshold require explicit human sign-off via the approval workflow.
 
-4. **Modification Phase**: Changes are applied atomically with proper error handling.
+### Phase 3: Atomic Snapshot
 
-5. **Validation Phase**: Automated tests verify the changes work correctly.
+Before touching a single file, the kernel creates an atomic snapshot of the affected workspace state. This isn't a git commit — it's an in-process snapshot designed for fast, reliable rollback within the same operation.
 
-6. **Rollback (if needed)**: If validation fails, automatic rollback to the backup.
+### Phase 4: Scoped Diff Generation
 
-### Safety First
+The kernel generates a minimal, scoped diff. It doesn't rewrite files wholesale — it produces the smallest possible change that satisfies the request, respecting code style, existing patterns, and interface contracts.
 
-Self-modification sounds dangerous. That's why we built multiple safety layers:
+### Phase 5: Validation Pipeline
 
-- **Human Approval Workflows**: Critical changes require human sign-off
-- **Audit Logs**: Every change is logged with full context
-- **Capability-Based Permissions**: Fine-grained control over what can be modified
-- **Sandboxed Execution**: Test changes in isolation before applying
+This is the safety net. Every change runs through:
 
-## Beyond Self-Modification
+1. `cargo build` — must compile
+2. `cargo test` — all 1,744+ tests must pass
+3. `cargo clippy -- -D warnings` — zero warnings tolerated
 
-ClawReform isn't just about evolving code. It's a complete AI agent framework:
+Any failure at any stage triggers automatic rollback to the snapshot. The system reports exactly what failed and why.
 
-- **61 Bundled Skills**: From Ansible to Zoom, there's a skill for everything
-- **7 Specialized Hands**: Browser automation, research, prediction, and more
-- **25+ Communication Channels**: Meet users where they are
-- **23+ MCP Servers**: Extend capabilities through Model Context Protocol
+### Phase 6: Audit Trail
 
-## Get Started
-
-```bash
-# Quick install
-curl -fsSL https://clawreform.ai/install.sh | sh
-
-# Start the daemon
-clawreform start
-
-# Try self-modification
-clawreform chat "Add a /health endpoint to the API"
-```
-
-## The Road Ahead
-
-This is just the beginning. We're working on:
-
-- **Multi-Agent Evolution**: Agents that can improve each other
-- **Learning from Feedback**: Incorporate user feedback into self-improvements
-- **Marketplace**: Share and discover community-created improvements
-
-## Join Us
-
-ClawReform is open-source under MIT/Apache 2.0 dual license.
-
-- ⭐ **Star us**: [github.com/aegntic/clawreform](https://github.com/aegntic/clawreform)
-- 💬 **Community**: [skool.com/autoclaw](https://skool.com/autoclaw)
-- 🐦 **Twitter**: [@clawreform](https://twitter.com/clawreform)
-
-Let's build the future of evolving AI together. 🦾
+Whether the change succeeds or rolls back, every operation is logged: the request, the diff, the risk score, the validation results, the outcome. This audit trail is queryable and exportable.
 
 ---
 
-*ClawReform 0.2.1 - Self-Evolving Edition*
+## What's Beyond Self-Modification
+
+The self-modification kernel is the headline, but clawREFORM is a complete Agent Operating System:
+
+**60+ Bundled Skills.** From Ansible to Zoom, production-ready capabilities that work out of the box. No boilerplate, no configuration. Docker, Kubernetes, AWS, GCP, Azure, security auditing, data pipelines — just ask.
+
+**7 Specialised Hands.** Browser automation (Playwright-backed), lead generation, research, prediction, content collection, social media management. Each hand is a composable agent module.
+
+**23+ MCP Servers.** Native Model Context Protocol support including GitHub, GitLab, Playwright, Supabase, Firebase, filesystem, sequential thinking, memory, and more. The ecosystem keeps growing.
+
+**Tailscale Mesh Networking.** Encrypted peer-to-peer networking across all your devices — no VPN config, no port forwarding, no infrastructure overhead.
+
+**Multi-Agent & A2A Protocol.** Build hierarchical agent systems where orchestrators delegate to specialists, and agents communicate via the Agent-to-Agent standard.
+
+---
+
+## Getting Started
+
+```bash
+# One-line install
+curl -fsSL https://clawreform.com/install | sh
+
+# Start the daemon
+clawreform start
+# Dashboard at http://127.0.0.1:4332
+
+# Try self-modification
+clawreform chat "Add a /metrics endpoint to the API"
+```
+
+Watch as clawREFORM maps the API codebase, proposes an implementation, creates a snapshot, applies the diff, runs the validation pipeline, and reports success — or rolls back cleanly if anything doesn't compile.
+
+---
+
+## What's Coming
+
+The self-modification kernel is v1. We're working on:
+
+**Collaborative evolution.** Multi-agent modification where specialised agents propose, review, and validate changes — a full CI/CD pipeline driven by language models.
+
+**Feedback-driven learning.** Incorporate production metrics and user feedback into self-improvement loops. The system gets better from its own deployments.
+
+**Skill marketplace.** Community-contributed skills, searchable and installable with a single command.
+
+---
+
+## Join the Build
+
+clawREFORM is open source under MIT/Apache 2.0 dual license.
+
+- ⭐ **Star us:** [github.com/aegntic/clawreform](https://github.com/aegntic/clawreform)
+- 💬 **Community:** [skool.com/autoclaw](https://skool.com/autoclaw)
+- 🐦 **X/Twitter:** [x.com/clawreform](https://x.com/clawreform)
+- 🌐 **Website:** [clawreform.com](https://clawreform.com)
+
+The future of AI infrastructure is systems that can improve themselves. We're building it in the open.
+
+---
+
+*clawREFORM by aegntic.ai — The self-evolving Agent OS* 🦾
 
