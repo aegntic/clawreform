@@ -61,7 +61,14 @@ jobs:
             librsvg2-dev \
             patchelf
       # Tests that need a display (Tauri) are skipped in headless CI via cfg
-      - run: cargo test --workspace
+      - name: Run tests (Linux stable mode)
+        if: runner.os == 'Linux'
+        env:
+          RUST_TEST_THREADS: "1"
+        run: cargo test --workspace -- --quiet
+      - name: Run tests
+        if: runner.os != 'Linux'
+        run: cargo test --workspace -- --quiet
 
   clippy:
     name: Clippy
