@@ -20,6 +20,12 @@ struct ProviderInfo {
 
 const PROVIDERS: &[ProviderInfo] = &[
     ProviderInfo {
+        name: "openrouter",
+        env_var: "OPENROUTER_API_KEY",
+        default_model: "openrouter/auto",
+        needs_key: true,
+    },
+    ProviderInfo {
         name: "groq",
         env_var: "GROQ_API_KEY",
         default_model: "llama-3.3-70b-versatile",
@@ -38,15 +44,15 @@ const PROVIDERS: &[ProviderInfo] = &[
         needs_key: true,
     },
     ProviderInfo {
-        name: "openrouter",
-        env_var: "OPENROUTER_API_KEY",
-        default_model: "anthropic/claude-sonnet-4-20250514",
-        needs_key: true,
-    },
-    ProviderInfo {
         name: "deepseek",
         env_var: "DEEPSEEK_API_KEY",
         default_model: "deepseek-chat",
+        needs_key: true,
+    },
+    ProviderInfo {
+        name: "minimax",
+        env_var: "MINIMAX_API_KEY",
+        default_model: "minimax-text-01",
         needs_key: true,
     },
     ProviderInfo {
@@ -86,6 +92,12 @@ const PROVIDERS: &[ProviderInfo] = &[
         needs_key: false,
     },
 ];
+
+fn has_nonempty_env_var(name: &str) -> bool {
+    std::env::var(name)
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+}
 
 /// Check if first-run setup is needed.
 pub fn needs_setup() -> bool {
@@ -151,13 +163,13 @@ impl WizardState {
         self.provider_order.clear();
         // Detected providers first
         for (i, p) in PROVIDERS.iter().enumerate() {
-            if std::env::var(p.env_var).is_ok() {
+            if has_nonempty_env_var(p.env_var) {
                 self.provider_order.push(i);
             }
         }
         // Then the rest
         for (i, p) in PROVIDERS.iter().enumerate() {
-            if std::env::var(p.env_var).is_err() {
+            if !has_nonempty_env_var(p.env_var) {
                 self.provider_order.push(i);
             }
         }
@@ -214,7 +226,7 @@ impl WizardState {
                         self.api_key_from_env = false;
                         self.model_input = p.default_model.to_string();
                         self.step = WizardStep::Model;
-                    } else if std::env::var(p.env_var).is_ok() {
+                    } else if has_nonempty_env_var(p.env_var) {
                         // Key already in env
                         self.api_key_from_env = true;
                         self.model_input = p.default_model.to_string();
@@ -441,7 +453,7 @@ fn draw_provider(f: &mut Frame, area: Rect, state: &mut WizardState) {
             let p = &PROVIDERS[idx];
             let hint = if !p.needs_key {
                 "local, no key needed".to_string()
-            } else if std::env::var(p.env_var).is_ok() {
+            } else if has_nonempty_env_var(p.env_var) {
                 format!("{} detected", p.env_var)
             } else {
                 format!("requires {}", p.env_var)

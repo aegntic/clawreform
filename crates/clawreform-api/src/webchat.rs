@@ -5,7 +5,7 @@
 //! single-binary deployment while allowing organized source files.
 //!
 //! Features:
-//! - Alpine.js SPA with hash-based routing (10 panels)
+//! - Alpine.js SPA with hash-based routing across dashboard panels
 //! - Dark/light theme toggle with system preference detection
 //! - Responsive layout with collapsible sidebar
 //! - Markdown rendering + syntax highlighting (bundled locally)
@@ -117,6 +117,12 @@ const WEBCHAT_HTML: &str = concat!(
     include_str!("../static/js/pages/usage.js"),
     "\n",
     include_str!("../static/js/pages/sessions.js"),
+    "\n",
+    include_str!("../static/js/pages/memory-layers.js"),
+    "\n",
+    include_str!("../static/js/pages/collective.js"),
+    "\n",
+    include_str!("../static/js/pages/organism.js"),
     "\n",
     include_str!("../static/js/pages/logs.js"),
     "\n",

@@ -12,6 +12,40 @@
   </div>
 </div>
 
+<!-- OpenRouter Setup Gate -->
+<div x-show="!$store.app.showAuthPrompt && $store.app.showOpenRouterGate" style="position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.68);backdrop-filter:blur(4px)">
+  <div style="background:var(--bg-card,#1e1e2e);border:1px solid var(--border,#333);border-radius:12px;padding:1.25rem;max-width:520px;width:92%">
+    <h3 style="margin:0 0 0.4rem;font-size:1.05rem">OpenRouter Key Required</h3>
+    <p style="color:var(--text-dim,#888);font-size:0.85rem;line-height:1.55;margin:0 0 0.8rem">
+      clawREFORM's lightweight in-house assistant path uses OpenRouter as the default provider.
+      Add your key to continue.
+    </p>
+    <div style="margin-bottom:0.7rem;font-size:0.8rem;color:var(--text-dim,#9aa)">
+      Get a key:
+      <a :href="$store.app.openRouterHelpUrl" target="_blank" rel="noopener noreferrer" style="color:var(--accent-light,#9f7aea)">openrouter.ai/keys</a>
+    </div>
+    <div x-show="$store.app.openRouterGateLoading" class="loading-state" style="margin:0.25rem 0 0.5rem">
+      <div class="spinner"></div><span>Checking OpenRouter status...</span>
+    </div>
+    <form x-show="!$store.app.openRouterGateLoading" @submit.prevent="$store.app.saveOpenRouterKey()">
+      <input
+        type="password"
+        x-model="$store.app.openRouterKeyInput"
+        placeholder="Enter OpenRouter API key..."
+        style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border,#333);background:var(--bg-input,#151520);color:var(--text,#e0e0e0);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.65rem"
+      >
+      <div x-show="$store.app.openRouterError" style="margin-bottom:0.65rem;padding:0.55rem;border-radius:6px;background:rgba(220,80,80,0.12);border:1px solid rgba(220,80,80,0.36);color:#f3b6b6;font-size:0.8rem" x-text="$store.app.openRouterError"></div>
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary" :disabled="$store.app.openRouterSaving" style="flex:1">
+          <span x-show="!$store.app.openRouterSaving">Save OpenRouter Key</span>
+          <span x-show="$store.app.openRouterSaving">Saving...</span>
+        </button>
+        <button type="button" class="btn btn-ghost" @click="$store.app.checkOpenRouterGate()" :disabled="$store.app.openRouterGateLoading">Refresh</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div class="app-layout" :class="{ 'focus-mode': $store.app.focusMode }">
   <!-- Sidebar -->
   <nav class="sidebar" :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileMenuOpen }">
@@ -82,21 +116,29 @@
         </template>
       </div>
 
-      <!-- Agents -->
-      <div class="nav-section" x-data="{ collapsed: false }" aria-label="Agents">
+      <!-- Memory -->
+      <div class="nav-section" x-data="{ collapsed: false }" aria-label="Memory">
         <div class="nav-section-title" @click="collapsed = !collapsed">
-          <span class="nav-label">Agents</span>
+          <span class="nav-label">Memory</span>
           <span class="nav-section-chevron" :style="collapsed ? '' : 'transform:rotate(90deg)'">&rsaquo;</span>
         </div>
         <template x-if="!collapsed">
           <div x-transition>
             <a class="nav-item" :class="{ active: page === 'sessions' }" @click="navigate('sessions')" :aria-current="page === 'sessions' ? 'page' : false">
               <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m12 2-10 5 10 5 10-5z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></span>
-              <span class="nav-label">Sessions</span>
+              <span class="nav-label">Agent Memory</span>
             </a>
-            <a class="nav-item" :class="{ active: page === 'approvals' }" @click="navigate('approvals')" :aria-current="page === 'approvals' ? 'page' : false">
-              <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
-              <span class="nav-label">Approvals</span>
+            <a class="nav-item" :class="{ active: page === 'memory-layers' }" @click="navigate('memory-layers')" :aria-current="page === 'memory-layers' ? 'page' : false">
+              <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+              <span class="nav-label">Memory Layers</span>
+            </a>
+            <a class="nav-item" :class="{ active: page === 'collective' }" @click="navigate('collective')" :aria-current="page === 'collective' ? 'page' : false">
+              <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v6"/><path d="M12 13.5l-5 3"/><path d="M12 13.5l5 3"/></svg></span>
+              <span class="nav-label">Collective</span>
+            </a>
+            <a class="nav-item" :class="{ active: page === 'obsidian' }" @click="navigate('obsidian')" :aria-current="page === 'obsidian' ? 'page' : false">
+              <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span>
+              <span class="nav-label">Obsidian Graph</span>
             </a>
           </div>
         </template>
@@ -122,14 +164,22 @@
         </template>
       </div>
 
-      <!-- Extensions -->
-      <div class="nav-section" x-data="{ collapsed: false }" aria-label="Extensions">
+      <!-- Organism -->
+      <div class="nav-section" x-data="{ collapsed: false }" aria-label="Organism">
         <div class="nav-section-title" @click="collapsed = !collapsed">
-          <span class="nav-label">Extensions</span>
+          <span class="nav-label">Organism</span>
           <span class="nav-section-chevron" :style="collapsed ? '' : 'transform:rotate(90deg)'">&rsaquo;</span>
         </div>
         <template x-if="!collapsed">
           <div x-transition>
+            <a class="nav-item" :class="{ active: page === 'organism' }" @click="navigate('organism')" :aria-current="page === 'organism' ? 'page' : false">
+              <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="9"/></svg></span>
+              <span class="nav-label">Organism Map</span>
+            </a>
+            <a class="nav-item" :class="{ active: page === 'approvals' }" @click="navigate('approvals')" :aria-current="page === 'approvals' ? 'page' : false">
+              <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
+              <span class="nav-label">Approvals</span>
+            </a>
             <a class="nav-item" :class="{ active: page === 'channels' }" @click="navigate('channels')" :aria-current="page === 'channels' ? 'page' : false">
               <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3l-2 18M16 3l-2 18"/></svg></span>
               <span class="nav-label">Channels</span>
@@ -3800,6 +3850,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
               <div class="info-card" style="flex:1;margin-bottom:0">
                 <h4>Agent Memory</h4>
                 <p>Each agent has its own key-value memory store. Agents use memory to persist preferences, notes, and context between conversations.</p>
+                <p class="hint" style="margin-top:6px">Layered memory is managed through workspace organs: <code>CORE.md</code>, <code>OVERVIEW.md</code>, <code>PROJECT.md</code>, and <code>COLLECTIVE.md</code>.</p>
               </div>
               <select class="form-select" style="width:200px;margin-left:16px" x-model="memAgentId" @change="loadKv()">
                 <option value="">Select agent...</option>
@@ -3870,6 +3921,272 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             <div class="empty-state" x-show="!memAgentId && !memLoading">
               <h4>Select an Agent</h4>
               <p class="hint">Choose an agent from the dropdown above to browse and edit its memory store.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Page: Memory Layers -->
+    <template x-if="page === 'memory-layers'">
+      <div x-data="memoryLayersPage()" x-init="loadData()">
+        <div class="page-header">
+          <h2>Memory Layers</h2>
+          <div class="flex gap-2 items-center">
+            <select class="form-select" style="width:260px" x-model="selectedAgentId" @change="loadLayers()">
+              <option value="">Select agent...</option>
+              <template x-for="a in $store.app.agents" :key="a.id">
+                <option :value="a.id" x-text="a.name + ' (' + a.id + ')'"></option>
+              </template>
+            </select>
+            <button class="btn btn-ghost btn-sm" @click="loadLayers()">Refresh</button>
+          </div>
+        </div>
+        <div class="page-body">
+          <div class="card mb-4" style="border-left:3px solid var(--accent)">
+            <div class="font-bold" style="font-size:13px;margin-bottom:4px">Layered memory tracker</div>
+            <div class="text-sm text-dim" style="line-height:1.6">
+              View the live ladder in one place: <code>CORE.md</code> (durable truths), <code>OVERVIEW.md</code> (direction), <code>PROJECT.md</code> (active ledger), and <code>COLLECTIVE.md</code> (ratification and promotion).
+            </div>
+          </div>
+
+          <div x-show="loading" class="loading-state"><div class="spinner"></div><span>Loading layer snapshots...</span></div>
+          <div x-show="!loading && loadError" class="error-state">
+            <span class="error-icon">!</span>
+            <p x-text="loadError"></p>
+            <button class="btn btn-ghost btn-sm" @click="loadLayers()">Retry</button>
+          </div>
+
+          <div x-show="!loading && !loadError && layers.length">
+            <div class="grid-2 mb-4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+              <template x-for="layer in layers" :key="layer.name">
+                <button class="card text-left" :style="selectedLayer === layer.name ? 'border-color:var(--accent)' : ''" @click="selectedLayer = layer.name">
+                  <div class="flex justify-between items-center">
+                    <div class="font-bold" x-text="layer.label"></div>
+                    <span class="badge" :class="layer.exists ? 'badge-running' : 'badge-crashed'" x-text="layer.exists ? 'Present' : 'Missing'"></span>
+                  </div>
+                  <div class="text-xs text-dim mt-2" x-text="layer.updatedAt ? ('Updated: ' + layer.updatedAt) : 'No auto timestamp yet'"></div>
+                  <div class="text-xs text-dim" x-text="'Auto bullets: ' + layer.bulletCount + ' | Size: ' + layer.sizeBytes + ' bytes'"></div>
+                  <div class="text-sm mt-2" style="line-height:1.45" x-text="layer.preview"></div>
+                </button>
+              </template>
+            </div>
+
+            <div class="card" x-show="activeLayer">
+              <div class="flex justify-between items-center mb-2">
+                <div class="font-bold" x-text="activeLayer ? activeLayer.label : ''"></div>
+                <span class="badge badge-muted" x-text="activeLayer ? activeLayer.name : ''"></span>
+              </div>
+              <div class="markdown-body" style="max-height:58vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2)" x-html="renderMarkdown(activeLayerRender)"></div>
+            </div>
+          </div>
+
+          <div class="empty-state" x-show="!loading && !loadError && !layers.length">
+            <h4>No layers available</h4>
+            <p class="hint">Spawn an agent with a workspace to generate organ and memory layer files.</p>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Page: Collective -->
+    <template x-if="page === 'collective'">
+      <div x-data="collectivePage()" x-init="loadData()">
+        <div class="page-header">
+          <h2>Collective Conscience</h2>
+          <div class="flex gap-2 items-center">
+            <select class="form-select" style="width:260px" x-model="selectedAgentId" @change="loadCollective()">
+              <option value="">Select agent...</option>
+              <template x-for="a in $store.app.agents" :key="a.id">
+                <option :value="a.id" x-text="a.name + ' (' + a.id + ')'"></option>
+              </template>
+            </select>
+            <button class="btn btn-ghost btn-sm" @click="loadCollective()">Refresh</button>
+          </div>
+        </div>
+        <div class="page-body">
+          <div class="card mb-4" style="border-left:3px solid var(--accent)">
+            <div class="font-bold" style="font-size:13px;margin-bottom:4px">Promotion readiness</div>
+            <div class="text-sm text-dim" style="line-height:1.6">
+              Track what has enough evidence to graduate from conversation noise into project direction and overview memory.
+            </div>
+          </div>
+
+          <div x-show="loading" class="loading-state"><div class="spinner"></div><span>Loading collective view...</span></div>
+          <div x-show="!loading && loadError" class="error-state">
+            <span class="error-icon">!</span>
+            <p x-text="loadError"></p>
+            <button class="btn btn-ghost btn-sm" @click="loadCollective()">Retry</button>
+          </div>
+
+          <div x-show="!loading && !loadError">
+            <div class="grid-2 mb-4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+              <div class="card">
+                <div class="text-xs text-dim">Tracked Claims</div>
+                <div class="font-bold" style="font-size:1.5rem" x-text="totalClaims"></div>
+              </div>
+              <div class="card">
+                <div class="text-xs text-dim">Project-Ready</div>
+                <div class="font-bold" style="font-size:1.25rem" x-text="projectReady"></div>
+                <div class="text-xs text-dim" x-text="ratio(projectReady) + '%'"></div>
+                <div style="margin-top:6px;background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:var(--accent);border-radius:4px" :style="'width:' + ratio(projectReady) + '%'"></div></div>
+              </div>
+              <div class="card">
+                <div class="text-xs text-dim">Overview-Ready</div>
+                <div class="font-bold" style="font-size:1.25rem" x-text="overviewReady"></div>
+                <div class="text-xs text-dim" x-text="ratio(overviewReady) + '%'"></div>
+                <div style="margin-top:6px;background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:#2ca58d;border-radius:4px" :style="'width:' + ratio(overviewReady) + '%'"></div></div>
+              </div>
+              <div class="card">
+                <div class="text-xs text-dim">Core Candidates</div>
+                <div class="font-bold" style="font-size:1.25rem" x-text="coreCandidates"></div>
+                <div class="text-xs text-dim" x-text="ratio(coreCandidates) + '%'"></div>
+                <div style="margin-top:6px;background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;background:#6f8df5;border-radius:4px" :style="'width:' + ratio(coreCandidates) + '%'"></div></div>
+              </div>
+            </div>
+
+            <div class="card mb-4" x-show="updatedAt">
+              <div class="text-sm text-dim">Last collective update</div>
+              <div class="font-bold" x-text="updatedAt"></div>
+            </div>
+
+            <div class="card mb-4">
+              <h4 class="mb-2">Top Claims</h4>
+              <div class="empty-state" x-show="!topClaims.length">
+                <p class="hint">No ranked claims yet.</p>
+              </div>
+              <div class="table-wrap" x-show="topClaims.length">
+                <table>
+                  <thead><tr><th style="width:50px">#</th><th>Claim</th></tr></thead>
+                  <tbody>
+                    <template x-for="(claim, idx) in topClaims" :key="'claim-' + idx">
+                      <tr>
+                        <td x-text="idx + 1"></td>
+                        <td class="text-sm" x-text="claim"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <h4 class="mb-2">Raw Auto Snapshot</h4>
+              <div class="markdown-body" style="max-height:45vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2)" x-html="renderMarkdown(autoSection || '_No auto snapshot found in COLLECTIVE.md_')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Page: Obsidian Graph -->
+    <template x-if="page === 'obsidian'">
+      <div>
+        <div class="page-header">
+          <h2>Obsidian Memory Graph</h2>
+        </div>
+        <div class="page-body">
+          <div class="card mb-4" style="border-left:3px solid var(--accent)">
+            <div class="font-bold" style="font-size:13px;margin-bottom:4px">Live memory map</div>
+            <div class="text-sm text-dim" style="line-height:1.6">
+              Connect your Obsidian graph URL so you can jump from clawREFORM by aegntic.ai dashboard memory into your live knowledge graph.
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="form-group">
+              <label>Obsidian Graph URL</label>
+              <input class="form-input" x-model="obsidianGraphUrl" placeholder="obsidian://graph?vault=YourVault or https://graph-view.local">
+              <div class="text-xs text-dim mt-2">
+                Use an <code style="color:var(--accent-light);background:var(--bg);padding:1px 4px;border-radius:2px">obsidian://</code> link to open the app, or an <code style="color:var(--accent-light);background:var(--bg);padding:1px 4px;border-radius:2px">http(s)://</code> URL for in-dashboard embed.
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-primary btn-sm" @click="saveObsidianGraphUrl()">Save URL</button>
+              <button class="btn btn-ghost btn-sm" @click="openObsidianGraph()">Open Graph</button>
+              <button class="btn btn-ghost btn-sm" @click="navigate('sessions')">Open Agent Memory</button>
+            </div>
+          </div>
+
+          <template x-if="obsidianEmbedUrl">
+            <div class="card">
+              <div class="font-bold mb-2" style="font-size:12px">Embedded graph</div>
+              <iframe :src="obsidianEmbedUrl" title="Obsidian Graph" style="width:100%;height:70vh;border:1px solid var(--border);border-radius:10px;background:var(--bg)"></iframe>
+            </div>
+          </template>
+
+          <template x-if="!obsidianEmbedUrl">
+            <div class="empty-state">
+              <h4>Embed unavailable for this URL</h4>
+              <p class="hint">Set an <code>http(s)://</code> graph URL to embed here, or use Open Graph to launch Obsidian directly.</p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- Page: Organism -->
+    <template x-if="page === 'organism'">
+      <div x-data="organismPage()" x-init="loadData()">
+        <div class="page-header">
+          <h2>Organism Map</h2>
+          <div class="flex gap-2 items-center">
+            <select class="form-select" style="width:260px" x-model="selectedAgentId" @change="loadOrganism()">
+              <option value="">Select agent...</option>
+              <template x-for="a in $store.app.agents" :key="a.id">
+                <option :value="a.id" x-text="a.name + ' (' + a.id + ')'"></option>
+              </template>
+            </select>
+            <button class="btn btn-ghost btn-sm" @click="loadOrganism()">Refresh</button>
+          </div>
+        </div>
+        <div class="page-body">
+          <div class="card mb-4" style="border-left:3px solid var(--accent)">
+            <div class="font-bold" style="font-size:13px;margin-bottom:4px">Organ health and coverage</div>
+            <div class="text-sm text-dim" style="line-height:1.6">
+              Inspect core organs, support organs, and memory views for each agent workspace. Missing files are visible immediately so drift is easy to catch.
+            </div>
+          </div>
+
+          <div x-show="loading" class="loading-state"><div class="spinner"></div><span>Loading organism inventory...</span></div>
+          <div x-show="!loading && loadError" class="error-state">
+            <span class="error-icon">!</span>
+            <p x-text="loadError"></p>
+            <button class="btn btn-ghost btn-sm" @click="loadOrganism()">Retry</button>
+          </div>
+
+          <div x-show="!loading && !loadError && files.length">
+            <div class="grid-2 mb-4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+              <template x-for="group in groups" :key="group.id">
+                <div class="card">
+                  <div class="flex justify-between items-center mb-1">
+                    <div class="font-bold" x-text="group.label"></div>
+                    <span class="badge badge-muted" x-text="existingCount(group) + '/' + group.files.length"></span>
+                  </div>
+                  <div class="text-xs text-dim mb-2" x-text="completion(group) + '% complete'"></div>
+                  <div style="background:var(--surface-2);border-radius:4px;height:10px;overflow:hidden;margin-bottom:10px">
+                    <div style="height:100%;background:var(--accent);border-radius:4px" :style="'width:' + completion(group) + '%'"></div>
+                  </div>
+                  <div class="flex" style="flex-wrap:wrap;gap:6px">
+                    <template x-for="name in group.files" :key="group.id + '-' + name">
+                      <button class="badge text-xs" :class="fileMeta(name).exists ? 'badge-running' : 'badge-crashed'" @click="openFile(name)" x-text="name"></button>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <div class="card">
+              <div class="flex justify-between items-center mb-2">
+                <div class="font-bold" x-text="selectedFile || 'Select an organ file'"></div>
+                <span class="badge badge-muted" x-show="selectedFile" x-text="selectedFile ? ((fileMeta(selectedFile).size_bytes || 0) + ' bytes') : ''"></span>
+              </div>
+              <div x-show="fileLoading" class="loading-state"><div class="spinner"></div><span>Loading file content...</span></div>
+              <div x-show="!fileLoading && fileError" class="error-state">
+                <span class="error-icon">!</span>
+                <p x-text="fileError"></p>
+              </div>
+              <div class="markdown-body" x-show="!fileLoading && !fileError && selectedFile" style="max-height:58vh;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--surface-2)" x-html="renderMarkdown(fileContent || '_File is empty._')"></div>
             </div>
           </div>
         </div>

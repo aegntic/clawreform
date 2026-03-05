@@ -22,6 +22,7 @@ const CONTEXT_FILES: &[&str] = &[
     "CORE.md",
     "OVERVIEW.md",
     "PROJECT.md",
+    "COLLECTIVE.md",
     "TOOLS.md",
     "IDENTITY.md",
     "MEMORY.md",

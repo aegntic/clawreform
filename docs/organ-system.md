@@ -11,6 +11,7 @@ clawREFORM by aegntic.ai treats agent context as a small set of first-class orga
 | `HANDS.md` | Embodied action doctrine: how the agent is allowed to act |
 | `MEMORY.md` | Memory law: what is remembered, promoted, summarized, or forgotten |
 | `HEARTBEAT.md` | Maintenance cadence for autonomous agents |
+| `COLLECTIVE.md` | Shared ratification surface: collective evidence, promotion state, and stewardship |
 
 ## Supporting Organs
 
@@ -31,6 +32,7 @@ These root workspace files now make the memory ladder inspectable and editable:
 | `CORE.md` | Durable truths with high edit friction |
 | `OVERVIEW.md` | Big-picture map of current movement and priorities |
 | `PROJECT.md` | Auto-curated project ledger plus human durable notes |
+| `COLLECTIVE.md` | Auto-ranked collective claims plus human ratification guidance |
 
 ## `HANDS.md` vs Hands Packages
 
@@ -57,6 +59,7 @@ Derived artifacts under `memory/` make that ladder operational:
 - `memory/working/YYYY-MM-DD.md` for short-term detail
 - `memory/dispatches/*.md` for published dispatch notes
 - `memory/summaries/*.md` for accepted session summaries
+- `memory/collective/ledger.json` for scored claim evidence and promotion readiness
 
 Promotion rule:
 

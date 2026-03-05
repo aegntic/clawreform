@@ -104,6 +104,13 @@ document.addEventListener('alpine:init', function() {
     focusMode: localStorage.getItem('clawreform-focus') === 'true',
     showOnboarding: false,
     showAuthPrompt: false,
+    showOpenRouterGate: true,
+    openRouterGateLoading: true,
+    openRouterSaving: false,
+    openRouterError: '',
+    openRouterKeyInput: '',
+    openRouterProviderStatus: 'unknown',
+    openRouterHelpUrl: 'https://openrouter.ai/keys',
 
     toggleFocusMode() {
       this.focusMode = !this.focusMode;
@@ -155,21 +162,94 @@ document.addEventListener('alpine:init', function() {
 
     async checkAuth() {
       try {
-        await ClawReformAPI.get('/api/providers');
+        var data = await ClawReformAPI.get('/api/providers');
         this.showAuthPrompt = false;
+        this.updateOpenRouterGateFromProviders((data && data.providers) || []);
+        this.openRouterGateLoading = false;
       } catch(e) {
         if (e.message && (e.message.indexOf('Not authorized') >= 0 || e.message.indexOf('401') >= 0 || e.message.indexOf('Missing Authorization') >= 0)) {
           this.showAuthPrompt = true;
+          this.showOpenRouterGate = false;
+          this.openRouterGateLoading = false;
         }
       }
     },
 
-    submitApiKey(key) {
+    updateOpenRouterGateFromProviders(providers) {
+      if (!Array.isArray(providers)) {
+        this.showOpenRouterGate = false;
+        return;
+      }
+      var provider = null;
+      for (var i = 0; i < providers.length; i++) {
+        if (providers[i].id === 'openrouter') {
+          provider = providers[i];
+          break;
+        }
+      }
+      if (!provider) {
+        this.openRouterProviderStatus = 'missing';
+        this.showOpenRouterGate = false;
+        return;
+      }
+      this.openRouterProviderStatus = provider.auth_status || 'unknown';
+      this.showOpenRouterGate = this.openRouterProviderStatus !== 'configured';
+    },
+
+    async checkOpenRouterGate() {
+      if (this.showAuthPrompt) {
+        this.showOpenRouterGate = false;
+        return;
+      }
+      this.openRouterGateLoading = true;
+      this.openRouterError = '';
+      try {
+        var data = await ClawReformAPI.get('/api/providers');
+        this.updateOpenRouterGateFromProviders((data && data.providers) || []);
+      } catch (e) {
+        if (e.message && (e.message.indexOf('Not authorized') >= 0 || e.message.indexOf('401') >= 0 || e.message.indexOf('Missing Authorization') >= 0)) {
+          this.showAuthPrompt = true;
+          this.showOpenRouterGate = false;
+        } else {
+          this.openRouterError = e.message || 'Could not verify OpenRouter setup.';
+          this.showOpenRouterGate = true;
+        }
+      }
+      this.openRouterGateLoading = false;
+    },
+
+    async saveOpenRouterKey() {
+      var key = (this.openRouterKeyInput || '').trim();
+      if (!key) {
+        this.openRouterError = 'Please enter your OpenRouter API key.';
+        return;
+      }
+      this.openRouterSaving = true;
+      this.openRouterError = '';
+      try {
+        await ClawReformAPI.post('/api/providers/openrouter/key', { key: key });
+        var test = await ClawReformAPI.post('/api/providers/openrouter/test', {});
+        if (test && test.status && test.status !== 'ok') {
+          throw new Error(test.error || 'OpenRouter key test failed');
+        }
+        this.openRouterKeyInput = '';
+        this.openRouterProviderStatus = 'configured';
+        this.showOpenRouterGate = false;
+        ClawReformToast.success('OpenRouter is configured');
+      } catch (e) {
+        this.openRouterError = e.message || 'Failed to save OpenRouter key.';
+        ClawReformToast.error(this.openRouterError);
+      }
+      this.openRouterSaving = false;
+    },
+
+    async submitApiKey(key) {
       if (!key || !key.trim()) return;
       ClawReformAPI.setAuthToken(key.trim());
       localStorage.setItem('clawreform-api-key', key.trim());
       this.showAuthPrompt = false;
-      this.refreshAgents();
+      await this.refreshAgents();
+      await this.checkOpenRouterGate();
     },
 
     clearApiKey() {
@@ -183,6 +263,7 @@ document.addEventListener('alpine:init', function() {
 function app() {
   return {
     page: 'agents',
+    obsidianGraphUrl: localStorage.getItem('clawreform-obsidian-graph-url') || '',
     themeMode: localStorage.getItem('clawreform-theme-mode') || 'system',
     theme: (() => {
       var mode = localStorage.getItem('clawreform-theme-mode') || 'system';
@@ -209,7 +290,7 @@ function app() {
       });
 
       // Hash routing
-      var validPages = ['overview','agents','sessions','approvals','workflows','scheduler','channels','skills','hands','analytics','logs','settings','wizard'];
+      var validPages = ['overview','agents','sessions','memory-layers','collective','obsidian','organism','approvals','workflows','scheduler','channels','skills','hands','analytics','logs','settings','wizard'];
       var pageRedirects = {
         'chat': 'agents',
         'templates': 'agents',
@@ -217,6 +298,14 @@ function app() {
         'cron': 'scheduler',
         'schedules': 'scheduler',
         'memory': 'sessions',
+        'memory-stack': 'memory-layers',
+        'memory-ladder': 'memory-layers',
+        'memory-graph': 'obsidian',
+        'obsidian-memory': 'obsidian',
+        'collective-consciousness': 'collective',
+        'collective-memory': 'collective',
+        'organs': 'organism',
+        'organ-system': 'organism',
         'audit': 'logs',
         'security': 'settings',
         'peers': 'settings',
@@ -266,7 +355,9 @@ function app() {
       // Initial data load
       this.pollStatus();
       Alpine.store('app').checkOnboarding();
-      Alpine.store('app').checkAuth();
+      Alpine.store('app').checkAuth().then(function() {
+        Alpine.store('app').checkOpenRouterGate();
+      });
       setInterval(function() { self.pollStatus(); }, 5000);
     },
 
@@ -274,6 +365,28 @@ function app() {
       this.page = p;
       window.location.hash = p;
       this.mobileMenuOpen = false;
+    },
+
+    get obsidianEmbedUrl() {
+      var raw = (this.obsidianGraphUrl || '').trim();
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return '';
+    },
+
+    saveObsidianGraphUrl() {
+      localStorage.setItem('clawreform-obsidian-graph-url', (this.obsidianGraphUrl || '').trim());
+    },
+
+    openObsidianGraph() {
+      var target = (this.obsidianGraphUrl || '').trim();
+      if (!target) {
+        target = window.prompt('Enter your Obsidian graph URL (obsidian://... or https://...)', '');
+        if (!target) return;
+        this.obsidianGraphUrl = target.trim();
+        this.saveObsidianGraphUrl();
+      }
+      window.open(target, '_blank', 'noopener,noreferrer');
     },
 
     setTheme(mode) {
