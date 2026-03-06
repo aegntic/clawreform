@@ -13,7 +13,7 @@
       "id": "US002",
       "title": "X share button with tracked virality",
       "description": "Add 'Share on X' buttons to dashboard. Track shares via UTM params.",
-      "passes": false,
+      "passes": true,
       "revenueImpact": "$2k projected in 7 days",
       "priority": 2
     },
@@ -21,15 +21,15 @@
       "id": "US003",
       "title": "Lemon Squeezy affiliate link embed",
       "description": "Add affiliate link storage and display for partner products. Commission tracking.",
-      "passes": false,
-      "revenueImpact": "$1k projected in 7 days",
+      "passes": true,
+     ": "$1k "revenueImpact projected in 7 days",
       "priority": 3
     },
     {
       "id": "US004",
       "title": "Cold email capture on signup drop-off",
       "description": "If user starts signup but doesn't complete, show modal offering 'early access' in exchange for email.",
-      "passes": false,
+      "passes": true,
       "revenueImpact": "$3k projected in 7 days",
       "priority": 4
     },
@@ -37,7 +37,7 @@
       "id": "US005",
       "title": "Retention nag for expired trials",
       "description": "Send notification when trial expires with upgrade prompt. Track conversion.",
-      "passes": false,
+      "passes": true,
       "revenueImpact": "$4k projected in 7 days",
       "priority": 5
     }

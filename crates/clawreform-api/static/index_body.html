@@ -1,7 +1,7 @@
 <body x-data="app" :data-theme="theme">
 
 <!-- API Key Auth Prompt -->
-<div x-show="$store.app.showAuthPrompt" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--overlay-backdrop);backdrop-filter:blur(4px)" x-data="{ apiKeyInput: '' }">
+<div x-show="$store.app.showAuthPrompt" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--overlay-backdrop);backdrop-filter:blur(4px)" x-data="{ apiKeyInput: '', emailCapture: '' }">
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:400px;width:90%">
     <h3 style="margin:0 0 0.5rem;font-size:1.1rem">API Key Required</h3>
     <p style="color:var(--text-dim);font-size:0.85rem;margin:0 0 1rem">This instance requires an API key. Enter the key from your <code>config.toml</code>.</p>
@@ -9,6 +9,13 @@
       <input type="password" x-model="apiKeyInput" placeholder="Enter API key..." style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.75rem">
       <button type="submit" style="width:100%;padding:0.6rem;border-radius:6px;border:none;background:var(--accent);color:var(--text-on-accent);font-weight:600;cursor:pointer;font-size:0.9rem">Unlock Dashboard</button>
     </form>
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <p style="color:var(--text-dim);font-size:0.8rem;margin:0 0 0.5rem">Don't have a key? Get early access:</p>
+      <form @submit.prevent="emailCapture && (alert('Thanks! We\'ll notify you.'), emailCapture='')">
+        <input type="email" x-model="emailCapture" placeholder="Enter your email..." style="width:100%;padding:0.5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:0.85rem;box-sizing:border-box;margin-bottom:0.5rem">
+        <button type="submit" style="width:100%;padding:0.4rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;font-size:0.8rem">Join Waitlist</button>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -59,10 +66,18 @@
           </div>
         </div>
       </div>
-      <div class="theme-switcher">
-        <button class="theme-opt" :class="{ active: themeMode === 'light' }" @click="setTheme('light')" title="Light">&#9788;</button>
-        <button class="theme-opt" :class="{ active: themeMode === 'system' }" @click="setTheme('system')" title="System">&#9675;</button>
-        <button class="theme-opt" :class="{ active: themeMode === 'dark' }" @click="setTheme('dark')" title="Dark">&#9790;</button>
+      <div style="display:flex;align-items:center;gap:4px">
+        <a href="https://x.com/intent/tweet?text=Just%20started%20using%20clawREFORM%20by%20%40aegntic_ai%20-%20the%20self-evolving%20agent%20OS!&url=https%3A%2F%2Fclawreform.com&via=aegntic_ai" 
+           target="_blank" rel="noopener noreferrer"
+           title="Share on X"
+           style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;background:rgba(255,255,255,0.1);color:inherit;text-decoration:none;font-size:14px">
+          𝕏
+        </a>
+        <div class="theme-switcher">
+          <button class="theme-opt" :class="{ active: themeMode === 'light' }" @click="setTheme('light')" title="Light">&#9788;</button>
+          <button class="theme-opt" :class="{ active: themeMode === 'system' }" @click="setTheme('system')" title="System">&#9675;</button>
+          <button class="theme-opt" :class="{ active: themeMode === 'dark' }" @click="setTheme('dark')" title="Dark">&#9790;</button>
+        </div>
       </div>
     </div>
 
@@ -2939,6 +2954,9 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
               <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'security' }" @click="tab = 'security'; if (!securityData && !secLoading) loadSecurity()">Security</div>
             </template>
             <template x-if="$store.app.developerMode">
+              <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'affiliates' }" @click="tab = 'affiliates'">Affiliates</div>
+            </template>
+            <template x-if="$store.app.developerMode">
               <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'network' }" @click="tab = 'network'; if (!peers.length && !peersLoading) { loadPeers(); startPeerPolling(); }">Network</div>
             </template>
             <template x-if="$store.app.developerMode">
@@ -3372,6 +3390,17 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             </div>
           </div>
           
+          <!-- Trial Status Banner -->
+          <div x-show="tab === 'budget' && $store.app.developerMode" class="card mb-4" style="border-left:3px solid var(--warning);background:var(--bg-input)" x-data="{ trialDaysLeft: 14 }">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+              <div>
+                <div style="font-weight:600;font-size:13px">📊 Trial Period Active</div>
+                <div class="text-xs text-dim" x-text="trialDaysLeft + ' days remaining'"></div>
+              </div>
+              <a href="https://billing.stripe.com/p/test-checkout" class="btn btn-sm" style="background:var(--warning);color:#000">Upgrade Now</a>
+            </div>
+          </div>
+          
           <div x-show="tab === 'budget' && $store.app.developerMode" x-data="{
             budgetData: null, agentRanking: [], budgetLoading: true,
             editMode: false,
@@ -3504,6 +3533,54 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 </table>
               </div>
               <div class="text-xs text-dim" x-show="!agentRanking.length">No spending recorded today.</div>
+            </div>
+          </div>
+
+          <!-- Affiliates tab -->
+          <div x-show="tab === 'affiliates' && $store.app.developerMode" x-data="{
+            affiliateLinks: [
+              { id: 1, name: 'Lemon Squeezy', url: 'https://lemonsqueezy.com/?ref=clawreform', commission: '20%', clicks: 0 },
+              { id: 2, name: 'OpenRouter', url: 'https://openrouter.ai/?ref=clawreform', commission: '30%', clicks: 0 },
+              { id: 3, name: 'Cloudflare', url: 'https://cloudflare.com/?ref=clawreform', commission: 'variable', clicks: 0 }
+            ],
+            addName: '', addUrl: '', addCommission: '',
+            addLink() {
+              if (!this.addName || !this.addUrl) return;
+              this.affiliateLinks.push({ id: Date.now(), name: this.addName, url: this.addUrl, commission: this.addCommission || '10%', clicks: 0 });
+              this.addName = ''; this.addUrl = ''; this.addCommission = '';
+            },
+            copyLink(url) {
+              navigator.clipboard.writeText(url);
+              alert('Link copied!');
+            }
+          }">
+            <div class="card mb-4" style="border-left:3px solid var(--accent)">
+              <div class="font-bold" style="font-size:14px;margin-bottom:6px">💰 Affiliate Links</div>
+              <div class="text-sm text-dim" style="line-height:1.7;margin-bottom:12px">
+                Earn commission by sharing these referral links. Track clicks and earnings here.
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                <input type="text" x-model="addName" placeholder="Product name" class="input" style="flex:1;min-width:120px">
+                <input type="text" x-model="addUrl" placeholder="Affiliate URL" class="input" style="flex:2;min-width:200px">
+                <input type="text" x-model="addCommission" placeholder="Commission %" class="input" style="width:100px">
+                <button @click="addLink()" class="btn btn-primary">Add</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Product</th><th>Link</th><th>Commission</th><th>Clicks</th><th>Action</th></tr></thead>
+                  <tbody>
+                    <template x-for="link in affiliateLinks" :key="link.id">
+                      <tr>
+                        <td class="font-bold" x-text="link.name"></td>
+                        <td class="text-dim" style="max-width:200px;overflow:hidden;text-overflow:ellipsis" x-text="link.url"></td>
+                        <td x-text="link.commission"></td>
+                        <td x-text="link.clicks"></td>
+                        <td><button @click="copyLink(link.url)" class="btn btn-ghost btn-sm">Copy</button></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
