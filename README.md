@@ -53,6 +53,16 @@
 
 ---
 
+## Theme System
+
+clawREFORM now ships with a dark-first tactile interface derived from the metallic brand mark.
+
+- Dark mode is the default: forged charcoal substrate, brushed metal controls, amber emissive feedback.
+- Light mode is fully designed, not inverted: stone/aluminum surfaces, restrained gold accent, preserved depth cues.
+- Shared rules across both modes: geometric typography, debossed/stamped headings for key UI chrome, and machined pill controls for primary actions, toggles, and progress rails.
+
+---
+
 ## 🧬 Four Innovations No One Else Has
 
 > These are not features bolted onto an SDK. They are architectural primitives baked into the runtime. Each one solves a category of problem that no other agent OS has addressed.

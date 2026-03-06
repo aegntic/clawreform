@@ -1,65 +1,51 @@
 <body x-data="app" :data-theme="theme">
 
   <!-- API Key Auth Prompt -->
-  <div x-show="$store.app.showAuthPrompt"
-    style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--overlay-backdrop);backdrop-filter:blur(4px)"
-    x-data="{ apiKeyInput: '', emailCapture: '' }">
-    <div
-      style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:400px;width:90%">
-      <h3 style="margin:0 0 0.5rem;font-size:1.1rem">API Key Required</h3>
-      <p style="color:var(--text-dim);font-size:0.85rem;margin:0 0 1rem">This instance requires an API key. Enter the
-        key from your <code>config.toml</code>.</p>
+  <div x-show="$store.app.showAuthPrompt" class="auth-gate" style="z-index:9999" x-data="{ apiKeyInput: '', emailCapture: '' }">
+    <div class="auth-panel" style="max-width:400px">
+      <h3 class="auth-panel-title">API Key Required</h3>
+      <p class="auth-panel-copy">This instance requires an API key. Enter the key from your <code>config.toml</code>.
+      </p>
       <form @submit.prevent="$store.app.submitApiKey(apiKeyInput)">
-        <input type="password" x-model="apiKeyInput" placeholder="Enter API key..."
-          style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.75rem">
-        <button type="submit"
-          style="width:100%;padding:0.6rem;border-radius:6px;border:none;background:var(--accent);color:var(--text-on-accent);font-weight:600;cursor:pointer;font-size:0.9rem">Unlock
-          Dashboard</button>
+        <input type="password" x-model="apiKeyInput" placeholder="Enter API key..." class="input" style="margin-bottom:12px">
+        <button type="submit" class="btn btn-primary btn-block">Unlock Dashboard</button>
       </form>
-      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
-        <p style="color:var(--text-dim);font-size:0.8rem;margin:0 0 0.5rem">Don't have a key? Get early access:</p>
+      <div class="auth-panel-divider">
+        <p class="auth-panel-meta">Don't have a key? Get early access:</p>
         <form @submit.prevent="emailCapture && (alert('Thanks! We\'ll notify you.'), emailCapture='')">
-          <input type="email" x-model="emailCapture" placeholder="Enter your email..."
-            style="width:100%;padding:0.5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:0.85rem;box-sizing:border-box;margin-bottom:0.5rem">
-          <button type="submit"
-            style="width:100%;padding:0.4rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;font-size:0.8rem">Join
-            Waitlist</button>
+          <input type="email" x-model="emailCapture" placeholder="Enter your email..." class="input"
+            style="margin-bottom:8px">
+          <button type="submit" class="btn btn-ghost btn-block">Join Waitlist</button>
         </form>
       </div>
     </div>
   </div>
 
   <!-- OpenRouter Setup Gate -->
-  <div x-show="!$store.app.showAuthPrompt && $store.app.showOpenRouterGate"
-    style="position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;background:var(--overlay-backdrop-strong);backdrop-filter:blur(4px)">
-    <div
-      style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;max-width:520px;width:92%">
-      <h3 style="margin:0 0 0.4rem;font-size:1.05rem">OpenRouter Key Required</h3>
-      <p style="color:var(--text-dim);font-size:0.85rem;line-height:1.55;margin:0 0 0.8rem">
+  <div x-show="!$store.app.showAuthPrompt && $store.app.showOpenRouterGate" class="auth-gate">
+    <div class="auth-panel">
+      <h3 class="auth-panel-title">OpenRouter Key Required</h3>
+      <p class="auth-panel-copy">
         clawREFORM's lightweight in-house assistant path uses OpenRouter as the default provider.
         Add your key to continue.
       </p>
-      <div style="margin-bottom:0.7rem;font-size:0.8rem;color:var(--text-dim)">
+      <div class="auth-panel-meta">
         Get a key:
-        <a :href="$store.app.openRouterHelpUrl" target="_blank" rel="noopener noreferrer"
-          style="color:var(--accent-light)">openrouter.ai/keys</a>
+        <a :href="$store.app.openRouterHelpUrl" target="_blank" rel="noopener noreferrer" class="auth-panel-link">openrouter.ai/keys</a>
       </div>
-      <div x-show="$store.app.openRouterGateLoading" class="loading-state" style="margin:0.25rem 0 0.5rem">
+      <div x-show="$store.app.openRouterGateLoading" class="loading-state" style="margin:4px 0 8px">
         <div class="spinner"></div><span>Checking OpenRouter status...</span>
       </div>
       <form x-show="!$store.app.openRouterGateLoading" @submit.prevent="$store.app.saveOpenRouterKey()">
-        <input type="password" x-model="$store.app.openRouterKeyInput" placeholder="Enter OpenRouter API key..."
-          style="width:100%;padding:0.6rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:0.9rem;box-sizing:border-box;margin-bottom:0.65rem">
-        <div x-show="$store.app.openRouterError"
-          style="margin-bottom:0.65rem;padding:0.55rem;border-radius:6px;background:var(--error-subtle);border:1px solid var(--error-muted);color:var(--error);font-size:0.8rem"
-          x-text="$store.app.openRouterError"></div>
-        <div class="flex gap-2">
-          <button type="submit" class="btn btn-primary" :disabled="$store.app.openRouterSaving" style="flex:1">
+        <input type="password" x-model="$store.app.openRouterKeyInput" placeholder="Enter OpenRouter API key..." class="input"
+          style="margin-bottom:10px">
+        <div x-show="$store.app.openRouterError" class="auth-error" x-text="$store.app.openRouterError"></div>
+        <div class="auth-panel-actions">
+          <button type="submit" class="btn btn-primary" :disabled="$store.app.openRouterSaving">
             <span x-show="!$store.app.openRouterSaving">Save OpenRouter Key</span>
             <span x-show="$store.app.openRouterSaving">Saving...</span>
           </button>
-          <button type="button" class="btn btn-ghost" @click="$store.app.checkOpenRouterGate()"
-            :disabled="$store.app.openRouterGateLoading">Refresh</button>
+          <button type="button" class="btn btn-ghost" @click="$store.app.checkOpenRouterGate()" :disabled="$store.app.openRouterGateLoading">Refresh</button>
         </div>
       </form>
     </div>
@@ -73,15 +59,14 @@
           <div class="sidebar-logo">
             <img src="/logo.png" alt="clawREFORM by aegntic.ai" width="28" height="28">
             <div>
-              <h1>clawREFORM</h1>
+              <h1 class="brand-wordmark"><span class="brand-wordmark-soft">claw</span><strong>REFORM</strong></h1>
               <div class="version" x-text="'by aegntic.ai · v' + version"></div>
             </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:4px">
+        <div class="sidebar-header-actions">
           <a href="https://x.com/intent/tweet?text=Just%20started%20using%20clawREFORM%20by%20%40aegntic_ai%20-%20the%20self-evolving%20agent%20OS!&url=https%3A%2F%2Fclawreform.com&via=aegntic_ai"
-            target="_blank" rel="noopener noreferrer" title="Share on X"
-            style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;background:rgba(255,255,255,0.1);color:inherit;text-decoration:none;font-size:14px">
+            target="_blank" rel="noopener noreferrer" title="Share on X" class="share-chip">
             𝕏
           </a>
           <div class="theme-switcher">
