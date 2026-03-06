@@ -13,11 +13,13 @@ pub struct Goal {
     #[serde(default)]
     pub description: String,
     /// Financial budget allocated to this goal.
+    #[serde(default)]
     pub budget: f64,
     /// Amount of budget spent so far.
     #[serde(default)]
     pub spent: f64,
     /// Current status of the goal (e.g., "active", "pending", "completed").
+    #[serde(default)]
     pub status: GoalStatus,
 }
 
@@ -60,6 +62,7 @@ pub struct Issue {
     pub title: String,
     #[serde(default)]
     pub description: String,
+    #[serde(default)]
     pub status: IssueStatus,
     /// Agent assigned to this issue.
     #[serde(default)]

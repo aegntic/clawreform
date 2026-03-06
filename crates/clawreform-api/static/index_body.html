@@ -870,6 +870,10 @@
                     x-text="formatCurrency(budget.allocated - budget.spent)"></div>
                   <div class="stat-label">Remaining Budget</div>
                 </div>
+                <div class="stat-card stat-card-lg">
+                  <div class="stat-value" style="color:var(--accent-light)" x-text="openIssueCount"></div>
+                  <div class="stat-label">Open Issues</div>
+                </div>
               </div>
 
               <div class="overview-grid" style="grid-template-columns: 1fr 1fr">
@@ -943,35 +947,121 @@
                   </div>
                 </div>
 
-                <!-- Org Chart / Team Structure -->
+                <!-- Issue Tracker -->
                 <div class="card">
-                  <div class="card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      style="margin-right:4px">
-                      <rect x="16" y="16" width="6" height="6" rx="1" />
-                      <rect x="2" y="16" width="6" height="6" rx="1" />
-                      <rect x="9" y="2" width="6" height="6" rx="1" />
-                      <path d="M5 16v-3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3" />
-                      <path d="M12 8v3" />
-                    </svg> Agent Organization</div>
+                  <div class="card-header" style="justify-content:space-between">
+                    <div style="display:flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" style="margin-right:4px">
+                        <path d="M9 11l3 3L22 4" />
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                      </svg> Issue Tracker</div>
+                    <button class="btn btn-ghost btn-sm" style="padding:2px 6px;font-size:11px"
+                      @click="showIssueForm = !showIssueForm">+ New Issue</button>
+                  </div>
+
+                  <div x-show="showIssueForm"
+                    style="margin-top:12px;padding:12px;border:1px solid var(--border-subtle);border-radius:6px;background:var(--bg-input)">
+                    <input type="text" x-model="newIssue.title" placeholder="Issue title..." class="input"
+                      style="margin-bottom:6px;width:100%">
+                    <input type="text" x-model="newIssue.description" placeholder="Description..." class="input"
+                      style="margin-bottom:6px;width:100%">
+                    <div class="flex gap-2 items-center" style="margin-bottom:6px">
+                      <select x-model="newIssue.goal_id" class="input" style="flex:1">
+                        <option value="">No linked goal</option>
+                        <template x-for="goal in goals" :key="goal.id">
+                          <option :value="goal.id" x-text="goal.title"></option>
+                        </template>
+                      </select>
+                      <input type="text" x-model="newIssue.assigned_to" placeholder="Assign to..." class="input"
+                        style="flex:1">
+                    </div>
+                    <div class="flex gap-2 items-center">
+                      <input type="number" min="0" x-model="newIssue.priority" placeholder="Priority" class="input"
+                        style="width:90px">
+                      <input type="text" x-model="newIssue.labels" placeholder="labels, comma separated" class="input"
+                        style="flex:1">
+                      <button class="btn btn-primary btn-sm" @click="createIssue()">Create</button>
+                      <button class="btn btn-ghost btn-sm" @click="showIssueForm = false">Cancel</button>
+                    </div>
+                  </div>
+
                   <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-                    <template x-for="agent in orgChart" :key="agent.id">
+                    <template x-for="issue in issues" :key="issue.id">
                       <div
-                        style="border-left:2px solid var(--border);padding-left:12px;margin-left:8px;position:relative">
-                        <div style="position:absolute;left:-2px;top:10px;width:10px;border-top:2px solid var(--border)">
-                        </div>
+                        style="border:1px solid var(--border-subtle);border-radius:6px;padding:12px;background:var(--bg-input)">
                         <div class="flex justify-between items-center">
-                          <div class="font-bold" x-text="agent.name"></div>
-                          <div class="text-xs text-dim" x-text="'Limit: ' + formatCurrency(agent.budget_limit)"></div>
+                          <div class="font-bold" x-text="issue.title"></div>
+                          <div class="flex gap-1 items-center">
+                            <span class="badge"
+                              :class="issue.status === 'done' ? 'badge-success' : issue.status === 'review' ? 'badge-info' : issue.status === 'inprogress' ? 'badge-running' : issue.status === 'cancelled' ? 'badge-error' : 'badge-dim'"
+                              x-text="issue.status"></span>
+                            <select class="input"
+                              style="font-size:10px;padding:1px 4px;width:auto;background:transparent;border:none;color:var(--text-dim)"
+                              :value="issue.status" @change="updateIssueStatus(issue.id, $event.target.value)">
+                              <option value="open">Open</option>
+                              <option value="inprogress">In Progress</option>
+                              <option value="review">Review</option>
+                              <option value="done">Done</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button class="btn btn-ghost btn-sm"
+                              style="padding:1px 4px;font-size:10px;color:var(--danger)"
+                              @click="deleteIssue(issue.id)">✕</button>
+                          </div>
                         </div>
-                        <div class="text-xs" style="color:var(--accent-light)" x-text="agent.role"></div>
+                        <div x-show="issue.description" class="text-xs text-dim mb-2" x-text="issue.description"></div>
+                        <div class="flex justify-between text-xs text-dim">
+                          <span x-text="'Goal: ' + goalTitle(issue.goal_id)"></span>
+                          <span x-text="'Priority: ' + issue.priority"></span>
+                        </div>
+                        <div class="flex justify-between text-xs text-dim" style="margin-top:4px">
+                          <span x-text="'Owner: ' + (issue.assigned_to || 'Unassigned')"></span>
+                          <span x-text="'Comments: ' + (issue.comments ? issue.comments.length : 0)"></span>
+                        </div>
+                        <div x-show="issue.labels && issue.labels.length" style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap">
+                          <template x-for="label in issue.labels" :key="label">
+                            <span class="badge badge-muted" x-text="label"></span>
+                          </template>
+                        </div>
                       </div>
                     </template>
+                    <div x-show="issues.length === 0" class="text-dim text-xs" style="padding:20px;text-align:center">No
+                      issues yet. Click "+ New Issue" to create one.</div>
                   </div>
                 </div>
 
               </div>
+
+              <!-- Org Chart / Team Structure -->
+              <div class="card" style="margin-top:20px">
+                <div class="card-header"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="margin-right:4px">
+                    <rect x="16" y="16" width="6" height="6" rx="1" />
+                    <rect x="2" y="16" width="6" height="6" rx="1" />
+                    <rect x="9" y="2" width="6" height="6" rx="1" />
+                    <path d="M5 16v-3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3" />
+                    <path d="M12 8v3" />
+                  </svg> Agent Organization</div>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+                  <template x-for="agent in orgChart" :key="agent.id">
+                    <div
+                      style="border-left:2px solid var(--border);padding-left:12px;margin-left:8px;position:relative">
+                      <div style="position:absolute;left:-2px;top:10px;width:10px;border-top:2px solid var(--border)">
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <div class="font-bold" x-text="agent.name"></div>
+                        <div class="text-xs text-dim" x-text="'Limit: ' + formatCurrency(agent.budget_limit)"></div>
+                      </div>
+                      <div class="text-xs" style="color:var(--accent-light)" x-text="agent.role"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
             </div>
+          </div>
           </div>
         </div>
       </template>

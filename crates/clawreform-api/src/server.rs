@@ -515,6 +515,19 @@ pub async fn build_router(
             axum::routing::put(routes::update_company_goal).delete(routes::delete_company_goal),
         )
         .route(
+            "/api/company/issues",
+            axum::routing::get(routes::list_company_issues).post(routes::create_company_issue),
+        )
+        .route(
+            "/api/company/issues/{id}",
+            axum::routing::put(routes::update_company_issue)
+                .delete(routes::delete_company_issue),
+        )
+        .route(
+            "/api/company/issues/{id}/comments",
+            axum::routing::post(routes::add_company_issue_comment),
+        )
+        .route(
             "/api/company/org",
             axum::routing::get(routes::company_org),
         )

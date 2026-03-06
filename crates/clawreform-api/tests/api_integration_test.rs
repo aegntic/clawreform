@@ -118,6 +118,30 @@ async fn start_test_server_with_provider(
             "/api/workflows/{id}/runs",
             axum::routing::get(routes::list_workflow_runs),
         )
+        .route(
+            "/api/company/overview",
+            axum::routing::get(routes::company_overview),
+        )
+        .route(
+            "/api/company/goals",
+            axum::routing::get(routes::list_company_goals).post(routes::create_company_goal),
+        )
+        .route(
+            "/api/company/goals/{id}",
+            axum::routing::put(routes::update_company_goal).delete(routes::delete_company_goal),
+        )
+        .route(
+            "/api/company/issues",
+            axum::routing::get(routes::list_company_issues).post(routes::create_company_issue),
+        )
+        .route(
+            "/api/company/issues/{id}",
+            axum::routing::put(routes::update_company_issue).delete(routes::delete_company_issue),
+        )
+        .route(
+            "/api/company/issues/{id}/comments",
+            axum::routing::post(routes::add_company_issue_comment),
+        )
         .route("/api/shutdown", axum::routing::post(routes::shutdown))
         .layer(axum::middleware::from_fn(middleware::request_logging))
         .layer(TraceLayer::new_for_http())
@@ -851,4 +875,129 @@ async fn test_auth_disabled_when_no_key() {
         .await
         .unwrap();
     assert_eq!(resp.status(), 200);
+}
+
+#[tokio::test]
+async fn test_company_goals_and_issues_flow() {
+    let server = start_test_server().await;
+    let client = reqwest::Client::new();
+
+    let goal_resp = client
+        .post(format!("{}/api/company/goals", server.base_url))
+        .json(&serde_json::json!({
+            "title": "Launch issue tracker",
+            "description": "Ship the first integrated company issue board.",
+            "budget": 1500.0,
+            "status": "active"
+        }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(goal_resp.status(), 201);
+    let goal: serde_json::Value = goal_resp.json().await.unwrap();
+    let goal_id = goal["id"].as_str().unwrap().to_string();
+    assert_eq!(goal["status"], "active");
+
+    let issue_resp = client
+        .post(format!("{}/api/company/issues", server.base_url))
+        .json(&serde_json::json!({
+            "goal_id": goal_id,
+            "title": "Build typed issue CRUD",
+            "description": "Add typed routes and structured memory persistence.",
+            "assigned_to": "ops",
+            "priority": 3,
+            "labels": ["backend", "company"]
+        }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(issue_resp.status(), 201);
+    let issue: serde_json::Value = issue_resp.json().await.unwrap();
+    let issue_id = issue["id"].as_str().unwrap().to_string();
+    assert_eq!(issue["status"], "open");
+
+    let comment_resp = client
+        .post(format!(
+            "{}/api/company/issues/{}/comments",
+            server.base_url, issue_id
+        ))
+        .json(&serde_json::json!({
+            "author": "operator",
+            "body": "This is the first tracked work item."
+        }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(comment_resp.status(), 201);
+
+    let overview_resp = client
+        .get(format!("{}/api/company/overview", server.base_url))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(overview_resp.status(), 200);
+    let overview: serde_json::Value = overview_resp.json().await.unwrap();
+    assert_eq!(overview["goals"].as_array().unwrap().len(), 1);
+    assert_eq!(overview["issues"].as_array().unwrap().len(), 1);
+    assert_eq!(overview["open_issue_count"], 1);
+
+    let update_issue_resp = client
+        .put(format!("{}/api/company/issues/{}", server.base_url, issue_id))
+        .json(&serde_json::json!({
+            "status": "done",
+            "labels": ["backend", "done"]
+        }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(update_issue_resp.status(), 200);
+    let updated_issue: serde_json::Value = update_issue_resp.json().await.unwrap();
+    assert_eq!(updated_issue["status"], "done");
+
+    let delete_goal_resp = client
+        .delete(format!("{}/api/company/goals/{}", server.base_url, goal_id))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(delete_goal_resp.status(), 200);
+    let delete_goal_body: serde_json::Value = delete_goal_resp.json().await.unwrap();
+    assert_eq!(delete_goal_body["detached_issues"], 1);
+
+    let issues_resp = client
+        .get(format!("{}/api/company/issues", server.base_url))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(issues_resp.status(), 200);
+    let issues_body: serde_json::Value = issues_resp.json().await.unwrap();
+    let issues = issues_body["issues"].as_array().unwrap();
+    assert_eq!(issues.len(), 1);
+    assert!(issues[0]["goal_id"].is_null());
+    assert_eq!(issues[0]["comments"].as_array().unwrap().len(), 1);
+
+    let delete_issue_resp = client
+        .delete(format!("{}/api/company/issues/{}", server.base_url, issue_id))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(delete_issue_resp.status(), 200);
+}
+
+#[tokio::test]
+async fn test_company_issue_rejects_unknown_goal() {
+    let server = start_test_server().await;
+    let client = reqwest::Client::new();
+
+    let resp = client
+        .post(format!("{}/api/company/issues", server.base_url))
+        .json(&serde_json::json!({
+            "goal_id": "missing-goal",
+            "title": "Broken link"
+        }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), 400);
+    let body: serde_json::Value = resp.json().await.unwrap();
+    assert!(body["error"].as_str().unwrap().contains("goal_id"));
 }
