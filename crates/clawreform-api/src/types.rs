@@ -94,3 +94,62 @@ pub struct ClawHubInstallRequest {
     /// ClawHub skill slug (e.g., "github-helper").
     pub slug: String,
 }
+
+/// Request to create a company goal.
+#[derive(Debug, Deserialize)]
+pub struct CreateCompanyGoalRequest {
+    pub title: String,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default)]
+    pub budget: f64,
+    #[serde(default)]
+    pub status: clawreform_types::company::GoalStatus,
+}
+
+/// Request to update a company goal.
+#[derive(Debug, Default, Deserialize)]
+pub struct UpdateCompanyGoalRequest {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub budget: Option<f64>,
+    pub spent: Option<f64>,
+    pub status: Option<clawreform_types::company::GoalStatus>,
+}
+
+/// Request to create a company issue.
+#[derive(Debug, Deserialize)]
+pub struct CreateCompanyIssueRequest {
+    #[serde(default)]
+    pub goal_id: Option<String>,
+    pub title: String,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default)]
+    pub status: clawreform_types::company::IssueStatus,
+    #[serde(default)]
+    pub assigned_to: Option<String>,
+    #[serde(default)]
+    pub priority: u8,
+    #[serde(default)]
+    pub labels: Vec<String>,
+}
+
+/// Request to update a company issue.
+#[derive(Debug, Default, Deserialize)]
+pub struct UpdateCompanyIssueRequest {
+    pub goal_id: Option<String>,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub status: Option<clawreform_types::company::IssueStatus>,
+    pub assigned_to: Option<String>,
+    pub priority: Option<u8>,
+    pub labels: Option<Vec<String>>,
+}
+
+/// Request to add a comment to a company issue.
+#[derive(Debug, Deserialize)]
+pub struct CreateCompanyIssueCommentRequest {
+    pub author: String,
+    pub body: String,
+}

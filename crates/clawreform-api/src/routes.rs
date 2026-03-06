@@ -13,7 +13,9 @@ use clawreform_kernel::ClawReformKernel;
 use clawreform_runtime::kernel_handle::KernelHandle;
 use clawreform_runtime::tool_runner::builtin_tool_definitions;
 use clawreform_types::agent::{AgentId, AgentIdentity, AgentManifest};
+use clawreform_types::company::{Goal, Issue, IssueComment, IssueStatus};
 use dashmap::DashMap;
+use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock};
 use std::time::Instant;
@@ -8738,8 +8740,13 @@ pub async fn company_overview(State(state): State<Arc<AppState>>) -> impl IntoRe
         }
     }
 
-    // Load goals from structured memory
+    // Load company planning state from structured memory.
     let goals = load_company_goals(&state);
+    let issues = load_company_issues(&state);
+    let open_issue_count = issues
+        .iter()
+        .filter(|issue| issue.status != IssueStatus::Done && issue.status != IssueStatus::Cancelled)
+        .count();
 
     (
         StatusCode::OK,
@@ -8751,7 +8758,10 @@ pub async fn company_overview(State(state): State<Arc<AppState>>) -> impl IntoRe
                 "remaining": total_budget - total_spent,
             },
             "goals": goals,
+            "issues": issues,
             "agent_count": agents.len(),
+            "issue_count": issues.len(),
+            "open_issue_count": open_issue_count,
         })),
     )
 }
@@ -8765,74 +8775,84 @@ pub async fn list_company_goals(State(state): State<Arc<AppState>>) -> impl Into
 /// POST /api/company/goals — Create a new company goal.
 pub async fn create_company_goal(
     State(state): State<Arc<AppState>>,
-    Json(body): Json<serde_json::Value>,
+    Json(body): Json<CreateCompanyGoalRequest>,
 ) -> impl IntoResponse {
-    let title = match body.get("title").and_then(|v| v.as_str()) {
-        Some(t) => t.to_string(),
-        None => {
-            return (
-                StatusCode::BAD_REQUEST,
-                Json(serde_json::json!({"error": "title is required"})),
-            );
-        }
+    let title = body.title.trim();
+    if title.is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({"error": "title is required"})),
+        );
+    }
+    if body.budget < 0.0 {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({"error": "budget cannot be negative"})),
+        );
+    }
+
+    let goal = Goal {
+        id: uuid::Uuid::new_v4().to_string(),
+        title: title.to_string(),
+        description: body.description.trim().to_string(),
+        budget: body.budget,
+        spent: 0.0,
+        status: body.status,
     };
-    let description = body
-        .get("description")
-        .and_then(|v| v.as_str())
-        .unwrap_or("")
-        .to_string();
-    let budget = body.get("budget").and_then(|v| v.as_f64()).unwrap_or(0.0);
-    let status = body
-        .get("status")
-        .and_then(|v| v.as_str())
-        .unwrap_or("pending")
-        .to_string();
 
-    let goal_id = uuid::Uuid::new_v4().to_string();
-    let goal = serde_json::json!({
-        "id": goal_id,
-        "title": title,
-        "description": description,
-        "budget": budget,
-        "spent": 0.0,
-        "status": status,
-    });
-
-    // Persist to kernel structured memory under "company_goals" namespace
-    let mut goals = load_company_goals_raw(&state);
+    let mut goals = load_company_goals(&state);
     goals.push(goal.clone());
     save_company_goals(&state, &goals);
 
-    (StatusCode::CREATED, Json(goal))
+    (StatusCode::CREATED, Json(serde_json::json!(goal)))
 }
 
 /// PUT /api/company/goals/{id} — Update a company goal.
 pub async fn update_company_goal(
     State(state): State<Arc<AppState>>,
     Path(id): Path<String>,
-    Json(body): Json<serde_json::Value>,
+    Json(body): Json<UpdateCompanyGoalRequest>,
 ) -> impl IntoResponse {
-    let mut goals = load_company_goals_raw(&state);
-    let idx = goals.iter().position(|g| g["id"].as_str() == Some(&id));
+    let mut goals = load_company_goals(&state);
+    let idx = goals.iter().position(|goal| goal.id == id);
     match idx {
         Some(i) => {
-            if let Some(t) = body.get("title").and_then(|v| v.as_str()) {
-                goals[i]["title"] = serde_json::Value::String(t.to_string());
+            if let Some(title) = body.title {
+                let title = title.trim();
+                if title.is_empty() {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        Json(serde_json::json!({"error": "title cannot be empty"})),
+                    );
+                }
+                goals[i].title = title.to_string();
             }
-            if let Some(d) = body.get("description").and_then(|v| v.as_str()) {
-                goals[i]["description"] = serde_json::Value::String(d.to_string());
+            if let Some(description) = body.description {
+                goals[i].description = description.trim().to_string();
             }
-            if let Some(b) = body.get("budget").and_then(|v| v.as_f64()) {
-                goals[i]["budget"] = serde_json::json!(b);
+            if let Some(budget) = body.budget {
+                if budget < 0.0 {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        Json(serde_json::json!({"error": "budget cannot be negative"})),
+                    );
+                }
+                goals[i].budget = budget;
             }
-            if let Some(s) = body.get("spent").and_then(|v| v.as_f64()) {
-                goals[i]["spent"] = serde_json::json!(s);
+            if let Some(spent) = body.spent {
+                if spent < 0.0 {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        Json(serde_json::json!({"error": "spent cannot be negative"})),
+                    );
+                }
+                goals[i].spent = spent;
             }
-            if let Some(s) = body.get("status").and_then(|v| v.as_str()) {
-                goals[i]["status"] = serde_json::Value::String(s.to_string());
+            if let Some(status) = body.status {
+                goals[i].status = status;
             }
             save_company_goals(&state, &goals);
-            (StatusCode::OK, Json(goals[i].clone()))
+            (StatusCode::OK, Json(serde_json::json!(goals[i].clone())))
         }
         None => (
             StatusCode::NOT_FOUND,
@@ -8846,14 +8866,25 @@ pub async fn delete_company_goal(
     State(state): State<Arc<AppState>>,
     Path(id): Path<String>,
 ) -> impl IntoResponse {
-    let mut goals = load_company_goals_raw(&state);
+    let mut goals = load_company_goals(&state);
     let before = goals.len();
-    goals.retain(|g| g["id"].as_str() != Some(&id));
+    goals.retain(|goal| goal.id != id);
     if goals.len() < before {
         save_company_goals(&state, &goals);
+        let mut issues = load_company_issues(&state);
+        let mut detached_issues = 0usize;
+        for issue in &mut issues {
+            if issue.goal_id.as_deref() == Some(id.as_str()) {
+                issue.goal_id = None;
+                detached_issues += 1;
+            }
+        }
+        if detached_issues > 0 {
+            save_company_issues(&state, &issues);
+        }
         (
             StatusCode::OK,
-            Json(serde_json::json!({"status": "deleted"})),
+            Json(serde_json::json!({"status": "deleted", "detached_issues": detached_issues})),
         )
     } else {
         (
@@ -8883,9 +8914,179 @@ pub async fn company_org(State(state): State<Arc<AppState>>) -> impl IntoRespons
     (StatusCode::OK, Json(serde_json::json!({"org": org})))
 }
 
-// ─── Company goals persistence helpers ─────────────────────────────────
-// Goals are stored as a JSON array in the kernel's structured memory
-// under a synthetic "system" agent using the key "company_goals".
+/// GET /api/company/issues — List all company issues.
+pub async fn list_company_issues(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let issues = load_company_issues(&state);
+    (StatusCode::OK, Json(serde_json::json!({"issues": issues})))
+}
+
+/// POST /api/company/issues — Create a new company issue.
+pub async fn create_company_issue(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<CreateCompanyIssueRequest>,
+) -> impl IntoResponse {
+    let title = body.title.trim();
+    if title.is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({"error": "title is required"})),
+        );
+    }
+
+    let goal_id = normalize_optional_string(body.goal_id);
+    if let Some(ref goal_id) = goal_id {
+        if !company_goal_exists(&state, goal_id) {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(serde_json::json!({"error": "goal_id does not match an existing goal"})),
+            );
+        }
+    }
+
+    let issue = Issue {
+        id: uuid::Uuid::new_v4().to_string(),
+        goal_id,
+        title: title.to_string(),
+        description: body.description.trim().to_string(),
+        status: body.status,
+        assigned_to: normalize_optional_string(body.assigned_to),
+        priority: body.priority,
+        labels: normalize_labels(body.labels),
+        comments: Vec::new(),
+        created_at: chrono::Utc::now().to_rfc3339(),
+    };
+
+    let mut issues = load_company_issues(&state);
+    issues.push(issue.clone());
+    save_company_issues(&state, &issues);
+
+    (StatusCode::CREATED, Json(serde_json::json!(issue)))
+}
+
+/// PUT /api/company/issues/{id} — Update a company issue.
+pub async fn update_company_issue(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    Json(body): Json<UpdateCompanyIssueRequest>,
+) -> impl IntoResponse {
+    let mut issues = load_company_issues(&state);
+    let idx = issues.iter().position(|issue| issue.id == id);
+    match idx {
+        Some(i) => {
+            if let Some(title) = body.title {
+                let title = title.trim();
+                if title.is_empty() {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        Json(serde_json::json!({"error": "title cannot be empty"})),
+                    );
+                }
+                issues[i].title = title.to_string();
+            }
+            if let Some(description) = body.description {
+                issues[i].description = description.trim().to_string();
+            }
+            if let Some(status) = body.status {
+                issues[i].status = status;
+            }
+            if let Some(priority) = body.priority {
+                issues[i].priority = priority;
+            }
+            if let Some(labels) = body.labels {
+                issues[i].labels = normalize_labels(labels);
+            }
+            if let Some(goal_id) = body.goal_id {
+                let goal_id = normalize_optional_string(Some(goal_id));
+                if let Some(ref goal_id) = goal_id {
+                    if !company_goal_exists(&state, goal_id) {
+                        return (
+                            StatusCode::BAD_REQUEST,
+                            Json(
+                                serde_json::json!({"error": "goal_id does not match an existing goal"}),
+                            ),
+                        );
+                    }
+                }
+                issues[i].goal_id = goal_id;
+            }
+            if let Some(assigned_to) = body.assigned_to {
+                issues[i].assigned_to = normalize_optional_string(Some(assigned_to));
+            }
+
+            save_company_issues(&state, &issues);
+            (StatusCode::OK, Json(serde_json::json!(issues[i].clone())))
+        }
+        None => (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({"error": "Issue not found"})),
+        ),
+    }
+}
+
+/// DELETE /api/company/issues/{id} — Delete a company issue.
+pub async fn delete_company_issue(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    let mut issues = load_company_issues(&state);
+    let before = issues.len();
+    issues.retain(|issue| issue.id != id);
+    if issues.len() < before {
+        save_company_issues(&state, &issues);
+        (
+            StatusCode::OK,
+            Json(serde_json::json!({"status": "deleted"})),
+        )
+    } else {
+        (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({"error": "Issue not found"})),
+        )
+    }
+}
+
+/// POST /api/company/issues/{id}/comments — Add a comment to a company issue.
+pub async fn add_company_issue_comment(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<String>,
+    Json(body): Json<CreateCompanyIssueCommentRequest>,
+) -> impl IntoResponse {
+    let author = body.author.trim();
+    let message = body.body.trim();
+    if author.is_empty() || message.is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({"error": "author and body are required"})),
+        );
+    }
+
+    let mut issues = load_company_issues(&state);
+    let idx = issues.iter().position(|issue| issue.id == id);
+    match idx {
+        Some(i) => {
+            let comment = IssueComment {
+                id: uuid::Uuid::new_v4().to_string(),
+                author: author.to_string(),
+                body: message.to_string(),
+                created_at: chrono::Utc::now().to_rfc3339(),
+            };
+            issues[i].comments.push(comment.clone());
+            save_company_issues(&state, &issues);
+            (StatusCode::CREATED, Json(serde_json::json!(comment)))
+        }
+        None => (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({"error": "Issue not found"})),
+        ),
+    }
+}
+
+// ─── Company planning persistence helpers ──────────────────────────────
+// Company goals and issues are stored as JSON arrays in structured memory
+// under a synthetic "system" agent.
+
+const COMPANY_GOALS_KEY: &str = "company_goals";
+const COMPANY_ISSUES_KEY: &str = "company_issues";
 
 /// Synthetic system agent ID for storing company-level data.
 static COMPANY_AGENT_ID: LazyLock<clawreform_types::agent::AgentId> = LazyLock::new(|| {
@@ -8896,27 +9097,88 @@ static COMPANY_AGENT_ID: LazyLock<clawreform_types::agent::AgentId> = LazyLock::
     ]))
 });
 
-fn load_company_goals_raw(state: &AppState) -> Vec<serde_json::Value> {
+fn load_company_entries_raw(state: &AppState, key: &str) -> Vec<serde_json::Value> {
     state
         .kernel
         .memory
-        .structured_get(*COMPANY_AGENT_ID, "company_goals")
+        .structured_get(*COMPANY_AGENT_ID, key)
         .ok()
         .flatten()
         .and_then(|v| serde_json::from_value::<Vec<serde_json::Value>>(v).ok())
         .unwrap_or_default()
 }
 
-fn load_company_goals(state: &AppState) -> Vec<serde_json::Value> {
-    load_company_goals_raw(state)
+fn load_company_entries<T>(state: &AppState, key: &str) -> Vec<T>
+where
+    T: DeserializeOwned,
+{
+    load_company_entries_raw(state, key)
+        .into_iter()
+        .filter_map(|value| match serde_json::from_value::<T>(value) {
+            Ok(entry) => Some(entry),
+            Err(error) => {
+                tracing::warn!("Ignoring invalid {key} entry: {error}");
+                None
+            }
+        })
+        .collect()
 }
 
-fn save_company_goals(state: &AppState, goals: &[serde_json::Value]) {
-    let _ = state.kernel.memory.structured_set(
-        *COMPANY_AGENT_ID,
-        "company_goals",
-        serde_json::json!(goals),
-    );
+fn save_company_entries<T>(state: &AppState, key: &str, entries: &[T])
+where
+    T: serde::Serialize,
+{
+    let payload = match serde_json::to_value(entries) {
+        Ok(value) => value,
+        Err(error) => {
+            tracing::warn!("Failed to serialize {key} entries: {error}");
+            return;
+        }
+    };
+    let _ = state.kernel.memory.structured_set(*COMPANY_AGENT_ID, key, payload);
+}
+
+fn load_company_goals(state: &AppState) -> Vec<Goal> {
+    load_company_entries(state, COMPANY_GOALS_KEY)
+}
+
+fn save_company_goals(state: &AppState, goals: &[Goal]) {
+    save_company_entries(state, COMPANY_GOALS_KEY, goals);
+}
+
+fn load_company_issues(state: &AppState) -> Vec<Issue> {
+    load_company_entries(state, COMPANY_ISSUES_KEY)
+}
+
+fn save_company_issues(state: &AppState, issues: &[Issue]) {
+    save_company_entries(state, COMPANY_ISSUES_KEY, issues);
+}
+
+fn company_goal_exists(state: &AppState, goal_id: &str) -> bool {
+    load_company_goals(state)
+        .iter()
+        .any(|goal| goal.id == goal_id)
+}
+
+fn normalize_optional_string(value: Option<String>) -> Option<String> {
+    value
+        .map(|raw| raw.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn normalize_labels(labels: Vec<String>) -> Vec<String> {
+    let mut normalized = Vec::new();
+    for label in labels {
+        let trimmed = label.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let candidate = trimmed.to_string();
+        if !normalized.contains(&candidate) {
+            normalized.push(candidate);
+        }
+    }
+    normalized
 }
 
 /// SECURITY: Validate webhook bearer token using constant-time comparison.
