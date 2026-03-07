@@ -150,6 +150,18 @@ function overviewPage() {
       return this.mcpServers.filter(function(s) { return s.status === 'connected'; });
     },
 
+    get hasAnyAgent() {
+      return (Alpine.store('app').agents || []).length > 0;
+    },
+
+    get needsInitialSetup() {
+      return this.configuredProviders.length === 0 || !this.hasAnyAgent;
+    },
+
+    get isBeginnerSetupView() {
+      return !Alpine.store('app').developerMode && this.needsInitialSetup;
+    },
+
     // Provider health badge color
     providerBadgeClass(p) {
       if (p.auth_status === 'configured') {
@@ -183,7 +195,7 @@ function overviewPage() {
     get setupChecklist() {
       return [
         { key: 'provider', label: 'Configure an LLM provider', done: this.configuredProviders.length > 0, action: '#settings' },
-        { key: 'agent', label: 'Create your first agent', done: (Alpine.store('app').agents || []).length > 0, action: '#agents' },
+        { key: 'agent', label: 'Create your first agent', done: this.hasAnyAgent, action: '#agents' },
         { key: 'chat', label: 'Send your first message', done: localStorage.getItem('of-first-msg') === 'true', action: '#chat' },
         { key: 'channel', label: 'Connect a messaging channel', done: this.channels.length > 0, action: '#channels' },
         { key: 'skill', label: 'Browse or install a skill', done: localStorage.getItem('of-skill-browsed') === 'true', action: '#skills' }

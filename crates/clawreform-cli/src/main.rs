@@ -1414,10 +1414,12 @@ fn boot_kernel_error(e: &clawreform_kernel::error::KernelError) {
             "Check if another clawREFORM by aegntic.ai process is running: clawreform status",
         );
     } else if msg.contains("key") || msg.contains("API") || msg.contains("auth") {
-        ui::error_with_fix(
-            "LLM provider authentication failed",
-            "Run `clawreform doctor` to check your API key configuration",
-        );
+        ui::error("LLM provider authentication failed");
+        ui::blank();
+        ui::hint("Quick fix:");
+        ui::hint("1) Run `clawreform configure` for guided setup");
+        ui::hint("2) Or run `clawreform config set-key openrouter`");
+        ui::hint("3) Verify with `clawreform doctor`, then run `clawreform start` again");
     } else {
         ui::error_with_fix(
             &format!("Failed to boot kernel: {msg}"),

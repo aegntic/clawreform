@@ -332,6 +332,20 @@ function app() {
       return page;
     },
 
+    shouldGuideOnStartup() {
+      var store = Alpine.store('app');
+      if (store.developerMode) return false;
+      if (store.showAuthPrompt) return false;
+      if ((window.location.hash || '').replace('#', '').trim()) return false;
+      return !!store.showOpenRouterGate || !!store.showOnboarding;
+    },
+
+    routeToStartupPageIfNeeded() {
+      if (this.shouldGuideOnStartup()) {
+        this.navigate('wizard');
+      }
+    },
+
     init() {
       var self = this;
 
@@ -392,11 +406,11 @@ function app() {
       });
 
       // Initial data load
-      this.pollStatus();
-      Alpine.store('app').checkOnboarding();
-      Alpine.store('app').checkAuth().then(function () {
-        Alpine.store('app').checkOpenRouterGate();
-      });
+      this.pollStatus()
+        .then(function () { return Alpine.store('app').checkOnboarding(); })
+        .then(function () { return Alpine.store('app').checkAuth(); })
+        .then(function () { return Alpine.store('app').checkOpenRouterGate(); })
+        .finally(function () { self.routeToStartupPageIfNeeded(); });
       setInterval(function () { self.pollStatus(); }, 5000);
     },
 

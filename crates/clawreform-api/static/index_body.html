@@ -98,7 +98,8 @@
 
       <div class="sidebar-status" :class="{ offline: !connected && !$store.app.booting }">
         <span class="status-dot"></span>
-        <span class="sidebar-label" x-show="connected && !$store.app.developerMode">Ready to chat</span>
+        <span class="sidebar-label" x-show="connected && !$store.app.developerMode && !$store.app.showOpenRouterGate">Ready to chat</span>
+        <span class="sidebar-label" x-show="connected && !$store.app.developerMode && $store.app.showOpenRouterGate">Finish setup to continue</span>
         <span class="sidebar-label" x-show="connected && $store.app.developerMode"
           x-text="agentCount + ' agent(s) running'"></span>
         <span class="sidebar-label" x-show="$store.app.booting && !connected"
@@ -492,7 +493,18 @@
                 <button class="btn btn-ghost" @click="$store.app.dismissOnboarding()">Dismiss</button>
               </div>
             </div>
-            <div x-show="!loading && !loadError" style="animation:fadeIn 0.3s">
+            <div class="card card-accent-left card-accent-success mb-3" x-show="!loading && !loadError && isBeginnerSetupView">
+              <div class="card-header">Start Here</div>
+              <p class="text-xs text-dim" style="margin:8px 0 12px">
+                Complete setup first, then the full dashboard unlocks automatically.
+              </p>
+              <div class="flex gap-2" style="flex-wrap:wrap">
+                <button class="btn btn-primary btn-sm" @click="location.hash='wizard'">Open Setup Wizard</button>
+                <button class="btn btn-ghost btn-sm" @click="location.hash='settings'">Configure Provider</button>
+                <button class="btn btn-ghost btn-sm" @click="location.hash='agents'">Create First Agent</button>
+              </div>
+            </div>
+            <div x-show="!loading && !loadError && !isBeginnerSetupView" style="animation:fadeIn 0.3s">
 
               <!-- Primary stats row with icons + stagger animation -->
               <div class="stats-row stats-row-lg">
