@@ -29,15 +29,22 @@
 
   <!-- OpenRouter Setup Gate -->
   <div x-show="!$store.app.showAuthPrompt && $store.app.showOpenRouterGate" class="auth-gate">
-    <div class="auth-panel">
+    <div class="auth-panel auth-panel-openrouter">
       <div class="auth-shell">
         <div class="auth-shell-rails" aria-hidden="true"></div>
         <button class="auth-shell-home" @click="navigate('overview')" aria-label="Go to Home">
           <img src="/logo.png" alt="clawREFORM by aegntic.ai">
-          <span class="auth-shell-home-text">Home</span>
+          <span class="auth-shell-home-brand">
+            <strong><span class="brand-wordmark-claw">claw</span><span class="brand-wordmark-reform">REFORM</span></strong>
+            <small>by aegntic.ai</small>
+          </span>
         </button>
       </div>
       <h3 class="auth-panel-title">OpenRouter Key Required</h3>
+      <div class="auth-openrouter-tracks" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </div>
       <p class="auth-panel-copy">
         clawREFORM's lightweight in-house assistant path uses OpenRouter as the default provider.
         Add your key to continue.
@@ -52,12 +59,12 @@
       <form x-show="!$store.app.openRouterGateLoading" @submit.prevent="$store.app.saveOpenRouterKey()">
         <input type="password" x-model="$store.app.openRouterKeyInput" placeholder="Enter OpenRouter API key..." class="input auth-input-gap-sm">
         <div x-show="$store.app.openRouterError" class="auth-error" x-text="$store.app.openRouterError"></div>
-        <div class="auth-panel-actions">
+        <div class="auth-panel-actions auth-openrouter-actions">
           <button type="submit" class="btn btn-primary" :disabled="$store.app.openRouterSaving">
             <span x-show="!$store.app.openRouterSaving">Save OpenRouter Key</span>
             <span x-show="$store.app.openRouterSaving">Saving...</span>
           </button>
-          <button type="button" class="btn btn-ghost" @click="$store.app.checkOpenRouterGate()" :disabled="$store.app.openRouterGateLoading">Refresh</button>
+          <a class="btn btn-ghost auth-openrouter-needkey" :href="$store.app.openRouterHelpUrl" target="_blank" rel="noopener noreferrer">Need a key?</a>
         </div>
       </form>
     </div>
@@ -66,34 +73,15 @@
   <div class="app-layout" :class="{ 'focus-mode': $store.app.focusMode }">
     <!-- Sidebar -->
     <nav class="sidebar" :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileMenuOpen }">
-      <div class="sidebar-header">
-          <div class="sidebar-header-text">
-            <button class="sidebar-logo sidebar-home-btn" @click="navigate('overview')" title="Go to Home"
-              aria-label="Go to Home">
-              <span class="brand-mark-frame">
-                <img src="/logo.png" alt="clawREFORM by aegntic.ai" width="28" height="28">
-              </span>
-              <div>
-                <h1 class="brand-wordmark"><span class="brand-wordmark-soft">claw</span><strong>REFORM</strong></h1>
-                <div class="version" x-text="'by aegntic.ai · v' + version"></div>
-              </div>
-            </button>
-          </div>
-        </div>
-        <div class="sidebar-header-actions">
-          <a href="https://x.com/intent/tweet?text=Just%20started%20using%20clawREFORM%20by%20%40aegntic_ai%20-%20the%20self-evolving%20agent%20OS!&url=https%3A%2F%2Fclawreform.com&via=aegntic_ai"
-            target="_blank" rel="noopener noreferrer" title="Share on X" class="share-chip">
-            𝕏
-          </a>
-          <div class="theme-switcher">
-            <button class="theme-opt" :class="{ active: themeMode === 'light' }" @click="setTheme('light')"
-              title="Light">&#9788;</button>
-            <button class="theme-opt" :class="{ active: themeMode === 'system' }" @click="setTheme('system')"
-              title="System">&#9675;</button>
-            <button class="theme-opt" :class="{ active: themeMode === 'dark' }" @click="setTheme('dark')"
-              title="Dark">&#9790;</button>
-          </div>
-        </div>
+      <div class="sidebar-header sidebar-header-minimal">
+        <button class="sidebar-home-btn sidebar-home-icon-btn" @click="navigate('overview')" title="Home"
+          aria-label="Go to Home">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m3 11 9-7 9 7" />
+            <path d="M5 10v10h14V10" />
+            <path d="M10 20v-6h4v6" />
+          </svg>
+        </button>
       </div>
 
       <div class="sidebar-status" :class="{ offline: !connected && !$store.app.booting }">
@@ -145,8 +133,8 @@
               <a class="nav-item" :class="{ active: page === 'overview' }" @click="navigate('overview')"
                 :aria-current="page === 'overview' ? 'page' : false">
                 <span class="nav-icon"><svg viewBox="0 0 24 24">
-                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                    <path d="M9 22V12h6v10" />
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <path d="M8 14v2M12 11v5M16 8v8" />
                   </svg></span>
                 <span class="nav-label">Overview</span>
               </a>
@@ -339,7 +327,6 @@
         <div class="sidebar-label text-xs text-dim" x-show="$store.app.developerMode"
           style="padding:0 16px 4px;letter-spacing:0.5px">Ctrl+K agents | Ctrl+N new</div>
       </div>
-      <div class="sidebar-toggle" @click="toggleSidebar()" x-text="sidebarCollapsed ? '\u276F' : '\u276E'"></div>
     </nav>
 
     <div class="sidebar-overlay" @click="mobileMenuOpen = false"></div>
@@ -356,30 +343,32 @@
 
       <header class="shell-border-frame" x-show="!$store.app.showAuthPrompt && !$store.app.showOpenRouterGate"
         role="banner">
-        <div class="shell-border-rails" aria-hidden="true"></div>
+        <div class="shell-border-rails" aria-hidden="true">
+          <span class="shell-claw-rail shell-claw-rail-a"></span>
+          <span class="shell-claw-rail shell-claw-rail-b"></span>
+          <span class="shell-claw-rail shell-claw-rail-c"></span>
+        </div>
         <div class="shell-border-row">
           <button class="shell-home-tile" @click="navigate('overview')" title="Home" aria-label="Go to Home">
             <img src="/logo.png" alt="clawREFORM by aegntic.ai">
             <span class="shell-home-text">
-              <strong>clawREFORM</strong>
-              <small>home</small>
+              <strong><span class="brand-wordmark-claw">claw</span><span class="brand-wordmark-reform">REFORM</span></strong>
+              <small>by aegntic.ai</small>
             </span>
           </button>
           <nav class="shell-top-nav" aria-label="Primary">
             <button class="shell-nav-link" :class="{ active: page === 'overview' }"
-              @click="navigate('overview')">Overview</button>
-            <button class="shell-nav-link" :class="{ active: page === 'agents' }" @click="navigate('agents')">Chat</button>
-            <button class="shell-nav-link" :class="{ active: page === 'company' }"
-              @click="navigate('company')">Company</button>
-            <button class="shell-nav-link" :class="{ active: page === 'obsidian' }"
-              @click="navigate('obsidian')">Memory</button>
-            <button class="shell-nav-link" :class="{ active: page === 'wizard' }" @click="navigate('wizard')">Setup</button>
-            <button class="shell-nav-link" :class="{ active: page === 'settings' }"
-              @click="navigate('settings')">Settings</button>
-            <button class="shell-nav-link" x-show="$store.app.developerMode"
-              :class="{ active: page === 'workflows' }" @click="navigate('workflows')">Workflows</button>
-            <button class="shell-nav-link" x-show="$store.app.developerMode"
-              :class="{ active: page === 'channels' }" @click="navigate('channels')">Channels</button>
+              @click="navigate('overview')">Home</button>
+            <button class="shell-nav-link" :class="{ active: page === 'agents' }" @click="navigate('agents')">Services</button>
+            <button class="shell-nav-link" :class="{ active: page === 'company' || page === 'collective' }"
+              @click="navigate('company')">Dashboards</button>
+            <button class="shell-nav-link"
+              :class="{ active: page === 'analytics' || page === 'logs' }"
+              @click="navigate($store.app.developerMode ? 'analytics' : 'company')">Reports</button>
+            <button class="shell-nav-link" :class="{ active: page === 'wizard' || page === 'settings' }"
+              @click="navigate('settings')">Configuration</button>
+            <button class="shell-nav-link" :class="{ active: page === 'obsidian' || page === 'memory-layers' }"
+              @click="navigate('obsidian')">Account</button>
           </nav>
         </div>
       </header>
@@ -388,7 +377,7 @@
       <template x-if="page === 'overview'">
         <div x-data="overviewPage" x-init="loadOverview().then(() => startAutoRefresh())"
           @page-leave.window="stopAutoRefresh()">
-          <div class="page-header">
+          <div class="page-header" x-show="!isBeginnerSetupView">
             <h2>Overview</h2>
             <div class="flex items-center gap-2">
               <span class="health-indicator" :class="health.status === 'ok' ? 'health-ok' : 'health-down'"
@@ -450,8 +439,15 @@
               <p class="text-xs text-dim" x-text="loadError"></p>
               <button class="btn btn-primary btn-sm" @click="loadData()" style="margin-top:8px">Retry</button>
             </div>
+            <div class="dashboard-hero-screen" x-show="!loading && !loadError && isBeginnerSetupView"
+              style="animation:fadeIn 0.3s var(--ease-smooth)">
+              <div class="dashboard-hero-title">Dashboard: Asset Utilization</div>
+              <div class="dashboard-hero-subtitle">Real-time insights for clawREFORM assets</div>
+              <img src="/logo.png" alt="clawREFORM by aegntic.ai" class="dashboard-hero-logo">
+              <button class="dashboard-hero-cta" @click="location.hash='wizard'">Get Started</button>
+            </div>
             <!-- Setup Checklist -->
-            <div class="setup-checklist" x-show="!loading && !loadError && setupProgress < 100 && !checklistDismissed"
+            <div class="setup-checklist" x-show="!loading && !loadError && !isBeginnerSetupView && setupProgress < 100 && !checklistDismissed"
               style="animation:slideUp 0.3s var(--ease-spring)">
               <div class="card" style="border-left:4px solid var(--accent)">
                 <div class="flex justify-between items-center mb-2">
@@ -483,7 +479,7 @@
             </div>
             <!-- Onboarding banner -->
             <div class="onboarding-banner"
-              x-show="!loading && !loadError && $store.app.showOnboarding && checklistDismissed">
+              x-show="!loading && !loadError && !isBeginnerSetupView && $store.app.showOnboarding && checklistDismissed">
               <h3>Welcome to clawREFORM by aegntic.ai</h3>
               <p style="font-size:12px;color:var(--text-dim)">Get started quickly with the guided Setup Wizard, or
                 configure manually:</p>
@@ -491,17 +487,6 @@
                 <button class="btn btn-primary" @click="location.hash='wizard'">Launch Setup Wizard</button>
                 <button class="btn btn-ghost" @click="location.hash='settings'">Configure Manually</button>
                 <button class="btn btn-ghost" @click="$store.app.dismissOnboarding()">Dismiss</button>
-              </div>
-            </div>
-            <div class="card card-accent-left card-accent-success mb-3" x-show="!loading && !loadError && isBeginnerSetupView">
-              <div class="card-header">Start Here</div>
-              <p class="text-xs text-dim" style="margin:8px 0 12px">
-                Complete setup first, then the full dashboard unlocks automatically.
-              </p>
-              <div class="flex gap-2" style="flex-wrap:wrap">
-                <button class="btn btn-primary btn-sm" @click="location.hash='wizard'">Open Setup Wizard</button>
-                <button class="btn btn-ghost btn-sm" @click="location.hash='settings'">Configure Provider</button>
-                <button class="btn btn-ghost btn-sm" @click="location.hash='agents'">Create First Agent</button>
               </div>
             </div>
             <div x-show="!loading && !loadError && !isBeginnerSetupView" style="animation:fadeIn 0.3s">
@@ -4559,19 +4544,16 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
 
               <!-- Budget tab -->
               <!-- Premium Upgrade CTA -->
-              <div class="card mb-4"
-                style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border: none; border-radius: 8px; padding: 16px;">
-                <div
-                  style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div class="card mb-4 upgrade-banner-card">
+                <div class="upgrade-banner-content">
                   <div>
-                    <div style="color: white; font-weight: 600; font-size: 14px; margin-bottom: 4px;">🚀 Upgrade to Pro
-                    </div>
-                    <div style="color: rgba(255,255,255,0.85); font-size: 12px;">Unlock unlimited agents, priority
-                      support & advanced automation</div>
+                    <div class="upgrade-banner-title">Upgrade to Pro</div>
+                    <div class="upgrade-banner-copy">Unlock unlimited agents, priority support, and advanced
+                      automation.</div>
                   </div>
-                  <a href="https://billing.stripe.com/p/test-checkout" target="_blank" rel="noopener" class="btn"
-                    style="background: white; color: #6366f1; border: none; font-weight: 600; padding: 8px 16px; border-radius: 6px; white-space: nowrap;">
-                    Upgrade Now →
+                  <a href="https://billing.stripe.com/p/test-checkout" target="_blank" rel="noopener"
+                    class="btn btn-primary btn-sm upgrade-banner-cta">
+                    Upgrade Now
                   </a>
                 </div>
               </div>
@@ -4584,8 +4566,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                     <div style="font-weight:600;font-size:13px">📊 Trial Period Active</div>
                     <div class="text-xs text-dim" x-text="trialDaysLeft + ' days remaining'"></div>
                   </div>
-                  <a href="https://billing.stripe.com/p/test-checkout" class="btn btn-sm"
-                    style="background:var(--warning);color:#000">Upgrade Now</a>
+                  <a href="https://billing.stripe.com/p/test-checkout" class="btn btn-primary btn-sm">Upgrade Now</a>
                 </div>
               </div>
 

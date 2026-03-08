@@ -333,7 +333,7 @@ function wizardPage() {
     },
 
     get popularProviders() {
-      var popular = ['openrouter', 'anthropic', 'openai', 'gemini', 'groq', 'deepseek'];
+      var popular = ['openrouter', 'anthropic', 'openai', 'gemini', 'groq', 'deepseek', 'minimax', 'zhipu', 'glm'];
       return this.providers.filter(function(p) {
         return popular.indexOf(p.id) >= 0;
       }).sort(function(a, b) {
@@ -342,7 +342,7 @@ function wizardPage() {
     },
 
     get otherProviders() {
-      var popular = ['openrouter', 'anthropic', 'openai', 'gemini', 'groq', 'deepseek'];
+      var popular = ['openrouter', 'anthropic', 'openai', 'gemini', 'groq', 'deepseek', 'minimax', 'zhipu', 'glm'];
       return this.providers.filter(function(p) {
         return popular.indexOf(p.id) < 0;
       });
@@ -363,6 +363,8 @@ function wizardPage() {
         groq: { url: 'https://console.groq.com/keys', text: 'Get your key from the Groq Console (free tier available)' },
         deepseek: { url: 'https://platform.deepseek.com/api_keys', text: 'Get your key from the DeepSeek Platform (very affordable)' },
         minimax: { url: 'https://intl.minimaxi.com/platform/user-center/basic-information/interface-key', text: 'Get your key from the MiniMax Platform' },
+        zhipu: { url: 'https://open.bigmodel.cn/usercenter/apikeys', text: 'Get your key from the Zhipu AI (GLM) Console' },
+        glm: { url: 'https://open.bigmodel.cn/usercenter/apikeys', text: 'Get your key from the Zhipu AI (GLM) Console' },
         openrouter: { url: 'https://openrouter.ai/keys', text: 'Get your key from OpenRouter (access 100+ models with one key)' },
         mistral: { url: 'https://console.mistral.ai/api-keys', text: 'Get your key from the Mistral Console' },
         together: { url: 'https://api.together.xyz/settings/api-keys', text: 'Get your key from Together AI' },
@@ -483,6 +485,8 @@ function wizardPage() {
         groq: 'llama-3.3-70b-versatile',
         deepseek: 'deepseek-chat',
         minimax: 'minimax-text-01',
+        zhipu: 'glm-4-plus',
+        glm: 'glm-4-plus',
         openrouter: 'openrouter/auto',
         mistral: 'mistral-large-latest',
         together: 'meta-llama/Llama-3-70b-chat-hf',

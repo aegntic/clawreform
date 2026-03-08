@@ -301,14 +301,11 @@ function app() {
     page: 'overview',
     obsidianGraphUrl: localStorage.getItem('clawreform-obsidian-graph-url') || '',
     showObsidianVaultEditor: !!(localStorage.getItem('clawreform-obsidian-graph-url') || '').trim(),
-    themeMode: localStorage.getItem('clawreform-theme-mode') || 'dark',
-    theme: (() => {
-      var mode = localStorage.getItem('clawreform-theme-mode') || 'dark';
-      if (mode === 'system') return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      return mode;
-    })(),
-    // Top-nav-first: collapse sidebar unless explicitly expanded by user
-    sidebarCollapsed: localStorage.getItem('clawreform-sidebar') !== 'expanded',
+    // Dark-only mode (simplified UX)
+    themeMode: 'dark',
+    theme: 'dark',
+    // Default to expanded for first-run clarity; persist explicit user choice.
+    sidebarCollapsed: true,
     mobileMenuOpen: false,
     connected: false,
     wsConnected: false,
@@ -349,13 +346,8 @@ function app() {
     init() {
       var self = this;
 
-      // Listen for OS theme changes (only matters when mode is 'system')
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
-        if (self.themeMode === 'system') {
-          self.theme = e.matches ? 'dark' : 'light';
-          document.body.setAttribute('data-theme', self.theme);
-        }
-      });
+      // Force dark mode for now.
+      localStorage.setItem('clawreform-theme-mode', 'dark');
 
       // Hash routing
       function handleHash() {
@@ -474,20 +466,15 @@ function app() {
     },
 
     setTheme(mode) {
-      this.themeMode = mode;
-      localStorage.setItem('clawreform-theme-mode', mode);
-      if (mode === 'system') {
-        this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      } else {
-        this.theme = mode;
-      }
+      // Keep API surface stable, but lock to dark.
+      this.themeMode = 'dark';
+      this.theme = 'dark';
+      localStorage.setItem('clawreform-theme-mode', 'dark');
       document.body.setAttribute('data-theme', this.theme);
     },
 
     toggleTheme() {
-      var modes = ['light', 'system', 'dark'];
-      var next = modes[(modes.indexOf(this.themeMode) + 1) % modes.length];
-      this.setTheme(next);
+      this.setTheme('dark');
     },
 
     toggleSidebar() {
