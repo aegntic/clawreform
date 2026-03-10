@@ -72,7 +72,10 @@
 
   <div class="app-layout" :class="{ 'focus-mode': $store.app.focusMode }">
     <!-- Sidebar -->
-    <nav class="sidebar" :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileMenuOpen }">
+    <nav class="sidebar"
+      :class="{ collapsed: sidebarCollapsed, 'mobile-open': mobileMenuOpen, 'hover-expanded': sidebarHoverExpanded }"
+      @mouseenter="onSidebarMouseEnter()" @mouseleave="onSidebarMouseLeave()"
+      @focusin="onSidebarFocusIn()" @focusout="onSidebarFocusOut()">
       <div class="sidebar-header sidebar-header-minimal">
         <button class="sidebar-home-btn sidebar-home-icon-btn" @click="navigate('overview')" title="Home"
           aria-label="Go to Home">
@@ -349,12 +352,8 @@
           <span class="shell-claw-rail shell-claw-rail-c"></span>
         </div>
         <div class="shell-border-row">
-          <button class="shell-home-tile" @click="navigate('overview')" title="Home" aria-label="Go to Home">
-            <img src="/logo.png" alt="clawREFORM by aegntic.ai">
-            <span class="shell-home-text">
-              <strong><span class="brand-wordmark-claw">claw</span><span class="brand-wordmark-reform">REFORM</span></strong>
-              <small>by aegntic.ai</small>
-            </span>
+          <button class="shell-home-tile shell-home-logo-btn" @click="navigate('overview')" title="Home" aria-label="Go to Home">
+            <img src="/logo.png" alt="clawREFORM logo mark">
           </button>
           <nav class="shell-top-nav" aria-label="Primary">
             <button class="shell-nav-link" :class="{ active: page === 'overview' }"
@@ -370,6 +369,9 @@
             <button class="shell-nav-link" :class="{ active: page === 'obsidian' || page === 'memory-layers' }"
               @click="navigate('obsidian')">Account</button>
           </nav>
+          <button class="shell-nav-link" @click="toggleTheme()"
+            :title="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+            x-text="theme === 'dark' ? 'Light' : 'Dark'"></button>
         </div>
       </header>
 
@@ -1375,17 +1377,19 @@
                 </div>
                 <!-- Input row -->
                 <div class="input-row">
-                  <button class="btn btn-ghost btn-sm" @click="$refs.fileInput.click()" title="Attach file"
-                    style="padding:6px 8px;flex-shrink:0">
+                  <label class="btn btn-ghost btn-sm" for="chat-file-input" title="Attach file" role="button"
+                    aria-label="Attach file"
+                    style="padding:6px 8px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                       stroke-linecap="round" stroke-linejoin="round">
                       <path
                         d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                     </svg>
-                  </button>
-                  <input type="file" x-ref="fileInput" multiple
+                  </label>
+                  <input id="chat-file-input" type="file" x-ref="fileInput" multiple
                     accept="image/*,.txt,.pdf,.md,.json,.csv,.mp3,.wav,.ogg,.webm,.m4a,.flac"
-                    @change="addFiles($event.target.files); $event.target.value = ''" style="display:none">
+                    @change="addFiles($event.target.files); $event.target.value = ''"
+                    style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none">
                   <!-- Mic button -->
                   <button class="btn btn-ghost btn-sm" :class="{ 'btn-recording': recording }"
                     @mousedown="startRecording()" @mouseup="stopRecording()" @mouseleave="if(recording) stopRecording()"
@@ -1718,19 +1722,15 @@
                     <div x-show="spawnStep === 2">
                       <div class="form-group">
                         <label>Provider</label>
-                        <select class="form-select" x-model="spawnForm.provider">
-                          <option value="anthropic">Anthropic</option>
-                          <option value="openai">OpenAI</option>
-                          <option value="groq">Groq</option>
-                          <option value="ollama">Ollama</option>
-                          <option value="google">Google</option>
-                          <option value="mistral">Mistral</option>
-                          <option value="xai">xAI</option>
-                          <option value="deepseek">DeepSeek</option>
-                          <option value="cerebras">Cerebras</option>
-                          <option value="sambanova">SambaNova</option>
-                          <option value="together">Together</option>
+                        <select class="form-select" x-model="spawnForm.provider" @change="handleSpawnProviderChange()">
+                          <template x-for="p in configuredSpawnProviders" :key="p.id">
+                            <option :value="p.id" x-text="p.display_name || p.id"></option>
+                          </template>
+                          <option value="__add_provider__">+ Add provider...</option>
                         </select>
+                        <div class="text-xs text-dim mt-2" x-show="!configuredSpawnProviders.length">
+                          No providers are configured yet. Select <code>+ Add provider...</code> to continue.
+                        </div>
                       </div>
                       <div class="form-group">
                         <label>Model</label>
@@ -3958,13 +3958,13 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
               <div class="card mb-4" style="border-left:3px solid var(--accent)">
                 <div class="font-bold" style="font-size:13px;margin-bottom:4px">Experience Mode</div>
                 <div class="text-sm text-dim" style="line-height:1.6;margin-bottom:10px">
-                  Simple Mode keeps only the essentials visible. Turn on Developer Mode to unlock advanced pages,
-                  layered memory tools, automation, and deep system controls.
+                  Simple Mode keeps only the essentials visible. Turn on Developer Mode to operate as Lead Dev with
+                  full access to advanced pages, layered memory tools, automation, and deep system controls.
                 </div>
                 <label class="form-checkbox" style="display:flex;align-items:center;gap:8px">
                   <input type="checkbox" :checked="$store.app.developerMode"
                     @change="$store.app.toggleDeveloperMode($event.target.checked); if (!$event.target.checked && tab !== 'providers') tab = 'providers'">
-                  <span style="font-size:13px">Developer Mode</span>
+                  <span style="font-size:13px">Developer Mode (Lead Dev Full Access)</span>
                 </label>
               </div>
               <div class="tabs" role="tablist">
@@ -4544,7 +4544,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
 
               <!-- Budget tab -->
               <!-- Premium Upgrade CTA -->
-              <div class="card mb-4 upgrade-banner-card">
+              <div class="card mb-4 upgrade-banner-card" x-show="!$store.app.developerMode">
                 <div class="upgrade-banner-content">
                   <div>
                     <div class="upgrade-banner-title">Upgrade to Pro</div>
@@ -4558,15 +4558,15 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 </div>
               </div>
 
-              <!-- Trial Status Banner -->
+              <!-- Lead Dev Access Banner -->
               <div x-show="tab === 'budget' && $store.app.developerMode" class="card mb-4"
-                style="border-left:3px solid var(--warning);background:var(--bg-input)" x-data="{ trialDaysLeft: 14 }">
+                style="border-left:3px solid var(--success);background:var(--bg-input)">
                 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
                   <div>
-                    <div style="font-weight:600;font-size:13px">📊 Trial Period Active</div>
-                    <div class="text-xs text-dim" x-text="trialDaysLeft + ' days remaining'"></div>
+                    <div style="font-weight:600;font-size:13px">Lead Dev Access Active</div>
+                    <div class="text-xs text-dim">Pro gates are bypassed for this local developer session.</div>
                   </div>
-                  <a href="https://billing.stripe.com/p/test-checkout" class="btn btn-primary btn-sm">Upgrade Now</a>
+                  <span class="badge badge-success">FULL ACCESS</span>
                 </div>
               </div>
 
@@ -5548,7 +5548,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
 
       <!-- Page: Obsidian Graph -->
       <template x-if="page === 'obsidian'">
-        <div>
+        <div x-init="if (hasObsidianGraphLinked) loadObsidianInAppGraph(false)">
           <div class="page-header">
             <h2>Memory Graph</h2>
           </div>
@@ -5556,27 +5556,157 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             <div class="card mb-4 card-accent-left">
               <div class="heading-sm">One live memory map</div>
               <div class="text-sm text-dim copy-relaxed">
-                This is the default memory view. Connect your Obsidian graph URL to see all memory context in one place.
+                This is the default memory view. Connect Obsidian once, then open your graph from here anytime.
               </div>
             </div>
 
-            <template x-if="!hasObsidianGraphLinked && !showObsidianVaultEditor">
+            <template x-if="!hasObsidianGraphLinked">
               <div class="card mb-4">
-                <div class="heading-sm">No active Obsidian vault linked</div>
+                <div class="heading-sm">Connect Obsidian in one click</div>
                 <div class="text-sm text-dim copy-relaxed mb-2">
-                  Pick one path. Create Vault starts a fresh vault flow in Obsidian with a default clawREFORM link. Add
-                  Vault lets you paste an existing vault/graph URL.
+                  No raw URL needed for normal setup. Step 1 opens Obsidian so you can create/select the vault. Step 2
+                  links the graph.
+                </div>
+                <div class="form-group mb-2" style="max-width:360px">
+                  <label>Vault name</label>
+                  <input class="form-input" x-model="obsidianVaultName" placeholder="clawREFORM">
+                </div>
+                <div class="text-xs text-dim mb-2" x-show="obsidianVaultPending">
+                  Obsidian is open. Create/select vault
+                  <code class="code-chip" x-text="obsidianVaultName"></code>,
+                  then click <strong>I Created It — Connect</strong>.
                 </div>
                 <div class="flex gap-2">
-                  <button class="btn btn-primary btn-sm" @click="createObsidianVault()">Create Vault</button>
-                  <button class="btn btn-ghost btn-sm" @click="startAddObsidianVault()">Add Vault</button>
+                  <button class="btn btn-primary btn-sm" @click="createObsidianVault()">Open Obsidian</button>
+                  <button class="btn btn-ghost btn-sm" @click="useExistingObsidianVault()"
+                    x-text="obsidianVaultPending ? 'I Created It — Connect' : 'Use Existing Vault'"></button>
+                  <button class="btn btn-ghost btn-sm" @click="startAddObsidianVault()">Advanced URL</button>
                   <button class="btn btn-ghost btn-sm" x-show="$store.app.developerMode"
                     @click="navigate('memory-layers')">Open Advanced Memory</button>
+                </div>
+                <div class="text-xs text-dim mt-2">
+                  Smooth path: this auto-saves your vault link as
+                  <code class="code-chip">obsidian://graph?vault=...</code>.
                 </div>
               </div>
             </template>
 
-            <div class="card mb-4" x-show="showObsidianVaultEditor || hasObsidianGraphLinked">
+            <template x-if="hasObsidianGraphLinked">
+              <div class="card mb-4">
+                <div class="memory-graph-toolbar">
+                  <div>
+                    <div class="heading-sm">Obsidian connected</div>
+                    <div class="text-sm text-dim copy-relaxed mb-2">
+                      Current link:
+                      <code class="code-chip"
+                        style="display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom"
+                        x-text="obsidianGraphLabel || obsidianGraphUrl"></code>
+                    </div>
+                    <div class="text-xs text-dim">
+                      Agent
+                      <code class="code-chip" x-text="obsidianInAppGraph.agentId || 'auto'"></code>
+                      <span>&middot;</span>
+                      Files
+                      <strong x-text="obsidianInAppGraph.fileCount || 0"></strong>
+                      <span>&middot;</span>
+                      Updated
+                      <span
+                        x-text="obsidianInAppGraph.generatedAt ? new Date(obsidianInAppGraph.generatedAt).toLocaleTimeString() : 'not yet'"></span>
+                    </div>
+                  </div>
+                  <div class="memory-graph-toolbar-actions">
+                    <button class="btn btn-primary btn-sm" @click="loadObsidianInAppGraph(true)">Refresh Map</button>
+                    <button class="btn btn-ghost btn-sm" @click="openObsidianGraph()">Open in Obsidian</button>
+                    <button class="btn btn-ghost btn-sm" x-show="obsidianEmbedUrl"
+                      @click="obsidianShowExternalEmbed = !obsidianShowExternalEmbed"
+                      x-text="obsidianShowExternalEmbed ? 'Hide Web Embed' : 'Show Web Embed'"></button>
+                    <button class="btn btn-ghost btn-sm" @click="startAddObsidianVault()">Advanced URL</button>
+                    <button class="btn btn-ghost btn-sm" @click="disconnectObsidianVault()">Disconnect</button>
+                  </div>
+                </div>
+
+                <div class="memory-graph-status" x-show="obsidianGraphLoading">
+                  Building in-app memory graph...
+                </div>
+
+                <div class="memory-graph-status is-error" x-show="!obsidianGraphLoading && obsidianGraphError">
+                  <div x-text="obsidianGraphError"></div>
+                  <div class="mt-2" x-show="obsidianCanSeedAgent">
+                    <button class="btn btn-primary btn-sm" :disabled="obsidianGraphSeeding"
+                      @click="createObsidianSeedAgent()"
+                      x-text="obsidianGraphSeeding ? 'Creating Seed Agent...' : 'Create Seed Memory Agent'"></button>
+                  </div>
+                </div>
+
+                <template x-if="!obsidianGraphLoading && obsidianGraphNodes.length">
+                  <div class="memory-graph-shell">
+                    <div class="memory-graph-board">
+                      <div class="memory-graph-plane" role="img" aria-label="clawREFORM in-app memory graph">
+                        <template x-for="edge in obsidianGraphEdges" :key="edge.id">
+                          <div class="memory-graph-edge memory-graph-edge-seg"
+                            :class="{ 'memory-graph-edge-reference': edge.type === 'reference', 'memory-graph-edge-section': edge.type === 'section' }"
+                            :style="'left:' + edge.x1 + 'px;top:' + edge.y1 + 'px;width:' + edge.length + 'px;transform:rotate(' + edge.angle + 'deg)'">
+                          </div>
+                        </template>
+
+                        <template x-for="node in obsidianGraphNodes" :key="node.id">
+                          <div class="memory-graph-node-group"
+                            :style="'left:' + node.x + 'px;top:' + node.y + 'px'"
+                            @click="obsidianGraphSelectedNodeId = node.id">
+                            <button class="memory-graph-node" :class="obsidianNodeClass(node)"
+                              :style="'width:' + (obsidianNodeRadius(node) * 2) + 'px;height:' + (obsidianNodeRadius(node) * 2) + 'px'"
+                              :aria-label="'Select node ' + node.label"></button>
+                            <div class="memory-graph-node-label"
+                              x-show="node.showLabel || obsidianGraphSelectedNodeId === node.id"
+                              x-text="node.shortLabel"></div>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+
+                    <aside class="memory-graph-inspector">
+                      <div class="heading-sm">Node Details</div>
+                      <template x-if="obsidianSelectedNode">
+                        <div>
+                          <div class="memory-node-title" x-text="obsidianSelectedNode.label"></div>
+                          <div class="memory-node-type" x-text="obsidianSelectedNode.type"></div>
+                          <div class="memory-node-meta" x-show="obsidianSelectedNode.meta && obsidianSelectedNode.meta.file">
+                            <span>File</span>
+                            <code class="code-chip" x-text="obsidianSelectedNode.meta.file"></code>
+                          </div>
+                          <div class="memory-node-meta"
+                            x-show="obsidianSelectedNode.meta && obsidianSelectedNode.meta.sourceFile">
+                            <span>Source</span>
+                            <code class="code-chip" x-text="obsidianSelectedNode.meta.sourceFile"></code>
+                          </div>
+                          <div class="memory-node-meta"
+                            x-show="obsidianSelectedNode.meta && obsidianSelectedNode.meta.sizeBytes">
+                            <span>Size</span>
+                            <span x-text="obsidianSelectedNode.meta.sizeBytes + ' bytes'"></span>
+                          </div>
+                        </div>
+                      </template>
+                      <template x-if="!obsidianSelectedNode">
+                        <div class="text-xs text-dim">Select a node to inspect its details.</div>
+                      </template>
+                    </aside>
+                  </div>
+                </template>
+
+                <template x-if="!obsidianGraphLoading && !obsidianGraphNodes.length && !obsidianGraphError">
+                  <div class="memory-graph-status">
+                    No memory markdown files were found yet for this agent.
+                  </div>
+                </template>
+
+                <div class="text-xs text-dim mt-2">
+                  Tip: this in-app map is generated from your memory files and updates without leaving the dashboard.
+                </div>
+              </div>
+            </template>
+
+            <div class="card mb-4" x-show="showObsidianVaultEditor">
+              <div class="heading-sm mb-2">Advanced Obsidian URL (optional)</div>
               <div class="form-group">
                 <label>Obsidian Graph URL</label>
                 <input id="obsidian-graph-url" class="form-input" x-model="obsidianGraphUrl"
@@ -5584,31 +5714,21 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 <div class="text-xs text-dim mt-2">
                   Use an <code class="code-chip">obsidian://</code>
                   link to open the app, or an <code class="code-chip">http(s)://</code>
-                  URL for in-dashboard embed.
+                  URL for optional in-dashboard embed.
                 </div>
               </div>
               <div class="flex gap-2">
                 <button class="btn btn-primary btn-sm" @click="saveObsidianGraphUrl()">Save URL</button>
                 <button class="btn btn-ghost btn-sm" @click="openObsidianGraph()">Open Graph</button>
-                <button class="btn btn-ghost btn-sm" x-show="!hasObsidianGraphLinked"
-                  @click="showObsidianVaultEditor = false">Back</button>
-                <button class="btn btn-ghost btn-sm" x-show="$store.app.developerMode"
-                  @click="navigate('memory-layers')">Open Advanced Memory</button>
+                <button class="btn btn-ghost btn-sm" @click="applyObsidianVaultPreset()">Use Vault Name</button>
+                <button class="btn btn-ghost btn-sm" @click="showObsidianVaultEditor = false">Close</button>
               </div>
             </div>
 
-            <template x-if="obsidianEmbedUrl">
+            <template x-if="hasObsidianGraphLinked && obsidianEmbedUrl && obsidianShowExternalEmbed">
               <div class="card">
-                <div class="font-bold mb-2 text-sm">Embedded graph</div>
+                <div class="font-bold mb-2 text-sm">Web embed (optional)</div>
                 <iframe :src="obsidianEmbedUrl" title="Obsidian Graph" class="embed-frame"></iframe>
-              </div>
-            </template>
-
-            <template x-if="hasObsidianGraphLinked && !obsidianEmbedUrl">
-              <div class="empty-state">
-                <h4>Embed unavailable for this URL</h4>
-                <p class="hint">Set an <code>http(s)://</code> graph URL to embed here, or use Open Graph to launch
-                  Obsidian directly.</p>
               </div>
             </template>
           </div>

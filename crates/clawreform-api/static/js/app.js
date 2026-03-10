@@ -296,16 +296,43 @@ function app() {
     'approval': 'approvals'
   };
   var advancedPages = ['sessions', 'memory-layers', 'collective', 'agentdna', 'approvals', 'workflows', 'scheduler', 'channels', 'skills', 'hands', 'analytics', 'logs'];
+  var savedThemeMode = localStorage.getItem('clawreform-theme-mode');
+  if (savedThemeMode !== 'light' && savedThemeMode !== 'dark') {
+    savedThemeMode = 'dark';
+  }
+  function applyThemeAttributes(mode) {
+    var resolved = mode === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', resolved);
+    if (document.body) {
+      document.body.setAttribute('data-theme', resolved);
+    }
+  }
 
   return {
     page: 'overview',
     obsidianGraphUrl: localStorage.getItem('clawreform-obsidian-graph-url') || '',
-    showObsidianVaultEditor: !!(localStorage.getItem('clawreform-obsidian-graph-url') || '').trim(),
-    // Dark-only mode (simplified UX)
-    themeMode: 'dark',
-    theme: 'dark',
-    // Default to expanded for first-run clarity; persist explicit user choice.
+    obsidianVaultName: (localStorage.getItem('clawreform-obsidian-vault-name') || 'clawREFORM').trim() || 'clawREFORM',
+    showObsidianVaultEditor: false,
+    obsidianVaultPending: false,
+    obsidianGraphLoading: false,
+    obsidianGraphSeeding: false,
+    obsidianGraphError: '',
+    obsidianShowExternalEmbed: false,
+    obsidianGraphSelectedNodeId: 'root',
+    obsidianInAppGraph: {
+      agentId: '',
+      generatedAt: '',
+      nodes: [],
+      edges: [],
+      fileCount: 0
+    },
+    themeMode: savedThemeMode,
+    theme: savedThemeMode,
+    // Default to compact sidebar; users can expand explicitly or hover-expand on desktop.
     sidebarCollapsed: true,
+    sidebarHoverExpanded: false,
+    sidebarHoverOpenTimer: null,
+    sidebarHoverCloseTimer: null,
     mobileMenuOpen: false,
     connected: false,
     wsConnected: false,
@@ -346,8 +373,7 @@ function app() {
     init() {
       var self = this;
 
-      // Force dark mode for now.
-      localStorage.setItem('clawreform-theme-mode', 'dark');
+      this.obsidianShowExternalEmbed = /^https?:\/\//i.test((this.obsidianGraphUrl || '').trim());
 
       // Hash routing
       function handleHash() {
@@ -358,11 +384,27 @@ function app() {
           return;
         }
         self.page = normalized;
+        if (normalized === 'obsidian' && self.hasObsidianGraphLinked) {
+          self.loadObsidianInAppGraph(false);
+        }
       }
       window.addEventListener('hashchange', handleHash);
       window.addEventListener('clawreform:developer-mode-changed', handleHash);
+      window.addEventListener('resize', function () {
+        if (window.innerWidth <= 768) {
+          self.sidebarHoverExpanded = false;
+          if (self.sidebarHoverOpenTimer) {
+            clearTimeout(self.sidebarHoverOpenTimer);
+            self.sidebarHoverOpenTimer = null;
+          }
+          if (self.sidebarHoverCloseTimer) {
+            clearTimeout(self.sidebarHoverCloseTimer);
+            self.sidebarHoverCloseTimer = null;
+          }
+        }
+      });
       handleHash();
-      document.body.setAttribute('data-theme', this.theme);
+      applyThemeAttributes(this.theme);
 
       // Keyboard shortcuts
       document.addEventListener('keydown', function (e) {
@@ -389,6 +431,15 @@ function app() {
         // Escape — close mobile menu
         if (e.key === 'Escape') {
           self.mobileMenuOpen = false;
+          self.sidebarHoverExpanded = false;
+          if (self.sidebarHoverOpenTimer) {
+            clearTimeout(self.sidebarHoverOpenTimer);
+            self.sidebarHoverOpenTimer = null;
+          }
+          if (self.sidebarHoverCloseTimer) {
+            clearTimeout(self.sidebarHoverCloseTimer);
+            self.sidebarHoverCloseTimer = null;
+          }
         }
       });
 
@@ -411,11 +462,21 @@ function app() {
       this.page = target;
       window.location.hash = target;
       this.mobileMenuOpen = false;
+      if (target === 'obsidian' && this.hasObsidianGraphLinked) {
+        this.loadObsidianInAppGraph(false);
+      }
     },
 
     get hasObsidianGraphLinked() {
       var raw = (this.obsidianGraphUrl || '').trim();
       return /^obsidian:\/\//i.test(raw) || /^https?:\/\//i.test(raw);
+    },
+
+    get obsidianGraphLabel() {
+      var raw = (this.obsidianGraphUrl || '').trim();
+      if (!raw) return '';
+      if (raw.length <= 72) return raw;
+      return raw.slice(0, 69) + '...';
     },
 
     get obsidianEmbedUrl() {
@@ -425,11 +486,468 @@ function app() {
       return '';
     },
 
-    saveObsidianGraphUrl() {
+    get obsidianGraphNodes() {
+      return (this.obsidianInAppGraph && this.obsidianInAppGraph.nodes) || [];
+    },
+
+    get obsidianGraphEdges() {
+      return (this.obsidianInAppGraph && this.obsidianInAppGraph.edges) || [];
+    },
+
+    get obsidianSelectedNode() {
+      var nodes = this.obsidianGraphNodes;
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].id === this.obsidianGraphSelectedNodeId) return nodes[i];
+      }
+      return nodes.length ? nodes[0] : null;
+    },
+
+    get obsidianCanSeedAgent() {
+      return /No agents found/i.test(this.obsidianGraphError || '');
+    },
+
+    graphHash(input) {
+      var str = String(input || '');
+      var hash = 0;
+      for (var i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash) + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    },
+
+    graphClamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    },
+
+    graphShortLabel(label, max) {
+      var text = String(label || '');
+      var cap = max || 20;
+      if (text.length <= cap) return text;
+      return text.slice(0, cap - 1) + '…';
+    },
+
+    obsidianNodeRadius(node) {
+      if (!node) return 6;
+      if (node.type === 'root') return 14;
+      if (node.type === 'file') return 10;
+      if (node.type === 'section') return 7;
+      return 6;
+    },
+
+    obsidianNodeClass(node) {
+      if (!node) return '';
+      var classes = ['memory-graph-node-' + node.type];
+      if (this.obsidianGraphSelectedNodeId === node.id) classes.push('is-selected');
+      return classes.join(' ');
+    },
+
+    buildObsidianInAppGraph(fileDocs, agentId) {
+      var width = 980;
+      var height = 560;
+      var centerX = width / 2;
+      var centerY = height / 2;
+      var nodeMap = {};
+      var nodes = [];
+      var edges = [];
+      var edgeMap = {};
+      var byFileSections = {};
+
+      function addNode(node) {
+        if (!node || !node.id || nodeMap[node.id]) return nodeMap[node.id];
+        var normalized = {
+          id: node.id,
+          label: node.label || node.id,
+          shortLabel: node.shortLabel || node.label || node.id,
+          type: node.type || 'topic',
+          meta: node.meta || {},
+          x: 0,
+          y: 0,
+          showLabel: !!node.showLabel
+        };
+        nodeMap[node.id] = normalized;
+        nodes.push(normalized);
+        return normalized;
+      }
+
+      function addEdge(source, target, type) {
+        if (!source || !target || source === target) return;
+        var edgeId = source + '->' + target;
+        if (edgeMap[edgeId]) return;
+        edgeMap[edgeId] = true;
+        edges.push({ id: edgeId, source: source, target: target, type: type || 'link', x1: 0, y1: 0, x2: 0, y2: 0 });
+      }
+
+      addNode({
+        id: 'root',
+        label: 'clawREFORM Memory',
+        shortLabel: 'Memory',
+        type: 'root',
+        showLabel: true
+      });
+
+      var fileNameToId = {};
+      for (var i = 0; i < fileDocs.length; i++) {
+        var file = fileDocs[i];
+        if (!file || !file.name) continue;
+        var fileId = 'file:' + file.name;
+        fileNameToId[file.name.toLowerCase()] = fileId;
+        addNode({
+          id: fileId,
+          label: file.name,
+          shortLabel: this.graphShortLabel(file.name, 18),
+          type: 'file',
+          showLabel: true,
+          meta: { file: file.name, sizeBytes: file.sizeBytes || 0 }
+        });
+        addEdge('root', fileId, 'contains');
+      }
+
+      for (var f = 0; f < fileDocs.length; f++) {
+        var doc = fileDocs[f];
+        if (!doc || !doc.name || !doc.content) continue;
+        var parentId = 'file:' + doc.name;
+        var headingRe = /^#{1,3}\s+(.+)$/gm;
+        var headingMatch;
+        var headingCount = 0;
+        byFileSections[parentId] = byFileSections[parentId] || [];
+        while ((headingMatch = headingRe.exec(doc.content)) && headingCount < 8) {
+          var headingText = (headingMatch[1] || '').replace(/\s+/g, ' ').trim();
+          if (!headingText) continue;
+          var sectionId = 'section:' + doc.name + ':' + headingCount;
+          addNode({
+            id: sectionId,
+            label: headingText,
+            shortLabel: this.graphShortLabel(headingText, 24),
+            type: 'section',
+            meta: { file: doc.name }
+          });
+          addEdge(parentId, sectionId, 'section');
+          byFileSections[parentId].push(sectionId);
+          headingCount += 1;
+        }
+
+        var wikiRe = /\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g;
+        var wikiMatch;
+        var linkCount = 0;
+        while ((wikiMatch = wikiRe.exec(doc.content)) && linkCount < 12) {
+          var rawTarget = (wikiMatch[1] || '').trim();
+          if (!rawTarget) continue;
+          var targetFile = rawTarget.toLowerCase().endsWith('.md') ? rawTarget : rawTarget + '.md';
+          var targetFileId = fileNameToId[targetFile.toLowerCase()];
+          if (targetFileId) {
+            addEdge(parentId, targetFileId, 'reference');
+          } else {
+            var normalized = rawTarget.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            if (!normalized) continue;
+            var topicId = 'topic:' + normalized.slice(0, 48);
+            addNode({
+              id: topicId,
+              label: rawTarget,
+              shortLabel: this.graphShortLabel(rawTarget, 22),
+              type: 'topic',
+              meta: { sourceFile: doc.name }
+            });
+            addEdge(parentId, topicId, 'reference');
+          }
+          linkCount += 1;
+        }
+      }
+
+      var fileNodes = [];
+      var sectionNodes = [];
+      var topicNodes = [];
+      for (var n = 0; n < nodes.length; n++) {
+        if (nodes[n].type === 'file') fileNodes.push(nodes[n]);
+        else if (nodes[n].type === 'section') sectionNodes.push(nodes[n]);
+        else if (nodes[n].type === 'topic') topicNodes.push(nodes[n]);
+      }
+
+      nodeMap.root.x = centerX;
+      nodeMap.root.y = centerY;
+
+      var fileRadius = 170;
+      for (var fi = 0; fi < fileNodes.length; fi++) {
+        var fileNode = fileNodes[fi];
+        var fileAngle = (-Math.PI / 2) + ((Math.PI * 2) * fi / Math.max(1, fileNodes.length));
+        fileNode.meta.angle = fileAngle;
+        fileNode.x = this.graphClamp(centerX + Math.cos(fileAngle) * fileRadius, 44, width - 44);
+        fileNode.y = this.graphClamp(centerY + Math.sin(fileAngle) * fileRadius, 44, height - 44);
+      }
+
+      for (var sf = 0; sf < fileNodes.length; sf++) {
+        var parentFile = fileNodes[sf];
+        var list = byFileSections[parentFile.id] || [];
+        for (var si = 0; si < list.length; si++) {
+          var sectionNode = nodeMap[list[si]];
+          if (!sectionNode) continue;
+          var spread = 0.16;
+          var offset = (si - ((list.length - 1) / 2)) * spread;
+          var secAngle = (parentFile.meta.angle || 0) + offset;
+          var secRadius = 290 + ((si % 2) * 24);
+          sectionNode.x = this.graphClamp(centerX + Math.cos(secAngle) * secRadius, 32, width - 32);
+          sectionNode.y = this.graphClamp(centerY + Math.sin(secAngle) * secRadius, 32, height - 32);
+        }
+      }
+
+      var topicRadius = 235;
+      for (var ti = 0; ti < topicNodes.length; ti++) {
+        var topicNode = topicNodes[ti];
+        var base = ((Math.PI * 2) * ti / Math.max(1, topicNodes.length));
+        var jitter = ((this.graphHash(topicNode.id) % 100) / 100 - 0.5) * 0.2;
+        var angle = base + jitter;
+        topicNode.x = this.graphClamp(centerX + Math.cos(angle) * topicRadius, 24, width - 24);
+        topicNode.y = this.graphClamp(centerY + Math.sin(angle) * topicRadius, 24, height - 24);
+      }
+
+      for (var ei = 0; ei < edges.length; ei++) {
+        var edge = edges[ei];
+        var sourceNode = nodeMap[edge.source];
+        var targetNode = nodeMap[edge.target];
+        if (!sourceNode || !targetNode) continue;
+        edge.x1 = sourceNode.x;
+        edge.y1 = sourceNode.y;
+        edge.x2 = targetNode.x;
+        edge.y2 = targetNode.y;
+        var dx = edge.x2 - edge.x1;
+        var dy = edge.y2 - edge.y1;
+        edge.length = Math.sqrt((dx * dx) + (dy * dy));
+        edge.angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      }
+
+      return {
+        agentId: agentId,
+        generatedAt: new Date().toISOString(),
+        nodes: nodes,
+        edges: edges,
+        fileCount: fileDocs.length
+      };
+    },
+
+    async loadObsidianInAppGraph(force) {
+      if (!this.hasObsidianGraphLinked) {
+        this.obsidianInAppGraph = { agentId: '', generatedAt: '', nodes: [], edges: [], fileCount: 0 };
+        this.obsidianGraphSelectedNodeId = 'root';
+        this.obsidianGraphError = '';
+        this.obsidianGraphLoading = false;
+        return;
+      }
+      if (this.obsidianGraphLoading || this.obsidianGraphSeeding) return;
+      if (!force && this.obsidianGraphNodes.length && this.obsidianInAppGraph.agentId) return;
+
+      this.obsidianGraphLoading = true;
+      this.obsidianGraphError = '';
+      try {
+        var store = Alpine.store('app');
+        if ((!store.agents || !store.agents.length) && store.refreshAgents) {
+          await store.refreshAgents();
+        }
+        var agents = (store.agents || []).slice();
+        if (!agents.length) {
+          this.obsidianGraphError = 'No agents found yet. Create an agent to build the in-app memory graph.';
+          this.obsidianInAppGraph = { agentId: '', generatedAt: '', nodes: [], edges: [], fileCount: 0 };
+          this.obsidianGraphSelectedNodeId = 'root';
+          return;
+        }
+
+        var preferred = localStorage.getItem('clawreform-obsidian-agent-id') || '';
+        var agentId = '';
+        for (var ai = 0; ai < agents.length; ai++) {
+          if (agents[ai].id === preferred) {
+            agentId = preferred;
+            break;
+          }
+        }
+        if (!agentId) agentId = agents[0].id;
+        localStorage.setItem('clawreform-obsidian-agent-id', agentId);
+
+        var listResp = await ClawReformAPI.get('/api/agents/' + agentId + '/files');
+        var files = (listResp && listResp.files) || [];
+        var priorityNames = ['CORE.md', 'OVERVIEW.md', 'PROJECT.md', 'COLLECTIVE.md', 'MEMORY.md', 'HEARTBEAT.md', 'SOUL.md', 'HANDS.md', 'SKILLS.md'];
+        var selectedNames = [];
+        var seen = {};
+
+        for (var p = 0; p < priorityNames.length; p++) {
+          for (var pf = 0; pf < files.length; pf++) {
+            var fileMeta = files[pf];
+            if (!fileMeta || !fileMeta.exists || !fileMeta.name) continue;
+            if (fileMeta.name.toUpperCase() === priorityNames[p] && !seen[fileMeta.name]) {
+              selectedNames.push(fileMeta.name);
+              seen[fileMeta.name] = true;
+            }
+          }
+        }
+
+        for (var fm = 0; fm < files.length && selectedNames.length < 14; fm++) {
+          var candidate = files[fm];
+          if (!candidate || !candidate.exists || !candidate.name) continue;
+          if (!/\.md$/i.test(candidate.name)) continue;
+          if (seen[candidate.name]) continue;
+          selectedNames.push(candidate.name);
+          seen[candidate.name] = true;
+        }
+
+        if (!selectedNames.length) {
+          this.obsidianGraphError = 'No memory markdown files found for this agent yet.';
+          this.obsidianInAppGraph = { agentId: agentId, generatedAt: new Date().toISOString(), nodes: [], edges: [], fileCount: 0 };
+          this.obsidianGraphSelectedNodeId = 'root';
+          return;
+        }
+
+        var docs = [];
+        for (var dn = 0; dn < selectedNames.length; dn++) {
+          var name = selectedNames[dn];
+          try {
+            var resp = await ClawReformAPI.get('/api/agents/' + agentId + '/files/' + encodeURIComponent(name));
+            docs.push({ name: name, content: (resp && resp.content) || '', sizeBytes: (resp && resp.size_bytes) || 0 });
+          } catch (_) {
+            docs.push({ name: name, content: '', sizeBytes: 0 });
+          }
+        }
+
+        this.obsidianInAppGraph = this.buildObsidianInAppGraph(docs, agentId);
+        this.obsidianGraphSelectedNodeId = 'root';
+      } catch (e) {
+        this.obsidianGraphError = e.message || 'Could not build in-app memory graph.';
+        this.obsidianInAppGraph = { agentId: '', generatedAt: '', nodes: [], edges: [], fileCount: 0 };
+        this.obsidianGraphSelectedNodeId = 'root';
+      } finally {
+        this.obsidianGraphLoading = false;
+      }
+    },
+
+    defaultObsidianSeedFiles() {
+      return {
+        'CORE.md': '# clawREFORM Core\n\n## North Star\nOperate as a practical agent system with clear memory, safe actions, and fast feedback.\n\n## Identity Contract\n- Brand: clawREFORM by aegntic.ai\n- Runtime: local-first with optional provider routing\n- Memory source: [[MEMORY.md]] and [[COLLECTIVE.md]]\n\n## Linked Organs\n- [[HANDS.md]]\n- [[SOUL.md]]\n- [[HEARTBEAT.md]]\n- [[SKILLS.md]]\n',
+        'OVERVIEW.md': '# System Overview\n\n## User Journey\n1. Open app\n2. Connect provider\n3. Start with one active agent\n4. See live memory map in Obsidian tab\n\n## Memory Layers\n- Project context in [[PROJECT.md]]\n- Shared context in [[COLLECTIVE.md]]\n- Active facts in [[MEMORY.md]]\n\n## Ops Views\n- Runtime controls in [[HANDS.md]]\n- Personality frame in [[SOUL.md]]\n',
+        'PROJECT.md': '# Project Memory\n\n## Current Goal\nDeliver an in-app memory graph that never forces users out of the dashboard.\n\n## Scope\n- Stable Obsidian link flow\n- Native graph rendering from memory files\n- Clear empty and error states\n\n## Dependencies\n- [[CORE.md]]\n- [[MEMORY.md]]\n- [[HEARTBEAT.md]]\n',
+        'COLLECTIVE.md': '# Collective Context\n\n## Shared Principles\n- Prefer clarity over hidden automation\n- Keep defaults beginner-friendly\n- Keep advanced controls in developer mode\n\n## Team Signals\n- UX state: refining\n- Memory state: connected\n- Risk log: avoid fragile setup paths\n\n## Related\n- [[PROJECT.md]]\n- [[OVERVIEW.md]]\n- [[AGENTS.md]]\n',
+        'MEMORY.md': '# Working Memory\n\n## Recent Decisions\n- Obsidian page defaults to native in-app graph.\n- External embed is optional and hidden until requested.\n- Graph builds from memory files.\n\n## Active Links\n- [[CORE.md]]\n- [[OVERVIEW.md]]\n- [[PROJECT.md]]\n- [[COLLECTIVE.md]]\n- [[HANDS.md]]\n- [[SOUL.md]]\n- [[HEARTBEAT.md]]\n- [[SKILLS.md]]\n',
+        'HANDS.md': '# Hands (Execution)\n\n## Responsibilities\n- Apply safe code changes\n- Validate with checks before claiming done\n- Keep UX paths simple first\n\n## Action Protocol\n1. inspect\n2. patch\n3. verify\n4. prove\n\n## Hooks\n- reads [[MEMORY.md]]\n- updates [[HEARTBEAT.md]]\n',
+        'SOUL.md': '# Soul (Identity)\n\n## Character\nDirect, practical, and rigorous.\n\n## Brand\nclawREFORM by aegntic.ai.\n\n## Guardrails\n- No fake success claims\n- No hidden complexity by default\n- Explain tradeoffs plainly\n\n## Connected\n- [[CORE.md]]\n- [[OVERVIEW.md]]\n',
+        'SKILLS.md': '# Skills Registry\n\n## Core Skills\n- graph-building\n- memory-linking\n- setup-simplification\n- provider-routing\n\n## Sources\n- [[HANDS.md]]\n- [[PROJECT.md]]\n',
+        'HEARTBEAT.md': '# Heartbeat\n\n## Status\n- daemon: running\n- api: healthy\n- memory graph: seeded\n\n## Last Update\nGraph seed applied for in-app Obsidian visualization.\n\n## Linked\n- [[MEMORY.md]]\n- [[COLLECTIVE.md]]\n'
+      };
+    },
+
+    async createObsidianSeedAgent() {
+      if (this.obsidianGraphSeeding) return;
+      this.obsidianGraphSeeding = true;
+      this.obsidianGraphError = '';
+      try {
+        var manifestToml = [
+          'name = "memory-seed"',
+          'version = "0.3.0"',
+          'description = "Seeded memory agent for Obsidian graph bootstrapping."',
+          'author = "aegntic.ai"',
+          'module = "builtin:chat"',
+          'tags = ["memory","seed","obsidian"]',
+          '',
+          '[model]',
+          'provider = "openrouter"',
+          'model = "llama-3.3-70b-versatile"',
+          'api_key_env = "OPENROUTER_API_KEY"',
+          'max_tokens = 2048',
+          'temperature = 0.4',
+          'system_prompt = """You maintain memory files for clawREFORM and keep context linked and clean."""',
+          ''
+        ].join('\n');
+        var spawn = await ClawReformAPI.post('/api/agents', { manifest_toml: manifestToml });
+        var agentId = spawn && spawn.agent_id;
+        if (!agentId) throw new Error('Seed agent did not return an id.');
+
+        var docs = this.defaultObsidianSeedFiles();
+        var names = Object.keys(docs);
+        for (var i = 0; i < names.length; i++) {
+          var filename = names[i];
+          await ClawReformAPI.put('/api/agents/' + agentId + '/files/' + encodeURIComponent(filename), {
+            content: docs[filename]
+          });
+        }
+        localStorage.setItem('clawreform-obsidian-agent-id', agentId);
+        var store = Alpine.store('app');
+        if (store && store.refreshAgents) {
+          await store.refreshAgents();
+        }
+        if (window.ClawReformToast && ClawReformToast.success) {
+          ClawReformToast.success('Seed memory agent created');
+        }
+        this.obsidianGraphSeeding = false;
+        await this.loadObsidianInAppGraph(true);
+      } catch (e) {
+        this.obsidianGraphError = e.message || 'Failed to create seed memory agent.';
+        if (window.ClawReformToast && ClawReformToast.error) {
+          ClawReformToast.error(this.obsidianGraphError);
+        }
+      } finally {
+        this.obsidianGraphSeeding = false;
+      }
+    },
+
+    normalizeObsidianVaultName(name) {
+      var cleaned = (name || '').replace(/\s+/g, ' ').trim();
+      return cleaned || 'clawREFORM';
+    },
+
+    getObsidianGraphUrlForVault(vaultName) {
+      return 'obsidian://graph?vault=' + encodeURIComponent(this.normalizeObsidianVaultName(vaultName));
+    },
+
+    extractObsidianVaultNameFromUrl(rawUrl) {
+      var raw = (rawUrl || '').trim();
+      if (!/^obsidian:\/\//i.test(raw)) return '';
+      var match = raw.match(/[?&]vault=([^&#]+)/i);
+      if (!match || !match[1]) return '';
+      try {
+        return decodeURIComponent(match[1].replace(/\+/g, '%20'));
+      } catch (_) {
+        return match[1];
+      }
+    },
+
+    persistObsidianVaultName(vaultName) {
+      var normalized = this.normalizeObsidianVaultName(vaultName);
+      this.obsidianVaultName = normalized;
+      localStorage.setItem('clawreform-obsidian-vault-name', normalized);
+      return normalized;
+    },
+
+    launchObsidianUrl(url) {
+      var target = (url || '').trim();
+      if (!target) return false;
+      try {
+        var anchor = document.createElement('a');
+        anchor.href = target;
+        anchor.rel = 'noopener noreferrer';
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    },
+
+    async saveObsidianGraphUrl() {
       var trimmed = (this.obsidianGraphUrl || '').trim();
       this.obsidianGraphUrl = trimmed;
       localStorage.setItem('clawreform-obsidian-graph-url', trimmed);
+      var detectedVault = this.extractObsidianVaultNameFromUrl(trimmed);
+      if (detectedVault) this.persistObsidianVaultName(detectedVault);
+      this.obsidianVaultPending = false;
       this.showObsidianVaultEditor = !!trimmed;
+      this.obsidianShowExternalEmbed = /^https?:\/\//i.test(trimmed);
+      if (trimmed && window.ClawReformToast && ClawReformToast.success) {
+        ClawReformToast.success('Obsidian memory link saved');
+      }
+      if (trimmed) {
+        await this.loadObsidianInAppGraph(true);
+      } else {
+        this.obsidianInAppGraph = { agentId: '', generatedAt: '', nodes: [], edges: [], fileCount: 0 };
+        this.obsidianGraphSelectedNodeId = 'root';
+        this.obsidianGraphError = '';
+      }
     },
 
     startAddObsidianVault() {
@@ -440,46 +958,144 @@ function app() {
       }, 20);
     },
 
-    createObsidianVault() {
-      var vaultName = (localStorage.getItem('clawreform-obsidian-vault-name') || 'clawREFORM').trim();
-      if (!vaultName) vaultName = 'clawREFORM';
-      var encodedVault = encodeURIComponent(vaultName);
-      this.obsidianGraphUrl = 'obsidian://graph?vault=' + encodedVault;
-      this.saveObsidianGraphUrl();
+    async applyObsidianVaultPreset() {
+      var vaultName = this.persistObsidianVaultName(this.obsidianVaultName);
+      this.obsidianGraphUrl = this.getObsidianGraphUrlForVault(vaultName);
+      await this.saveObsidianGraphUrl();
+      this.obsidianVaultPending = false;
       this.showObsidianVaultEditor = true;
-      localStorage.setItem('clawreform-obsidian-vault-name', vaultName);
-      window.open('obsidian://open?vault=' + encodedVault, '_blank', 'noopener,noreferrer');
+    },
+
+    createObsidianVault() {
+      var vaultName = this.persistObsidianVaultName(this.obsidianVaultName);
+      this.obsidianVaultPending = true;
+      this.showObsidianVaultEditor = false;
+      this.launchObsidianUrl('obsidian://open');
       if (window.ClawReformToast && ClawReformToast.info) {
-        ClawReformToast.info('Vault flow started in Obsidian. Return here and click Open Graph.');
+        ClawReformToast.info('Obsidian opened. Create vault "' + vaultName + '", then click Connect.');
+      }
+    },
+
+    async useExistingObsidianVault() {
+      var vaultName = this.persistObsidianVaultName(this.obsidianVaultName);
+      var graphUrl = this.getObsidianGraphUrlForVault(vaultName);
+      this.obsidianGraphUrl = graphUrl;
+      localStorage.setItem('clawreform-obsidian-graph-url', graphUrl);
+      this.obsidianVaultPending = false;
+      this.showObsidianVaultEditor = false;
+      this.obsidianShowExternalEmbed = false;
+      this.launchObsidianUrl(graphUrl);
+      await this.loadObsidianInAppGraph(true);
+      if (window.ClawReformToast && ClawReformToast.success) {
+        ClawReformToast.success('Obsidian vault linked.');
+      }
+    },
+
+    disconnectObsidianVault() {
+      this.obsidianGraphUrl = '';
+      localStorage.removeItem('clawreform-obsidian-graph-url');
+      this.obsidianVaultPending = false;
+      this.showObsidianVaultEditor = false;
+      this.obsidianShowExternalEmbed = false;
+      this.obsidianInAppGraph = { agentId: '', generatedAt: '', nodes: [], edges: [], fileCount: 0 };
+      this.obsidianGraphSelectedNodeId = 'root';
+      this.obsidianGraphError = '';
+      this.obsidianGraphLoading = false;
+      if (window.ClawReformToast && ClawReformToast.info) {
+        ClawReformToast.info('Obsidian link removed.');
       }
     },
 
     openObsidianGraph() {
       var target = (this.obsidianGraphUrl || '').trim();
       if (!target) {
-        target = window.prompt('Enter your Obsidian graph URL (obsidian://... or https://...)', '');
-        if (!target) return;
-        this.obsidianGraphUrl = target.trim();
-        this.saveObsidianGraphUrl();
+        this.createObsidianVault();
+        return;
+      }
+      if (/^obsidian:\/\//i.test(target)) {
+        this.launchObsidianUrl(target);
+        return;
       }
       window.open(target, '_blank', 'noopener,noreferrer');
     },
 
     setTheme(mode) {
-      // Keep API surface stable, but lock to dark.
-      this.themeMode = 'dark';
-      this.theme = 'dark';
-      localStorage.setItem('clawreform-theme-mode', 'dark');
-      document.body.setAttribute('data-theme', this.theme);
+      var next = mode === 'light' ? 'light' : 'dark';
+      this.themeMode = next;
+      this.theme = next;
+      localStorage.setItem('clawreform-theme-mode', next);
+      applyThemeAttributes(this.theme);
     },
 
     toggleTheme() {
-      this.setTheme('dark');
+      this.setTheme(this.theme === 'dark' ? 'light' : 'dark');
     },
 
     toggleSidebar() {
       this.sidebarCollapsed = !this.sidebarCollapsed;
+      if (!this.sidebarCollapsed) {
+        this.sidebarHoverExpanded = false;
+      }
       localStorage.setItem('clawreform-sidebar', this.sidebarCollapsed ? 'collapsed' : 'expanded');
+    },
+
+    canSidebarHoverExpand() {
+      var canHover = true;
+      if (window.matchMedia) {
+        canHover = window.matchMedia('(hover: hover)').matches;
+      }
+      return this.sidebarCollapsed && window.innerWidth > 768 && !this.mobileMenuOpen && canHover;
+    },
+
+    clearSidebarHoverTimers() {
+      if (this.sidebarHoverOpenTimer) {
+        clearTimeout(this.sidebarHoverOpenTimer);
+        this.sidebarHoverOpenTimer = null;
+      }
+      if (this.sidebarHoverCloseTimer) {
+        clearTimeout(this.sidebarHoverCloseTimer);
+        this.sidebarHoverCloseTimer = null;
+      }
+    },
+
+    onSidebarMouseEnter() {
+      if (!this.canSidebarHoverExpand()) return;
+      this.clearSidebarHoverTimers();
+      var self = this;
+      this.sidebarHoverOpenTimer = setTimeout(function () {
+        self.sidebarHoverExpanded = true;
+        self.sidebarHoverOpenTimer = null;
+      }, 80);
+    },
+
+    onSidebarMouseLeave() {
+      if (!this.sidebarCollapsed) return;
+      this.clearSidebarHoverTimers();
+      var self = this;
+      this.sidebarHoverCloseTimer = setTimeout(function () {
+        self.sidebarHoverExpanded = false;
+        self.sidebarHoverCloseTimer = null;
+      }, 180);
+    },
+
+    onSidebarFocusIn() {
+      if (!this.canSidebarHoverExpand()) return;
+      this.clearSidebarHoverTimers();
+      this.sidebarHoverExpanded = true;
+    },
+
+    onSidebarFocusOut() {
+      if (!this.sidebarCollapsed) return;
+      this.clearSidebarHoverTimers();
+      var self = this;
+      this.sidebarHoverCloseTimer = setTimeout(function () {
+        var sidebar = document.querySelector('.sidebar');
+        var active = document.activeElement;
+        if (sidebar && (!active || !sidebar.contains(active))) {
+          self.sidebarHoverExpanded = false;
+        }
+        self.sidebarHoverCloseTimer = null;
+      }, 120);
     },
 
     async pollStatus() {
