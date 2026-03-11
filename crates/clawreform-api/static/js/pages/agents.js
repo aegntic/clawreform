@@ -60,6 +60,7 @@ function agentsPage() {
     tplProviders: [],
     tplLoading: false,
     tplLoadError: '',
+    spawnProvidersLoading: false,
     selectedCategory: 'All',
     searchQuery: '',
 
@@ -245,6 +246,12 @@ function agentsPage() {
       return p ? p.auth_status === 'configured' : false;
     },
 
+    get configuredSpawnProviders() {
+      return (this.tplProviders || []).filter(function(p) {
+        return p && p.auth_status === 'configured';
+      });
+    },
+
     async init() {
       var self = this;
       this.loading = true;
@@ -295,6 +302,33 @@ function agentsPage() {
         this.tplLoadError = e.message || 'Could not load templates.';
       }
       this.tplLoading = false;
+    },
+
+    async loadSpawnProviders(force) {
+      if (this.spawnProvidersLoading) return;
+      if (!force && this.tplProviders && this.tplProviders.length) return;
+      this.spawnProvidersLoading = true;
+      try {
+        var data = await ClawReformAPI.get('/api/providers');
+        this.tplProviders = (data && data.providers) || [];
+      } catch (_) {
+        this.tplProviders = [];
+      }
+      this.spawnProvidersLoading = false;
+    },
+
+    gotoProviderSetup() {
+      this.showSpawnModal = false;
+      window.location.hash = 'settings';
+      if (window.ClawReformToast && ClawReformToast.info) {
+        ClawReformToast.info('Configure a provider in Settings > Providers first.');
+      }
+    },
+
+    handleSpawnProviderChange() {
+      if (this.spawnForm.provider === '__add_provider__') {
+        this.gotoProviderSetup();
+      }
     },
 
     chatWithAgent(agent) {
@@ -358,7 +392,7 @@ function agentsPage() {
     },
 
     // ── Multi-step wizard navigation ──
-    openSpawnWizard() {
+    async openSpawnWizard() {
       this.showSpawnModal = true;
       this.spawnStep = 1;
       this.spawnMode = 'wizard';
@@ -368,12 +402,28 @@ function agentsPage() {
       this.spawnForm.name = '';
       this.spawnForm.systemPrompt = 'You are a helpful assistant.';
       this.spawnForm.profile = 'full';
+      await this.loadSpawnProviders(true);
+      var configured = this.configuredSpawnProviders;
+      if (configured.length) {
+        var keepCurrent = configured.some(function(p) { return p.id === this.spawnForm.provider; }.bind(this));
+        if (!keepCurrent) {
+          this.spawnForm.provider = configured[0].id;
+        }
+      } else {
+        this.spawnForm.provider = '__add_provider__';
+      }
     },
 
     nextStep() {
       if (this.spawnStep === 1 && !this.spawnForm.name.trim()) {
         ClawReformToast.warn('Please enter an agent name');
         return;
+      }
+      if (this.spawnStep === 2) {
+        if (!this.configuredSpawnProviders.length || this.spawnForm.provider === '__add_provider__') {
+          this.gotoProviderSetup();
+          return;
+        }
       }
       if (this.spawnStep < 5) this.spawnStep++;
     },

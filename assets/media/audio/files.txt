@@ -1,7 +1,0 @@
-file 'intro.wav'
-file 'features.wav'
-file 'cli.wav'
-file 'skills.wav'
-file 'mcp.wav'
-file 'selfmodify.wav'
-file 'outro.wav'

@@ -12,6 +12,7 @@
 //! - WebSocket real-time chat with HTTP fallback
 //! - Agent management, workflows, memory browser, audit log, and more
 
+use axum::extract::Path;
 use axum::http::header;
 use axum::response::IntoResponse;
 
@@ -23,6 +24,18 @@ const LOGO_PNG: &[u8] = include_bytes!("../static/logo.png");
 
 /// Embedded favicon ICO for browser tabs.
 const FAVICON_ICO: &[u8] = include_bytes!("../static/favicon.ico");
+
+/// Embedded top-rail branding strip used by the shell chrome.
+const BRANDING_SHELL_RAIL_STRIP_CLEAN_PNG: &[u8] =
+    include_bytes!("../static/branding/shell-rail-strip-clean.png");
+const BRANDING_SHELL_RAIL_ELBOW_CLEAN_PNG: &[u8] =
+    include_bytes!("../static/branding/shell-rail-elbow-clean.png");
+const BRANDING_SHELL_RAILS_REF_PNG: &[u8] =
+    include_bytes!("../static/branding/shell-rails-ref.png");
+const BRANDING_SHELL_RAIL_STRIP_TRANSPARENT_PNG: &[u8] =
+    include_bytes!("../static/branding/shell-rail-strip-transparent.png");
+const BRANDING_SHELL_RAIL_ELBOW_TRANSPARENT_PNG: &[u8] =
+    include_bytes!("../static/branding/shell-rail-elbow-transparent.png");
 
 /// GET /logo.png — Serve the ClawReform logo.
 pub async fn logo_png() -> impl IntoResponse {
@@ -44,6 +57,57 @@ pub async fn favicon_ico() -> impl IntoResponse {
         ],
         FAVICON_ICO,
     )
+}
+
+/// GET /branding/{*path} — Serve embedded branding assets used by the dashboard chrome.
+pub async fn branding_asset(Path(path): Path<String>) -> impl IntoResponse {
+    match path.as_str() {
+        "shell-rail-strip-transparent.png" => (
+            [
+                (header::CONTENT_TYPE, "image/png"),
+                (header::CACHE_CONTROL, "public, max-age=86400, immutable"),
+            ],
+            BRANDING_SHELL_RAIL_STRIP_TRANSPARENT_PNG,
+        )
+            .into_response(),
+        "shell-rail-elbow-transparent.png" => (
+            [
+                (header::CONTENT_TYPE, "image/png"),
+                (header::CACHE_CONTROL, "public, max-age=86400, immutable"),
+            ],
+            BRANDING_SHELL_RAIL_ELBOW_TRANSPARENT_PNG,
+        )
+            .into_response(),
+        "shell-rail-elbow-clean.png" => (
+            [
+                (header::CONTENT_TYPE, "image/png"),
+                (header::CACHE_CONTROL, "public, max-age=86400, immutable"),
+            ],
+            BRANDING_SHELL_RAIL_ELBOW_CLEAN_PNG,
+        )
+            .into_response(),
+        "shell-rails-ref.png" => (
+            [
+                (header::CONTENT_TYPE, "image/png"),
+                (header::CACHE_CONTROL, "public, max-age=86400, immutable"),
+            ],
+            BRANDING_SHELL_RAILS_REF_PNG,
+        )
+            .into_response(),
+        "shell-rail-strip-clean.png" => (
+            [
+                (header::CONTENT_TYPE, "image/png"),
+                (header::CACHE_CONTROL, "public, max-age=86400, immutable"),
+            ],
+            BRANDING_SHELL_RAIL_STRIP_CLEAN_PNG,
+        )
+            .into_response(),
+        _ => (
+            axum::http::StatusCode::NOT_FOUND,
+            "branding asset not found",
+        )
+            .into_response(),
+    }
 }
 
 /// GET / — Serve the clawREFORM by aegntic.ai Dashboard single-page application.
