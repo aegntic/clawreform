@@ -1,5 +1,6 @@
 //! Agent-related types: identity, manifests, state, and scheduling.
 
+use crate::openclaw::TraceId;
 use crate::tool::ToolDefinition;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -648,6 +649,10 @@ pub struct AgentEntry {
     /// When onboarding was completed.
     #[serde(default)]
     pub onboarding_completed_at: Option<DateTime<Utc>>,
+    /// Current active trace ID for OpenClaw observability.
+    /// Propagates through all operations for distributed tracing.
+    #[serde(default)]
+    pub trace_id: Option<TraceId>,
 }
 
 #[cfg(test)]
@@ -778,6 +783,9 @@ mod tests {
             workspace: None,
             generate_identity_files: true,
             exec_policy: None,
+            budget_limit: None,
+            department: None,
+            reports_to: None,
         };
         let json = serde_json::to_string(&manifest).unwrap();
         let deserialized: AgentManifest = serde_json::from_str(&json).unwrap();
@@ -1010,6 +1018,7 @@ mod tests {
             identity: AgentIdentity::default(),
             onboarding_completed: false,
             onboarding_completed_at: None,
+            trace_id: None,
         };
         let json = serde_json::to_string(&entry).unwrap();
         let back: AgentEntry = serde_json::from_str(&json).unwrap();
@@ -1072,6 +1081,7 @@ mod tests {
             },
             onboarding_completed: false,
             onboarding_completed_at: None,
+            trace_id: None,
         };
         let json = serde_json::to_string(&entry).unwrap();
         let back: AgentEntry = serde_json::from_str(&json).unwrap();

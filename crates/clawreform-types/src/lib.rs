@@ -15,9 +15,24 @@ pub mod media;
 pub mod memory;
 pub mod message;
 pub mod model_catalog;
+pub mod openclaw;
 pub mod scheduler;
 pub mod serde_compat;
 pub mod taint;
 pub mod tool;
 pub mod tool_compat;
 pub mod webhook;
+
+// Re-export commonly used OpenClaw types at crate root
+pub use openclaw::{
+    AgentCapabilities, AgentHealth, AgentKind, AgentAddressing, AgentContract,
+    AgentConstraints, AgentDependencies, ActivationMode,
+    ArtifactId, ArtifactRecord, RetentionClass,
+    DispatchDecision, DispatchRecord,
+    EventId, EvaluationDecision, EvaluationResult, EvaluationScores,
+    LifecycleEvent, LifecycleState,
+    MemoryEnvelope, MemoryObject, MemoryTier, MemoryVisibility,
+    RegistryRecord, RepairAction, RepairActionType,
+    TaskId, TaskPacket, TaskPriority, TraceId,
+    SCHEMA_VERSION as OPENCLAW_SCHEMA_VERSION,
+};
