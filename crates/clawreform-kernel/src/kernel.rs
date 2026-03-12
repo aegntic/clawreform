@@ -1790,6 +1790,7 @@ impl ClawReformKernel {
             identity: Default::default(),
             onboarding_completed: false,
             onboarding_completed_at: None,
+            trace_id: None,
         };
         self.registry
             .register(entry.clone())
@@ -2039,6 +2040,7 @@ impl ClawReformKernel {
                 messages: Vec::new(),
                 context_window_tokens: 0,
                 label: None,
+                trace_id: None,
             });
 
         // Check if auto-compaction is needed: message-count OR token-count trigger
@@ -2540,6 +2542,7 @@ impl ClawReformKernel {
                 messages: Vec::new(),
                 context_window_tokens: 0,
                 label: None,
+                trace_id: None,
             });
 
         let messages_before = session.messages.len();
@@ -3225,6 +3228,7 @@ impl ClawReformKernel {
                 messages: Vec::new(),
                 context_window_tokens: 0,
                 label: None,
+                trace_id: None,
             });
 
         let config = CompactionConfig::default();
@@ -3310,6 +3314,7 @@ impl ClawReformKernel {
                 messages: Vec::new(),
                 context_window_tokens: 0,
                 label: None,
+                trace_id: None,
             });
 
         let system_prompt = &entry.manifest.model.system_prompt;
@@ -5945,6 +5950,7 @@ mod tests {
             identity: Default::default(),
             onboarding_completed: false,
             onboarding_completed_at: None,
+            trace_id: None,
         };
         registry.register(entry).unwrap();
 
@@ -5982,6 +5988,7 @@ mod tests {
             identity: Default::default(),
             onboarding_completed: false,
             onboarding_completed_at: None,
+            trace_id: None,
         };
         registry.register(e1).unwrap();
 
@@ -6005,6 +6012,7 @@ mod tests {
             identity: Default::default(),
             onboarding_completed: false,
             onboarding_completed_at: None,
+            trace_id: None,
         };
         registry.register(e2).unwrap();
 

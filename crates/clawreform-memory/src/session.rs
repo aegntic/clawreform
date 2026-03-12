@@ -4,6 +4,7 @@ use chrono::Utc;
 use clawreform_types::agent::{AgentId, SessionId};
 use clawreform_types::error::{ClawReformError, ClawReformResult};
 use clawreform_types::message::{ContentBlock, Message, MessageContent, Role};
+use clawreform_types::openclaw::TraceId;
 use rusqlite::Connection;
 use std::io::Write;
 use std::path::Path;
@@ -22,6 +23,8 @@ pub struct Session {
     pub context_window_tokens: u64,
     /// Optional human-readable session label.
     pub label: Option<String>,
+    /// Active trace ID for the current task execution (OpenClaw observability).
+    pub trace_id: Option<TraceId>,
 }
 
 /// Session store backed by SQLite.
@@ -67,6 +70,7 @@ impl SessionStore {
                     messages,
                     context_window_tokens: tokens as u64,
                     label,
+                    trace_id: None,
                 }))
             }
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
@@ -176,6 +180,7 @@ impl SessionStore {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         self.save_session(&session)?;
         Ok(session)
@@ -237,6 +242,7 @@ impl SessionStore {
                     messages,
                     context_window_tokens: tokens as u64,
                     label: lbl,
+                    trace_id: None,
                 }))
             }
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
@@ -298,6 +304,7 @@ impl SessionStore {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: label.map(|s| s.to_string()),
+            trace_id: None,
         };
         self.save_session(&session)?;
         Ok(session)

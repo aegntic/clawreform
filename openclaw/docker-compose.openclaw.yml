@@ -1,0 +1,210 @@
+# OpenClaw Ecosystem - Docker Compose
+# Reference: openclaw/IMPLEMENTATION_PACK.md
+#
+# Stack: PostgreSQL 16 + Redis 7 + Python FastAPI services
+# Package Manager: Astral UV (https://docs.astral.sh/uv/)
+
+version: "3.9"
+
+services:
+  # ==========================================================================
+  # INFRASTRUCTURE
+  # ==========================================================================
+
+  postgres:
+    image: postgres:16
+    container_name: openclaw-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: openclaw
+      POSTGRES_USER: openclaw
+      POSTGRES_PASSWORD: openclaw_secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./openclaw_registry.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openclaw -d openclaw"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: openclaw-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openclaw-net
+
+  # ==========================================================================
+  # CONTROL PLANE
+  # ==========================================================================
+
+  registry-api:
+    build:
+      context: ./apps/registry-api
+      dockerfile: Dockerfile
+    container_name: openclaw-registry
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://openclaw:openclaw_secret@postgres:5432/openclaw
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - openclaw-net
+    restart: unless-stopped
+
+  # ==========================================================================
+  # EXECUTION PLANE
+  # ==========================================================================
+
+  dispatcher:
+    build:
+      context: ./apps/dispatcher
+      dockerfile: Dockerfile
+    container_name: openclaw-dispatcher
+    ports:
+      - "8002:8002"
+    environment:
+      REGISTRY_URL: http://registry-api:8001
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://openclaw:openclaw_secret@postgres:5432/openclaw
+      LOG_LEVEL: INFO
+    depends_on:
+      registry-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - openclaw-net
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: ./apps/scheduler
+      dockerfile: Dockerfile
+    container_name: openclaw-scheduler
+    ports:
+      - "8003:8003"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://openclaw:openclaw_secret@postgres:5432/openclaw
+      REGISTRY_URL: http://registry-api:8001
+      LOG_LEVEL: INFO
+    depends_on:
+      redis:
+        condition: service_healthy
+      registry-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - openclaw-net
+    restart: unless-stopped
+
+  # ==========================================================================
+  # KNOWLEDGE PLANE
+  # ==========================================================================
+
+  evaluator:
+    build:
+      context: ./apps/evaluator
+      dockerfile: Dockerfile
+    container_name: openclaw-evaluator
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: postgresql://openclaw:openclaw_secret@postgres:5432/openclaw
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - openclaw-net
+    restart: unless-stopped
+
+  repair:
+    build:
+      context: ./apps/repair
+      dockerfile: Dockerfile
+    container_name: openclaw-repair
+    ports:
+      - "8005:8005"
+    environment:
+      REGISTRY_URL: http://registry-api:8001
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://openclaw:openclaw_secret@postgres:5432/openclaw
+      LOG_LEVEL: INFO
+    depends_on:
+      registry-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - openclaw-net
+    restart: unless-stopped
+
+  # ==========================================================================
+  # OBSERVABILITY (Optional)
+  # ==========================================================================
+
+  # Uncomment to enable Jaeger tracing
+  # jaeger:
+  #   image: jaegertracing/all-in-one:latest
+  #   container_name: openclaw-jaeger
+  #   ports:
+  #     - "16686:16686"  # UI
+  #     - "6831:6831/udp"  # Agent
+  #   environment:
+  #     COLLECTOR_ZIPKIN_HOST_PORT: :9411
+  #   networks:
+  #     - openclaw-net
+
+networks:
+  openclaw-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

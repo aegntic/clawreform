@@ -1977,6 +1977,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(EmptyAfterToolUseDriver::new());
@@ -2029,6 +2030,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(EmptyMaxTokensDriver);
@@ -2081,6 +2083,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(NormalDriver);
@@ -2124,6 +2127,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(ThinkVisibleDriver);
@@ -2171,6 +2175,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(EmptyAfterToolUseDriver::new());
@@ -2295,6 +2300,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(EmptyThenNormalDriver::new());
@@ -2341,6 +2347,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(AlwaysEmptyDriver);
@@ -2393,6 +2400,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(EmptyMaxTokensDriver);
@@ -2753,6 +2761,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(TextToolCallDriver::new());
@@ -2825,6 +2834,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(NormalDriver);
@@ -2879,6 +2889,7 @@ mod tests {
             messages: Vec::new(),
             context_window_tokens: 0,
             label: None,
+            trace_id: None,
         };
         let manifest = test_manifest();
         let driver: Arc<dyn LlmDriver> = Arc::new(TextToolCallDriver::new());
