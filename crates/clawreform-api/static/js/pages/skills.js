@@ -295,5 +295,127 @@ function skillsPage() {
     isSkillInstalledByName: function(name) {
       return this.skills.some(function(s) { return s.name === name; });
     },
+
+    // Local skills scanning
+    localSkills: [],
+    localLoading: false,
+    localError: '',
+    localScannedDirs: [],
+
+    async scanLocalSkills() {
+      this.localLoading = true;
+      this.localError = '';
+      this.localSkills = [];
+      this.localScannedDirs = [];
+
+      var home = window.location.hostname === 'localhost' ? '' : '';
+      var commonDirs = [
+        '~/.claude/skills',
+        '~/.codex/skills',
+        '~/.gemini/skills',
+        '~/.opencode/skills',
+        '~/.cline/skills',
+        '~/.aider/skills',
+        '~/.cursor/skills',
+        '~/.continue/skills',
+        '~/.local/share/mcp/skills',
+      ];
+
+      // Try to get suggestions from API first
+      try {
+        var data = await ClawReformAPI.get('/api/import/suggestions');
+        if (data.suggestions && data.suggestions.length > 0) {
+          for (var i = 0; i < data.suggestions.length; i++) {
+            var s = data.suggestions[i];
+            if (s.exists && s.item_count > 0) {
+              this.localScannedDirs.push({ path: s.path, count: s.item_count });
+            }
+          }
+        }
+      } catch(e) {
+        // API suggestions failed, use hardcoded list
+      }
+
+      // Scan each suggested directory
+      for (var j = 0; j < this.localScannedDirs.length; j++) {
+        var dir = this.localScannedDirs[j];
+        try {
+          var scanData = await ClawReformAPI.post('/api/import/scan', { directory: dir.path });
+          if (scanData.skills && scanData.skills.length > 0) {
+            for (var k = 0; k < scanData.skills.length; k++) {
+              var skill = scanData.skills[k];
+              if (!skill.already_installed && skill.can_import) {
+                this.localSkills.push(skill);
+              }
+            }
+          }
+        } catch(err) {
+          // Skip directories that fail to scan
+        }
+      }
+
+      // If no results from suggestions, scan home directories
+      if (this.localSkills.length === 0) {
+        for (var m = 0; m < commonDirs.length; m++) {
+          var path = commonDirs[m];
+          try {
+            var scanRes = await ClawReformAPI.post('/api/import/scan', { directory: path });
+            if (scanRes.skills && scanRes.skills.length > 0) {
+              for (var n = 0; n < scanRes.skills.length; n++) {
+                var sk = scanRes.skills[n];
+                if (!sk.already_installed && sk.can_import) {
+                  this.localSkills.push(sk);
+                }
+              }
+            }
+          } catch(err2) {
+            // Skip
+          }
+        }
+      }
+
+      this.localLoading = false;
+      if (this.localSkills.length === 0 && this.localScannedDirs.length === 0) {
+        this.localError = 'No local skills found. Try scanning a specific directory in Settings > Import.';
+      }
+    },
+
+    async importLocalSkill(skill) {
+      try {
+        var data = await ClawReformAPI.post('/api/import', {
+          items: [{ item_type: 'skill', path: skill.path, name: skill.name }]
+        });
+        if (data.success) {
+          ClawReformToast.success('Skill "' + skill.name + '" imported');
+          // Remove from local list
+          var idx = this.localSkills.findIndex(function(s) { return s.path === skill.path; });
+          if (idx !== -1) this.localSkills.splice(idx, 1);
+          await this.loadSkills();
+        } else {
+          ClawReformToast.error(data.message || 'Import failed');
+        }
+      } catch(e) {
+        ClawReformToast.error('Import failed: ' + e.message);
+      }
+    },
+
+    async importAllLocalSkills() {
+      if (this.localSkills.length === 0) return;
+      var items = this.localSkills.map(function(s) {
+        return { item_type: 'skill', path: s.path, name: s.name };
+      });
+      try {
+        var data = await ClawReformAPI.post('/api/import', { items: items });
+        if (data.success) {
+          ClawReformToast.success('Imported ' + data.imported.length + ' skill(s)');
+          this.localSkills = [];
+          await this.loadSkills();
+        } else {
+          ClawReformToast.error(data.message || 'Import failed');
+        }
+      } catch(e) {
+        ClawReformToast.error('Import failed: ' + e.message);
+      }
+    },
   };
 }

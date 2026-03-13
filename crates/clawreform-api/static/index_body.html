@@ -1254,6 +1254,17 @@
                             x-show="msg.text && msg.text.trim() && !msg.thinking"
                             x-html="highlightSearch(msg.isHtml ? msg.text : ((msg.role === 'agent' || msg.role === 'system') && !msg.thinking ? renderMarkdown(msg.text) : escapeHtml(msg.text)))">
                           </div>
+                          <!-- Fix API Key button for system error messages -->
+                          <template x-if="msg.role === 'system' && msg.text && (msg.text.includes('API error') || msg.text.includes('API key') || msg.text.includes('401') || msg.text.includes('403') || msg.text.includes('Invalid'))">
+                            <div style="margin-top:8px">
+                              <button class="btn btn-primary btn-sm" @click="showApiKeyFix()" style="display:inline-flex;align-items:center;gap:6px">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                                <span>Fix API Configuration</span>
+                              </button>
+                            </div>
+                          </template>
                           <!-- Inline images from uploads (shown above tool cards) -->
                           <template x-if="msg.images && msg.images.length">
                             <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0">
@@ -2965,6 +2976,11 @@
                 <div class="tab" :class="{ active: tab === 'clawhub' }"
                   @click="tab = 'clawhub'; if (!clawhubBrowseResults.length && !clawhubSearch) browseClawHub('trending')">
                   ClawHub</div>
+                <div class="tab" :class="{ active: tab === 'local' }"
+                  @click="tab = 'local'; if (!localScannedDirs.length) scanLocalSkills()">
+                  Local <span class="badge badge-dim" x-show="localSkills.length" x-text="localSkills.length"
+                    style="margin-left:4px"></span>
+                </div>
                 <div class="tab" :class="{ active: tab === 'mcp' }" @click="tab = 'mcp'; loadMcpServers()">MCP Servers
                 </div>
                 <div class="tab" :class="{ active: tab === 'create' }" @click="tab = 'create'">Quick Start</div>
@@ -2972,29 +2988,21 @@
 
               <!-- TAB: Installed Skills -->
               <div x-show="tab === 'installed'">
-                <div class="card-grid" x-show="skills.length">
+                <div x-show="skills.length" class="skill-list">
                   <template x-for="skill in skills" :key="skill.name">
-                    <div class="card">
-                      <div class="flex justify-between items-center mb-2">
-                        <div class="flex items-center gap-2">
-                          <div class="card-header" style="margin:0" x-text="skill.name"></div>
-                          <span class="runtime-badge" :class="runtimeBadge(skill.runtime).cls"
-                            x-text="runtimeBadge(skill.runtime).text"></span>
-                          <span class="badge" :class="sourceBadge(skill.source).cls"
-                            x-text="sourceBadge(skill.source).text" style="font-size:0.65rem"></span>
-                        </div>
-                        <div class="toggle" :class="{ active: skill.enabled }" @click="skill.enabled = !skill.enabled">
-                        </div>
+                    <div class="skill-row">
+                      <div class="skill-info">
+                        <div class="skill-name" x-text="skill.name"></div>
+                        <div class="skill-desc" x-text="skill.description || 'No description'"></div>
                       </div>
-                      <div class="card-meta" x-text="skill.description"></div>
-                      <div class="flex justify-between items-center mt-2">
-                        <div class="flex gap-2 items-center">
-                          <span class="text-xs text-dim" x-text="skill.tools_count + ' tool(s)'"></span>
-                          <span class="text-xs text-dim" x-show="skill.version" x-text="'v' + skill.version"></span>
-                          <span class="text-xs text-dim" x-show="skill.has_prompt_context">(prompt context)</span>
-                        </div>
-                        <button class="btn btn-danger btn-sm" @click="uninstallSkill(skill.name)">Uninstall</button>
+                      <div class="skill-meta">
+                        <span class="skill-badge" x-text="skill.tools_count + ' tools'"></span>
+                        <span class="skill-badge" x-show="skill.version" x-text="'v' + skill.version"></span>
+                        <span class="skill-source" :class="sourceBadge(skill.source).cls" x-text="sourceBadge(skill.source).text"></span>
                       </div>
+                      <button class="btn btn-ghost btn-sm skill-remove" @click="uninstallSkill(skill.name)" title="Remove skill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      </button>
                     </div>
                   </template>
                 </div>
@@ -3006,14 +3014,80 @@
                     </svg>
                   </div>
                   <h3>No skills installed</h3>
-                  <p>Skills add new capabilities to your agents. Browse ClawHub for 3,000+ community skills or create
-                    your own.</p>
-                  <div class="flex gap-2">
+                  <p>Skills add new capabilities to your agents. Get started with one of these options:</p>
+                  <div class="flex flex-col gap-3 mt-4" style="max-width:400px;margin-left:auto;margin-right:auto">
                     <button class="btn btn-primary"
-                      @click="tab = 'clawhub'; if (!clawhubBrowseResults.length) browseClawHub('trending')">Browse
-                      ClawHub</button>
-                    <button class="btn btn-ghost" @click="tab = 'create'">Quick Start</button>
+                      @click="tab = 'clawhub'; if (!clawhubBrowseResults.length) browseClawHub('trending')">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                      Browse ClawHub (3,000+ skills)
+                    </button>
+                    <button class="btn btn-secondary"
+                      @click="scanLocalSkills(); tab = 'local'">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                      Find Local Skills
+                    </button>
+                    <button class="btn btn-ghost" @click="tab = 'create'">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                      Build Your Own
+                    </button>
                   </div>
+                </div>
+              </div>
+
+              <!-- TAB: Local Skills -->
+              <div x-show="tab === 'local'">
+                <div x-show="localLoading" class="loading-state">
+                  <div class="spinner"></div><span>Scanning local directories...</span>
+                </div>
+                <div x-show="!localLoading && localError" class="empty-state">
+                  <div class="empty-state-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </div>
+                  <h3>No local skills found</h3>
+                  <p x-text="localError"></p>
+                  <button class="btn btn-ghost" @click="scanLocalSkills()">Scan Again</button>
+                </div>
+                <div x-show="!localLoading && !localError && localSkills.length > 0">
+                  <div class="flex justify-between items-center mb-4">
+                    <div class="text-sm text-dim">
+                      Found <span x-text="localSkills.length"></span> skill(s) in local directories
+                    </div>
+                    <div class="flex gap-2">
+                      <button class="btn btn-ghost btn-sm" @click="scanLocalSkills()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        Rescan
+                      </button>
+                      <button class="btn btn-primary btn-sm" @click="importAllLocalSkills()">
+                        Import All
+                      </button>
+                    </div>
+                  </div>
+                  <div class="card-list">
+                    <template x-for="skill in localSkills" :key="skill.path">
+                      <div class="card-item">
+                        <div class="flex justify-between items-center">
+                          <div style="flex:1;min-width:0">
+                            <div class="font-bold" x-text="skill.name"></div>
+                            <div class="text-xs text-dim truncate" x-text="skill.description || skill.path"></div>
+                            <div class="text-xs text-dim mt-1" style="font-family:monospace" x-text="skill.path"></div>
+                          </div>
+                          <button class="btn btn-primary btn-sm" @click="importLocalSkill(skill)">Import</button>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+                <div x-show="!localLoading && !localError && localSkills.length === 0 && localScannedDirs.length > 0" class="empty-state">
+                  <div class="empty-state-icon" style="color:var(--success)">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </div>
+                  <h3>All caught up!</h3>
+                  <p>All skills from your local directories are already installed.</p>
                 </div>
               </div>
 
@@ -4009,6 +4083,8 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                   <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'migration' }"
                     @click="tab = 'migration'">Migration</div>
                 </template>
+                <div class="tab tab-secondary" role="tab" :class="{ active: tab === 'import' }"
+                  @click="tab = 'import'; if (!suggestions.length) loadSuggestions()">Import</div>
               </div>
 
               <!-- Providers tab -->
@@ -4089,9 +4165,30 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
               <div x-show="tab === 'models' && $store.app.developerMode">
                 <div class="info-card">
                   <h4>Model Catalog</h4>
-                  <p>Browse all available models across providers. Models marked "Available" have their provider
-                    configured and ready to use.</p>
+                  <p>Browse all available models across providers. Models marked "Ready" have their provider
+                    configured and can be used immediately.</p>
                 </div>
+
+                <!-- Quick presets -->
+                <div class="model-presets">
+                  <button class="model-preset-btn" :class="{ active: showAvailableOnly }" @click="showAvailableOnly = !showAvailableOnly">
+                    <span x-show="showAvailableOnly">✓</span> Ready to Use
+                  </button>
+                  <button class="model-preset-btn" :class="{ active: modelTierFilter === 'frontier' }" @click="setModelTierFilter('frontier')">
+                    ★ Frontier
+                  </button>
+                  <button class="model-preset-btn" :class="{ active: modelTierFilter === 'smart' }" @click="setModelTierFilter('smart')">
+                    ◆ Smart
+                  </button>
+                  <button class="model-preset-btn" :class="{ active: modelTierFilter === 'fast' }" @click="setModelTierFilter('fast')">
+                    ⚡ Fast
+                  </button>
+                  <button class="model-preset-btn" :class="{ active: modelProviderFilter === 'ollama' }" @click="setModelProviderFilter('ollama')">
+                    ◐ Local
+                  </button>
+                </div>
+
+                <!-- Filters -->
                 <div class="flex gap-2 mb-4" style="flex-wrap:wrap">
                   <div class="search-input" style="flex:1;min-width:200px">
                     <span style="color:var(--text-muted)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"
@@ -4114,37 +4211,49 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                     </template>
                   </select>
                 </div>
-                <div class="text-xs text-dim mb-2" x-text="filteredModels.length + ' of ' + models.length + ' models'">
+
+                <div class="text-xs text-dim mb-2" x-text="filteredModels.length + ' of ' + models.length + ' models · ' + availableModels.length + ' ready'">
                 </div>
-                <div class="table-wrap" x-show="filteredModels.length">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Model</th>
-                        <th>Provider</th>
-                        <th>Tier</th>
-                        <th>Context</th>
-                        <th>Input Cost</th>
-                        <th>Output Cost</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template x-for="m in filteredModels" :key="m.id">
-                        <tr>
-                          <td class="font-bold" style="font-size:11px" x-text="m.display_name || m.id"></td>
-                          <td class="text-dim" x-text="m.provider"></td>
-                          <td><span class="tier-badge" :class="tierBadgeClass(m.tier)" x-text="m.tier || '-'"></span>
-                          </td>
-                          <td class="text-xs" x-text="formatContext(m.context_window)"></td>
-                          <td class="text-xs" x-text="formatCost(m.input_cost_per_m)"></td>
-                          <td class="text-xs" x-text="formatCost(m.output_cost_per_m)"></td>
-                          <td><span class="badge" :class="m.available ? 'badge-success' : 'badge-muted'"
-                              x-text="m.available ? 'Available' : 'Needs Key'"></span></td>
-                        </tr>
-                      </template>
-                    </tbody>
-                  </table>
+
+                <!-- Model cards grid -->
+                <div class="model-grid" x-show="filteredModels.length">
+                  <template x-for="m in filteredModels" :key="m.id">
+                    <div class="model-card" :class="{ available: m.available, unavailable: !m.available }">
+                      <div class="model-card-status">
+                        <span class="model-card-available-badge" :class="m.available ? 'ready' : 'needs-key'"
+                          x-text="m.available ? 'Ready' : 'Needs Key'"></span>
+                      </div>
+                      <div class="model-card-header">
+                        <div class="model-card-name" x-text="m.display_name || m.id"></div>
+                        <div class="model-card-badges">
+                          <span class="tier-badge" :class="tierBadgeClass(m.tier)" x-text="m.tier || '-'"></span>
+                        </div>
+                      </div>
+                      <div class="model-card-provider">
+                        <span class="model-card-provider-dot"></span>
+                        <span x-text="m.provider"></span>
+                      </div>
+                      <div class="model-card-meta">
+                        <div class="model-card-meta-item">
+                          <span>CTX</span>
+                          <span class="model-card-cost" x-text="formatContext(m.context_window)"></span>
+                        </div>
+                        <div class="model-card-meta-item">
+                          <span>IN</span>
+                          <span class="model-card-cost" x-text="formatCostShort(m.input_cost_per_m)"></span>
+                        </div>
+                        <div class="model-card-meta-item">
+                          <span>OUT</span>
+                          <span class="model-card-cost" x-text="formatCostShort(m.output_cost_per_m)"></span>
+                        </div>
+                      </div>
+                      <div class="model-card-caps" x-show="m.supports_vision || m.supports_tools">
+                        <span class="model-cap" x-show="m.supports_vision">Vision</span>
+                        <span class="model-cap" x-show="m.supports_tools">Tools</span>
+                        <span class="model-cap" x-show="m.supports_streaming">Stream</span>
+                      </div>
+                    </div>
+                  </template>
                 </div>
               </div>
 
@@ -4903,6 +5012,145 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                 </div>
               </div>
 
+              <!-- Import tab -->
+              <div x-show="tab === 'import'" x-data="importPage()">
+                <div class="card mb-4" style="border-left:3px solid var(--accent)">
+                  <div class="font-bold" style="font-size:14px;margin-bottom:6px">Import Skills, MCP Servers & Plugins</div>
+                  <div class="text-sm text-dim" style="line-height:1.7">
+                    Scan local directories to discover and import skills, MCP servers, and plugins from other installations
+                    like Claude Code, OpenClaw, or custom directories.
+                  </div>
+                </div>
+
+                <!-- Suggested directories -->
+                <div class="card mb-4" x-show="suggestions.length > 0">
+                  <div class="font-bold mb-2" style="font-size:13px">Quick Scan</div>
+                  <div class="flex flex-wrap gap-2">
+                    <template x-for="s in suggestions" :key="s.path">
+                      <button class="btn btn-ghost btn-sm" @click="scanPath = s.path; scanDirectory(s.path)"
+                        :disabled="scanning">
+                        <span x-text="s.path.split('/').pop()"></span>
+                        <span class="text-dim ml-1" x-text="'(' + s.item_count + ')'"></span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Manual path input -->
+                <div class="card mb-4">
+                  <div class="font-bold mb-2" style="font-size:13px">Scan Custom Directory</div>
+                  <div class="flex gap-2">
+                    <input class="form-input" type="text" x-model="scanPath" placeholder="~/.claude/skills"
+                      style="font-family:monospace;font-size:12px;flex:1">
+                    <button class="btn btn-primary" @click="scanDirectory(scanPath)" :disabled="scanning || !scanPath">
+                      <span x-show="!scanning">Scan</span>
+                      <span x-show="scanning">Scanning...</span>
+                    </button>
+                  </div>
+                  <div class="text-xs text-dim mt-2" x-show="scanError" style="color:var(--error)" x-text="scanError"></div>
+                </div>
+
+                <!-- Scan results -->
+                <div x-show="scanResults">
+                  <div class="flex justify-between items-center mb-3">
+                    <div class="font-bold" style="font-size:14px">
+                      Found <span x-text="scanResults?.total_items || 0"></span> item(s)
+                    </div>
+                    <div class="flex gap-2" x-show="discoveredItems.filter(i => i.can_import).length > 0">
+                      <button class="btn btn-ghost btn-sm" @click="selectAll()">Select All Importable</button>
+                      <button class="btn btn-ghost btn-sm" @click="deselectAll()">Deselect All</button>
+                    </div>
+                  </div>
+
+                  <!-- Skills list -->
+                  <div x-show="scanResults?.skills?.length > 0" class="mb-4">
+                    <div class="text-sm font-bold mb-2" style="color:var(--accent)">Skills</div>
+                    <div class="card-list">
+                      <template x-for="item in scanResults?.skills || []" :key="item.path">
+                        <div class="card-item" :class="{ selected: isSelected(item) }"
+                          @click="item.can_import && toggleSelect(item)" :style="item.can_import ? 'cursor:pointer' : 'opacity:0.6'">
+                          <div class="flex justify-between items-center">
+                            <div>
+                              <div class="font-bold" x-text="item.name"></div>
+                              <div class="text-xs text-dim" x-text="item.description?.substring(0,80) + (item.description?.length > 80 ? '...' : '')"></div>
+                            </div>
+                            <span class="badge" :class="item.already_installed ? 'badge-connected' : (isSelected(item) ? 'badge-pending' : 'badge-crashed')"
+                              x-text="item.already_installed ? 'Installed' : (isSelected(item) ? 'Selected' : 'New')"></span>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+
+                  <!-- MCP Servers list -->
+                  <div x-show="scanResults?.mcp_servers?.length > 0" class="mb-4">
+                    <div class="text-sm font-bold mb-2" style="color:var(--accent)">MCP Servers</div>
+                    <div class="card-list">
+                      <template x-for="item in scanResults?.mcp_servers || []" :key="item.path">
+                        <div class="card-item" :class="{ selected: isSelected(item) }"
+                          @click="item.can_import && toggleSelect(item)" :style="item.can_import ? 'cursor:pointer' : 'opacity:0.6'">
+                          <div class="flex justify-between items-center">
+                            <div>
+                              <div class="font-bold" x-text="item.name"></div>
+                              <div class="text-xs text-dim" x-text="item.description?.substring(0,80) + (item.description?.length > 80 ? '...' : '')"></div>
+                            </div>
+                            <span class="badge" :class="item.already_installed ? 'badge-connected' : (isSelected(item) ? 'badge-pending' : 'badge-crashed')"
+                              x-text="item.already_installed ? 'Installed' : (isSelected(item) ? 'Selected' : 'New')"></span>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+
+                  <!-- Plugins list -->
+                  <div x-show="scanResults?.plugins?.length > 0" class="mb-4">
+                    <div class="text-sm font-bold mb-2" style="color:var(--accent)">Plugins</div>
+                    <div class="card-list">
+                      <template x-for="item in scanResults?.plugins || []" :key="item.path">
+                        <div class="card-item" :class="{ selected: isSelected(item) }"
+                          @click="item.can_import && toggleSelect(item)" :style="item.can_import ? 'cursor:pointer' : 'opacity:0.6'">
+                          <div class="flex justify-between items-center">
+                            <div>
+                              <div class="font-bold" x-text="item.name"></div>
+                              <div class="text-xs text-dim" x-text="item.description?.substring(0,80) + (item.description?.length > 80 ? '...' : '')"></div>
+                            </div>
+                            <span class="badge" :class="item.already_installed ? 'badge-connected' : (isSelected(item) ? 'badge-pending' : 'badge-crashed')"
+                              x-text="item.already_installed ? 'Installed' : (isSelected(item) ? 'Selected' : 'New')"></span>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+
+                  <!-- Import button -->
+                  <div class="flex gap-2" x-show="selectedItems.length > 0">
+                    <button class="btn btn-primary" @click="importSelected()" :disabled="importing">
+                      <span x-show="!importing">Import <span x-text="selectedItems.length"></span> Selected</span>
+                      <span x-show="importing">Importing...</span>
+                    </button>
+                  </div>
+
+                  <!-- Import results -->
+                  <div x-show="importResults" class="mt-4">
+                    <div class="card" :style="'border-left:3px solid ' + (importResults?.success ? 'var(--success)' : 'var(--warning)')">
+                      <div class="font-bold mb-2" x-text="importResults?.message"></div>
+                      <div x-show="importResults?.imported?.length > 0">
+                        <div class="text-xs text-dim mb-1">Imported:</div>
+                        <template x-for="item in importResults.imported" :key="item.path">
+                          <div class="text-xs" style="color:var(--success)" x-text="item.name"></div>
+                        </template>
+                      </div>
+                      <div x-show="importResults?.failed?.length > 0">
+                        <div class="text-xs text-dim mb-1 mt-2">Failed:</div>
+                        <template x-for="item in importResults.failed" :key="item.path">
+                          <div class="text-xs" style="color:var(--error)" x-text="item.path + ': ' + item.error"></div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -5548,7 +5796,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
 
       <!-- Page: Obsidian Graph -->
       <template x-if="page === 'obsidian'">
-        <div x-init="if (hasObsidianGraphLinked) loadObsidianInAppGraph(false)">
+        <div x-init="ensureObsidianReady(false)">
           <div class="page-header">
             <h2>Memory Graph</h2>
           </div>
@@ -5556,16 +5804,15 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
             <div class="card mb-4 card-accent-left">
               <div class="heading-sm">One live memory map</div>
               <div class="text-sm text-dim copy-relaxed">
-                This is the default memory view. Connect Obsidian once, then open your graph from here anytime.
+                This is the default memory view. The dashboard now auto-links a local Obsidian vault path and self-seeds memory when needed.
               </div>
             </div>
 
             <template x-if="!hasObsidianGraphLinked">
               <div class="card mb-4">
-                <div class="heading-sm">Connect Obsidian in one click</div>
+                <div class="heading-sm">Obsidian fallback controls</div>
                 <div class="text-sm text-dim copy-relaxed mb-2">
-                  No raw URL needed for normal setup. Step 1 opens Obsidian so you can create/select the vault. Step 2
-                  links the graph.
+                  Normal setup is automatic. These controls are only here if you want to override the default vault link or recover from a local app handoff failure.
                 </div>
                 <div class="form-group mb-2" style="max-width:360px">
                   <label>Vault name</label>

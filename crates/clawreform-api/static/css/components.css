@@ -2931,6 +2931,178 @@ mark.search-highlight {
 .tier-smart { background: var(--info-soft); color: var(--info); }
 .tier-balanced { background: var(--success-soft); color: var(--success); }
 .tier-fast { background: var(--warning-soft); color: var(--warning); }
+.tier-local { background: var(--neutral-soft); color: var(--text-dim); }
+
+/* ── Model Cards ── */
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.model-card {
+  background: var(--surface-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.model-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-drop);
+}
+.model-card.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-panel));
+  box-shadow: var(--shadow-glow-amber);
+}
+.model-card.available {
+  border-left: 3px solid var(--success);
+}
+.model-card.unavailable {
+  opacity: 0.65;
+  border-left: 3px solid var(--text-muted);
+}
+.model-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.model-card-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.3;
+  word-break: break-word;
+}
+.model-card-badges {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.model-card-provider {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.model-card-provider-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.model-card.available .model-card-provider-dot { background: var(--success); }
+.model-card.unavailable .model-card-provider-dot { background: var(--warning); }
+.model-card-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.model-card-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.model-card-cost {
+  font-family: var(--font-mono);
+}
+.model-card-caps {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.model-cap {
+  font-size: 9px;
+  padding: 2px 5px;
+  background: var(--neutral-soft);
+  border-radius: 3px;
+  color: var(--text-dim);
+}
+.model-card-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+.model-card-available-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.model-card-available-badge.ready {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.model-card-available-badge.needs-key {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+/* Model selector presets */
+.model-presets {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.model-preset-btn {
+  padding: 6px 12px;
+  font-size: 11px;
+  border-radius: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.model-preset-btn:hover {
+  background: var(--surface-panel);
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.model-preset-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Provider group header */
+.model-provider-group {
+  margin-bottom: 20px;
+}
+.model-provider-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.model-provider-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+.model-provider-count {
+  font-size: 10px;
+  color: var(--text-dim);
+  background: var(--neutral-soft);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
 
 /* ── Auth status badges ── */
 .auth-configured { background: var(--success-soft); color: var(--success); }
@@ -4560,3 +4732,95 @@ mark.search-highlight {
   overflow-y: auto;
 }
 .flex-col { flex-direction: column; }
+
+/* Card list for import page */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.card-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  transition: all 0.15s ease;
+}
+.card-item:hover {
+  border-color: var(--accent);
+  background: var(--surface-panel);
+}
+.card-item.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--card-bg));
+}
+
+/* Skill list layout */
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  transition: background 0.15s ease;
+}
+.skill-row:hover {
+  background: var(--surface-panel);
+}
+.skill-info {
+  flex: 1;
+  min-width: 0;
+}
+.skill-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+.skill-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.skill-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.skill-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  color: var(--text-dim);
+}
+.skill-source {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.skill-source.badge-dim { background: var(--bg-secondary); color: var(--text-dim); }
+.skill-source.badge-info { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+.skill-source.badge-success { background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success); }
+.skill-remove {
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+.skill-remove:hover {
+  opacity: 1;
+  color: var(--error);
+}

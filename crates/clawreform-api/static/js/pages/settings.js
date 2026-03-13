@@ -14,6 +14,7 @@ function settingsPage() {
     modelSearch: '',
     modelProviderFilter: '',
     modelTierFilter: '',
+    showAvailableOnly: false,
     providerKeyInputs: {},
     providerUrlInputs: {},
     providerUrlSaving: {},
@@ -269,7 +270,8 @@ function settingsPage() {
 
     get filteredModels() {
       var self = this;
-      return this.models.filter(function(m) {
+      var list = this.showAvailableOnly ? this.availableModels : this.models;
+      return list.filter(function(m) {
         if (self.modelProviderFilter && m.provider !== self.modelProviderFilter) return false;
         if (self.modelTierFilter && m.tier !== self.modelTierFilter) return false;
         if (self.modelSearch) {
@@ -278,6 +280,14 @@ function settingsPage() {
               (m.display_name || '').toLowerCase().indexOf(q) === -1) return false;
         }
         return true;
+      }).sort(function(a, b) {
+        // Available models first, then by tier priority, then by name
+        if (a.available !== b.available) return a.available ? -1 : 1;
+        var tierPriority = { frontier: 1, smart: 2, balanced: 3, fast: 4, local: 5 };
+        var ta = tierPriority[a.tier] || 99;
+        var tb = tierPriority[b.tier] || 99;
+        if (ta !== tb) return ta - tb;
+        return (a.display_name || a.id).localeCompare(b.display_name || b.id);
       });
     },
 
@@ -291,6 +301,10 @@ function settingsPage() {
       var seen = {};
       this.models.forEach(function(m) { if (m.tier) seen[m.tier] = true; });
       return Object.keys(seen).sort();
+    },
+
+    get availableModels() {
+      return this.models.filter(function(m) { return m.available; });
     },
 
     providerAuthClass(p) {
@@ -324,6 +338,20 @@ function settingsPage() {
     formatCost(cost) {
       if (!cost && cost !== 0) return '-';
       return '$' + cost.toFixed(4);
+    },
+
+    formatCostShort(cost) {
+      if (!cost && cost !== 0) return '-';
+      if (cost === 0) return 'Free';
+      return '$' + cost.toFixed(2);
+    },
+
+    setModelTierFilter(tier) {
+      this.modelTierFilter = this.modelTierFilter === tier ? '' : tier;
+    },
+
+    setModelProviderFilter(provider) {
+      this.modelProviderFilter = this.modelProviderFilter === provider ? '' : provider;
     },
 
     formatContext(ctx) {

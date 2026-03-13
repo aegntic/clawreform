@@ -253,6 +253,18 @@ document.addEventListener('alpine:init', function () {
       this.openRouterSaving = false;
     },
 
+    showApiKeyFix() {
+      // Reset the API key configuration and show the OpenRouter gate
+      this.openRouterKeyInput = '';
+      this.openRouterError = '';
+      this.openRouterProviderStatus = 'unknown';
+      this.showOpenRouterGate = true;
+      // Navigate to wizard if not already there
+      if (Alpine.store('app').page !== 'wizard') {
+        this.navigate('wizard');
+      }
+    },
+
     async submitApiKey(key) {
       if (!key || !key.trim()) return;
       ClawReformAPI.setAuthToken(key.trim());
@@ -314,6 +326,7 @@ function app() {
     obsidianVaultName: (localStorage.getItem('clawreform-obsidian-vault-name') || 'clawREFORM').trim() || 'clawREFORM',
     showObsidianVaultEditor: false,
     obsidianVaultPending: false,
+    obsidianAutoSetupInFlight: false,
     obsidianGraphLoading: false,
     obsidianGraphSeeding: false,
     obsidianGraphError: '',
@@ -384,8 +397,8 @@ function app() {
           return;
         }
         self.page = normalized;
-        if (normalized === 'obsidian' && self.hasObsidianGraphLinked) {
-          self.loadObsidianInAppGraph(false);
+        if (normalized === 'obsidian') {
+          self.ensureObsidianReady(false);
         }
       }
       window.addEventListener('hashchange', handleHash);
@@ -462,8 +475,8 @@ function app() {
       this.page = target;
       window.location.hash = target;
       this.mobileMenuOpen = false;
-      if (target === 'obsidian' && this.hasObsidianGraphLinked) {
-        this.loadObsidianInAppGraph(false);
+      if (target === 'obsidian') {
+        this.ensureObsidianReady(false);
       }
     },
 
@@ -503,7 +516,46 @@ function app() {
     },
 
     get obsidianCanSeedAgent() {
-      return /No agents found/i.test(this.obsidianGraphError || '');
+      return /No agents found|No memory markdown files/i.test(this.obsidianGraphError || '');
+    },
+
+    ensureDefaultObsidianLink() {
+      if (this.hasObsidianGraphLinked) return (this.obsidianGraphUrl || '').trim();
+      var vaultName = this.persistObsidianVaultName(this.obsidianVaultName);
+      var graphUrl = this.getObsidianGraphUrlForVault(vaultName);
+      this.obsidianGraphUrl = graphUrl;
+      localStorage.setItem('clawreform-obsidian-graph-url', graphUrl);
+      this.obsidianShowExternalEmbed = false;
+      this.showObsidianVaultEditor = false;
+      return graphUrl;
+    },
+
+    maybeAutoLaunchObsidian(target) {
+      var launchTarget = (target || '').trim();
+      if (!/^obsidian:\/\//i.test(launchTarget)) return false;
+      var autoLaunchKey = 'clawreform-obsidian-auto-launch-v1';
+      if (localStorage.getItem(autoLaunchKey) === 'done') return false;
+      var launched = this.launchObsidianUrl(launchTarget);
+      if (launched) {
+        localStorage.setItem(autoLaunchKey, 'done');
+      }
+      return launched;
+    },
+
+    async ensureObsidianReady(force) {
+      if (this.obsidianAutoSetupInFlight) return;
+      this.obsidianAutoSetupInFlight = true;
+      try {
+        var graphUrl = this.ensureDefaultObsidianLink();
+        this.obsidianVaultPending = false;
+        this.maybeAutoLaunchObsidian(graphUrl);
+        await this.loadObsidianInAppGraph(!!force);
+        if (this.obsidianCanSeedAgent) {
+          await this.createObsidianSeedAgent({ silent: true });
+        }
+      } finally {
+        this.obsidianAutoSetupInFlight = false;
+      }
     },
 
     graphHash(input) {
@@ -830,11 +882,13 @@ function app() {
       };
     },
 
-    async createObsidianSeedAgent() {
+    async createObsidianSeedAgent(options) {
       if (this.obsidianGraphSeeding) return;
+      var silent = !!(options && options.silent);
       this.obsidianGraphSeeding = true;
       this.obsidianGraphError = '';
       try {
+        this.ensureDefaultObsidianLink();
         var manifestToml = [
           'name = "memory-seed"',
           'version = "0.3.0"',
@@ -869,14 +923,14 @@ function app() {
         if (store && store.refreshAgents) {
           await store.refreshAgents();
         }
-        if (window.ClawReformToast && ClawReformToast.success) {
+        if (!silent && window.ClawReformToast && ClawReformToast.success) {
           ClawReformToast.success('Seed memory agent created');
         }
         this.obsidianGraphSeeding = false;
         await this.loadObsidianInAppGraph(true);
       } catch (e) {
         this.obsidianGraphError = e.message || 'Failed to create seed memory agent.';
-        if (window.ClawReformToast && ClawReformToast.error) {
+        if (!silent && window.ClawReformToast && ClawReformToast.error) {
           ClawReformToast.error(this.obsidianGraphError);
         }
       } finally {
