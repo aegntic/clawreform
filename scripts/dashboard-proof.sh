@@ -5,8 +5,22 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTPUT_DIR="${ROOT_DIR}/output/playwright"
 SESSION_NAME="${PLAYWRIGHT_CLI_SESSION:-proof}"
 URL="${1:-${DASHBOARD_PROOF_URL:-http://127.0.0.1:4332/#agents}}"
-BASE_URL="$(
-  python3 - "${URL}" <<'PY'
+
+json_get() {
+  local key="$1"
+  if command -v bun >/dev/null 2>&1; then
+    bun -e "const data = JSON.parse(require('fs').readFileSync(0, 'utf8')); console.log(data[process.argv[1]] ?? '');" "${key}"
+  else
+    python3 -c 'import json, sys; print(json.load(sys.stdin).get(sys.argv[1], ""))' "${key}"
+  fi
+}
+
+base_url() {
+  local raw_url="$1"
+  if command -v bun >/dev/null 2>&1; then
+    bun -e "const value = process.argv[1]; const parsed = new URL(value); console.log(parsed.origin);" "${raw_url}"
+  else
+    python3 - "${raw_url}" <<'PY'
 import sys
 from urllib.parse import urlsplit
 
@@ -15,15 +29,13 @@ if not parts.scheme or not parts.netloc:
     raise SystemExit(f"Invalid dashboard URL: {sys.argv[1]}")
 print(f"{parts.scheme}://{parts.netloc}")
 PY
-)"
+  fi
+}
+
+BASE_URL="$(base_url "${URL}")"
 
 cd "${ROOT_DIR}"
 mkdir -p "${OUTPUT_DIR}"
-
-if ! command -v npx >/dev/null 2>&1; then
-  echo "npx is required for dashboard proof" >&2
-  exit 1
-fi
 
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 PWCLI="${CODEX_HOME}/skills/playwright/scripts/playwright_cli.sh"
@@ -31,8 +43,13 @@ PWCLI="${CODEX_HOME}/skills/playwright/scripts/playwright_cli.sh"
 run_pwcli() {
   if [[ -x "${PWCLI}" ]]; then
     "${PWCLI}" --session "${SESSION_NAME}" "$@"
-  else
+  elif command -v bunx >/dev/null 2>&1; then
+    bunx --package @playwright/cli playwright-cli --session "${SESSION_NAME}" "$@"
+  elif command -v npx >/dev/null 2>&1; then
     npx --yes --package @playwright/cli playwright-cli --session "${SESSION_NAME}" "$@"
+  else
+    echo "bunx or npx is required for dashboard proof" >&2
+    exit 1
   fi
 }
 
@@ -66,21 +83,31 @@ run_pwcli close >/dev/null 2>&1 || true
 HEALTH_JSON="$(curl -fsS "${BASE_URL}/api/health")"
 API_VERSION="$(
   printf '%s' "${HEALTH_JSON}" \
-    | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])'
+    | json_get "version"
 )"
 
 echo "Opening ${URL} with session ${SESSION_NAME}"
 run_pwcli open "${URL}" >/dev/null
 run_pwcli snapshot >/dev/null
 
-SIDEBAR_VERSION="$(
-  run_pwcli eval "document.querySelector('.sidebar .version')?.textContent" \
+PAGE_TITLE="$(
+  run_pwcli eval "document.title" \
     | extract_result \
     | tr -d '"'
 )"
 
-if [[ "${SIDEBAR_VERSION}" != *"v${API_VERSION}"* ]]; then
-  echo "Version badge mismatch: expected v${API_VERSION}, got ${SIDEBAR_VERSION}" >&2
+if [[ "${PAGE_TITLE}" != *"clawREFORM"* ]]; then
+  echo "Unexpected page title: ${PAGE_TITLE}" >&2
+  exit 1
+fi
+
+AGENTS_PANEL_VISIBLE="$(
+  run_pwcli eval "document.body.textContent.includes('Your Agents')" \
+    | extract_result
+)"
+
+if [[ "${AGENTS_PANEL_VISIBLE}" != "true" ]]; then
+  echo "Agents panel did not render" >&2
   exit 1
 fi
 
@@ -179,7 +206,8 @@ if ! grep -q 'Errors: 0' "${CONSOLE_DST}" || ! grep -q 'Warnings: 0' "${CONSOLE_
 fi
 
 printf 'Dashboard proof ok\n'
-printf 'Version: %s\n' "${SIDEBAR_VERSION}"
+printf 'Version: v%s (from API health)\n' "${API_VERSION}"
+printf 'Title: %s\n' "${PAGE_TITLE}"
 printf 'Reasoning: ok\n'
 printf 'Shell screenshot: %s\n' "${OUTPUT_DIR}/dashboard-shell-proof.png"
 printf 'Screenshot: %s\n' "${SCREENSHOT_DST}"

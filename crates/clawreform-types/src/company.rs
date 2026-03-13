@@ -24,19 +24,14 @@ pub struct Goal {
 }
 
 /// Status of a business goal.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum GoalStatus {
+    #[default]
     Pending,
     Active,
     Completed,
     Failed,
-}
-
-impl Default for GoalStatus {
-    fn default() -> Self {
-        Self::Pending
-    }
 }
 
 /// Overarching budget configuration for a company/workspace.
@@ -79,20 +74,15 @@ pub struct Issue {
 }
 
 /// Status of an issue.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum IssueStatus {
+    #[default]
     Open,
     InProgress,
     Review,
     Done,
     Cancelled,
-}
-
-impl Default for IssueStatus {
-    fn default() -> Self {
-        Self::Open
-    }
 }
 
 /// A comment on an issue.

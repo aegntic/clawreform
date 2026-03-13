@@ -477,9 +477,8 @@ pub struct AgentManifest {
     /// Per-agent exec policy override. If None, uses global exec_policy.
     #[serde(default)]
     pub exec_policy: Option<crate::config::ExecPolicy>,
-    
-    // --- Company & Orchestration Fields ---
 
+    // --- Company & Orchestration Fields ---
     /// The department or team this agent belongs to.
     #[serde(default)]
     pub department: Option<String>,

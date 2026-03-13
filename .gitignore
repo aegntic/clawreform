@@ -41,6 +41,7 @@ Thumbs.db
 .vscode/
 .claude/
 .playwright-cli/
+.worktrees/
 *.swp
 *.swo
 *~
@@ -54,5 +55,7 @@ autoclaw-test/
 
 # Local proof artifacts
 output/playwright/
+output/demo/
+.swarm/
 crates/clawreform-desktop/gen/schemas/macOS-schema.json
 crates/clawreform-desktop/gen/schemas/linux-schema.json

@@ -8727,10 +8727,7 @@ pub async fn company_overview(State(state): State<Arc<AppState>>) -> impl IntoRe
         .collect();
 
     // Aggregate budget from all agents
-    let total_budget: f64 = agents
-        .iter()
-        .filter_map(|a| a.manifest.budget_limit)
-        .sum();
+    let total_budget: f64 = agents.iter().filter_map(|a| a.manifest.budget_limit).sum();
 
     // Calculate total spent from kernel usage tracking
     let mut total_spent = 0.0f64;
@@ -9093,8 +9090,8 @@ const COMPANY_ISSUES_KEY: &str = "company_issues";
 static COMPANY_AGENT_ID: LazyLock<clawreform_types::agent::AgentId> = LazyLock::new(|| {
     // Deterministic UUID for the "company" namespace
     clawreform_types::agent::AgentId(uuid::Uuid::from_bytes([
-        0xC0, 0x4A, 0xFA, 0x12, 0x00, 0x00, 0x40, 0x00,
-        0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+        0xC0, 0x4A, 0xFA, 0x12, 0x00, 0x00, 0x40, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x01,
     ]))
 });
 
@@ -9136,7 +9133,10 @@ where
             return;
         }
     };
-    let _ = state.kernel.memory.structured_set(*COMPANY_AGENT_ID, key, payload);
+    let _ = state
+        .kernel
+        .memory
+        .structured_set(*COMPANY_AGENT_ID, key, payload);
 }
 
 fn load_company_goals(state: &AppState) -> Vec<Goal> {

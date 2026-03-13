@@ -26,10 +26,11 @@ pub const SCHEMA_VERSION: &str = "1.0";
 // ============================================================================
 
 /// Agent kind/type in the ecosystem.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AgentKind {
     /// Standard worker agent.
+    #[default]
     Worker,
     /// Dormant until scheduled tick wakes it.
     ScheduledSpecialist,
@@ -65,7 +66,6 @@ pub enum LifecycleState {
     /// Agent is permanently retired.
     Retired,
 }
-
 
 /// Agent health metrics.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

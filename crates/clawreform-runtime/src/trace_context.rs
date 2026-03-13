@@ -63,7 +63,7 @@ mod tests {
 
         TRACE_CONTEXT
             .scope(RefCell::new(None), async {
-                set_trace_id(trace_id.clone());
+                set_trace_id(trace_id);
                 let retrieved = current_trace_id();
                 assert_eq!(retrieved, Some(trace_id));
             })
