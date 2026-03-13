@@ -302,6 +302,19 @@ pub async fn build_router(
             "/api/skills/uninstall",
             axum::routing::post(routes::uninstall_skill),
         )
+        // Auto-import endpoints
+        .route(
+            "/api/import/scan",
+            axum::routing::post(crate::auto_import::scan_directory),
+        )
+        .route(
+            "/api/import",
+            axum::routing::post(crate::auto_import::import_items),
+        )
+        .route(
+            "/api/import/suggestions",
+            axum::routing::get(crate::auto_import::get_suggestions),
+        )
         .route(
             "/api/marketplace/search",
             axum::routing::get(routes::marketplace_search),
@@ -524,17 +537,13 @@ pub async fn build_router(
         )
         .route(
             "/api/company/issues/{id}",
-            axum::routing::put(routes::update_company_issue)
-                .delete(routes::delete_company_issue),
+            axum::routing::put(routes::update_company_issue).delete(routes::delete_company_issue),
         )
         .route(
             "/api/company/issues/{id}/comments",
             axum::routing::post(routes::add_company_issue_comment),
         )
-        .route(
-            "/api/company/org",
-            axum::routing::get(routes::company_org),
-        )
+        .route("/api/company/org", axum::routing::get(routes::company_org))
         .route("/api/shutdown", axum::routing::post(routes::shutdown))
         // Chat commands endpoint (dynamic slash menu)
         .route("/api/commands", axum::routing::get(routes::list_commands))
@@ -636,6 +645,62 @@ pub async fn build_router(
         )
         // MCP HTTP endpoint (exposes MCP protocol over HTTP)
         .route("/mcp", axum::routing::post(routes::mcp_http))
+        // OpenClaw service integration endpoints
+        .route(
+            "/api/openclaw/status",
+            axum::routing::get(crate::openclaw::get_status),
+        )
+        // OpenClaw Registry
+        .route(
+            "/api/openclaw/agents",
+            axum::routing::get(crate::openclaw::list_registered_agents)
+                .post(crate::openclaw::register_agent),
+        )
+        .route(
+            "/api/openclaw/agents/{id}",
+            axum::routing::get(crate::openclaw::get_registered_agent),
+        )
+        // OpenClaw Dispatcher
+        .route(
+            "/api/openclaw/dispatch",
+            axum::routing::post(crate::openclaw::dispatch_task),
+        )
+        .route(
+            "/api/openclaw/routes",
+            axum::routing::get(crate::openclaw::get_routes),
+        )
+        // OpenClaw Scheduler
+        .route(
+            "/api/openclaw/schedules",
+            axum::routing::get(crate::openclaw::list_schedules)
+                .post(crate::openclaw::create_schedule),
+        )
+        .route(
+            "/api/openclaw/schedules/{id}/trigger",
+            axum::routing::post(crate::openclaw::trigger_schedule),
+        )
+        // OpenClaw Evaluator
+        .route(
+            "/api/openclaw/evaluate",
+            axum::routing::post(crate::openclaw::evaluate_artifact),
+        )
+        // OpenClaw Repair
+        .route(
+            "/api/openclaw/repair",
+            axum::routing::post(crate::openclaw::request_repair),
+        )
+        .route(
+            "/api/openclaw/repair/{id}",
+            axum::routing::get(crate::openclaw::get_repair_status),
+        )
+        .route(
+            "/api/openclaw/repair/{id}/execute",
+            axum::routing::post(crate::openclaw::execute_repair),
+        )
+        .route(
+            "/api/openclaw/strategies",
+            axum::routing::get(crate::openclaw::get_repair_strategies),
+        )
         // OpenAI-compatible API
         .route(
             "/v1/chat/completions",
