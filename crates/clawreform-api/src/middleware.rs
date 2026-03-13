@@ -6,7 +6,7 @@
 //! - In-memory rate limiting (per IP)
 
 use axum::body::Body;
-use axum::http::{Request, Response, StatusCode};
+use axum::http::{Method, Request, Response, StatusCode};
 use axum::middleware::Next;
 use std::time::Instant;
 use tracing::info;
@@ -43,6 +43,65 @@ pub async fn request_logging(request: Request<Body>, next: Next) -> Response<Bod
     response
 }
 
+fn is_loopback_request<B>(request: &Request<B>) -> bool {
+    request
+        .extensions()
+        .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
+        .map(|ci| ci.0.ip().is_loopback())
+        .unwrap_or(false)
+}
+
+fn is_public_dashboard_path(path: &str) -> bool {
+    path == "/"
+        || path == "/api/health"
+        || path == "/api/health/detail"
+        || path == "/api/status"
+        || path == "/api/version"
+        || path == "/api/agents"
+        || path == "/api/profiles"
+        || path == "/api/config"
+        || path.starts_with("/api/uploads/")
+        || path == "/api/models"
+        || path == "/api/models/aliases"
+        || path == "/api/providers"
+        || path == "/api/budget"
+        || path == "/api/budget/agents"
+        || path.starts_with("/api/budget/agents/")
+        || path == "/api/network/status"
+        || path == "/api/a2a/agents"
+        || path == "/api/approvals"
+        || path == "/api/channels"
+        || path == "/api/skills"
+        || path == "/api/sessions"
+        || path == "/api/integrations"
+        || path == "/api/integrations/available"
+        || path == "/api/integrations/health"
+        || path.starts_with("/api/cron/")
+}
+
+fn is_local_obsidian_bootstrap_request<B>(request: &Request<B>) -> bool {
+    if !is_loopback_request(request) {
+        return false;
+    }
+
+    let path = request.uri().path();
+    let method = request.method();
+
+    if method == Method::POST && path == "/api/agents" {
+        return true;
+    }
+
+    let Some(suffix) = path.strip_prefix("/api/agents/") else {
+        return false;
+    };
+    let Some((_agent_id, rest)) = suffix.split_once('/') else {
+        return false;
+    };
+
+    (method == Method::GET && rest == "files")
+        || ((method == Method::GET || method == Method::PUT) && rest.starts_with("files/"))
+}
+
 /// Bearer token authentication middleware.
 ///
 /// When `api_key` is non-empty, all requests must include
@@ -54,13 +113,7 @@ pub async fn auth(
 ) -> Response<Body> {
     // If no API key configured, restrict to loopback addresses only.
     if api_key.is_empty() {
-        let is_loopback = request
-            .extensions()
-            .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
-            .map(|ci| ci.0.ip().is_loopback())
-            .unwrap_or(false);
-
-        if !is_loopback {
+        if !is_loopback_request(&request) {
             tracing::warn!(
                 "Rejected non-localhost request: no API key configured. \
                  Set api_key in config.toml for remote access."
@@ -79,36 +132,11 @@ pub async fn auth(
         return next.run(request).await;
     }
 
-    // Public endpoints that don't require auth (dashboard needs these)
+    // Public endpoints that don't require auth (dashboard needs these).
+    // Obsidian bootstrap also gets a silent loopback-only bypass so the local
+    // dashboard can seed and sync memory files without forcing an auth prompt.
     let path = request.uri().path();
-    if path == "/"
-        || path == "/api/health"
-        || path == "/api/health/detail"
-        || path == "/api/status"
-        || path == "/api/version"
-        || path == "/api/agents"
-        || path == "/api/profiles"
-        || path == "/api/config"
-        || path.starts_with("/api/uploads/")
-        // Dashboard read endpoints — allow unauthenticated so the SPA can
-        // render before the user enters their API key.
-        || path == "/api/models"
-        || path == "/api/models/aliases"
-        || path == "/api/providers"
-        || path == "/api/budget"
-        || path == "/api/budget/agents"
-        || path.starts_with("/api/budget/agents/")
-        || path == "/api/network/status"
-        || path == "/api/a2a/agents"
-        || path == "/api/approvals"
-        || path == "/api/channels"
-        || path == "/api/skills"
-        || path == "/api/sessions"
-        || path == "/api/integrations"
-        || path == "/api/integrations/available"
-        || path == "/api/integrations/health"
-        || path.starts_with("/api/cron/")
-    {
+    if is_public_dashboard_path(path) || is_local_obsidian_bootstrap_request(&request) {
         return next.run(request).await;
     }
 
@@ -194,9 +222,63 @@ pub async fn security_headers(request: Request<Body>, next: Next) -> Response<Bo
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::extract::ConnectInfo;
+    use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+    fn request_with_addr(method: Method, path: &str, ip: IpAddr) -> Request<Body> {
+        let mut request = Request::builder()
+            .method(method)
+            .uri(path)
+            .body(Body::empty())
+            .unwrap();
+        request
+            .extensions_mut()
+            .insert(ConnectInfo(SocketAddr::new(ip, 12345)));
+        request
+    }
 
     #[test]
     fn test_request_id_header_constant() {
         assert_eq!(REQUEST_ID_HEADER, "x-request-id");
+    }
+
+    #[test]
+    fn test_local_obsidian_bootstrap_routes_are_allowed() {
+        let loopback = IpAddr::V4(Ipv4Addr::LOCALHOST);
+        assert!(is_local_obsidian_bootstrap_request(&request_with_addr(
+            Method::POST,
+            "/api/agents",
+            loopback,
+        )));
+        assert!(is_local_obsidian_bootstrap_request(&request_with_addr(
+            Method::GET,
+            "/api/agents/test-agent/files",
+            loopback,
+        )));
+        assert!(is_local_obsidian_bootstrap_request(&request_with_addr(
+            Method::PUT,
+            "/api/agents/test-agent/files/CORE.md",
+            loopback,
+        )));
+    }
+
+    #[test]
+    fn test_obsidian_bypass_does_not_apply_to_remote_or_unrelated_routes() {
+        let remote = IpAddr::V4(Ipv4Addr::new(10, 0, 0, 9));
+        assert!(!is_local_obsidian_bootstrap_request(&request_with_addr(
+            Method::POST,
+            "/api/agents",
+            remote,
+        )));
+        assert!(!is_local_obsidian_bootstrap_request(&request_with_addr(
+            Method::DELETE,
+            "/api/agents/test-agent",
+            IpAddr::V4(Ipv4Addr::LOCALHOST),
+        )));
+        assert!(!is_local_obsidian_bootstrap_request(&request_with_addr(
+            Method::POST,
+            "/api/agents/test-agent/message",
+            IpAddr::V4(Ipv4Addr::LOCALHOST),
+        )));
     }
 }
