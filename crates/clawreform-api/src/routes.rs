@@ -3129,6 +3129,7 @@ pub async fn get_hand(
                             "label": r.label,
                             "type": format!("{:?}", r.requirement_type),
                             "check_value": r.check_value,
+                            "min_version": r.min_version,
                             "satisfied": ok,
                         });
                         if let Some(ref desc) = r.description {
@@ -3191,6 +3192,7 @@ pub async fn check_hand_deps(
                             "label": r.label,
                             "type": format!("{:?}", r.requirement_type),
                             "check_value": r.check_value,
+                            "min_version": r.min_version,
                             "satisfied": ok,
                         });
                         if let Some(ref desc) = r.description {
