@@ -7,6 +7,7 @@
       "category": "coding",
       "tags": ["code", "review", "quality"],
       "content": "Please review the following code for:\n\n- Code quality and readability\n- Potential bugs or edge cases\n- Performance considerations\n- Security concerns\n\nProvide specific feedback and suggestions for improvements.",
+      "description": "Comprehensive code review checklist",
       "favorite": true,
       "createdAt": 1709825600000
     },
@@ -16,6 +17,7 @@
       "category": "coding",
       "tags": ["explain", "understand", "code"],
       "content": "Please explain the following code:\n\nFocus on:\n- What it does and why\n- How it works\n- Any design patterns used\n- Potential edge cases\n\nProvide a clear, step-by-step explanation suitable for someone unfamiliar with the codebase.",
+      "description": "Step-by-step code explanation",
       "favorite": true,
       "createdAt": 1709825600000
     },
@@ -25,6 +27,7 @@
       "category": "coding",
       "tags": ["refactor", "clean", "improve"],
       "content": "Please refactor the following code to improve:\n\n- Readability\n- Maintainability\n- Performance\n- Reduce complexity\n\nKeep the same functionality while making the code cleaner and more efficient.\n\nInclude comments explaining your changes.",
+      "description": "Code refactoring request",
       "favorite": false,
       "createdAt": 1709825600000
     },
@@ -33,16 +36,8 @@
       "name": "Bug Report",
       "category": "coding",
       "tags": ["bug", "issue", "debug"],
-      "content": "## Bug Description\nA clear description of the bug.\n\n## Steps to Reproduce\n1. First step\n2. Second step\n3. Third step\n\n## Expected Behavior\nWhat should happen?\n\n## Actual Behavior\nWhat happens instead?\n\n## Environment\n- Browser: \n- OS: \n- Device:\n\n## Screenshots\nIf applicable, add screenshots to help explain the issue.",
-      "favorite": false,
-      "createdAt": 1709825600000
-    },
-    {
-      "id": "tpl_git_commit",
-      "name": "Git Commit Message",
-      "category": "coding",
-      "tags": ["git", "commit", "message"],
-      "content": "Write a git commit message for these changes:\n\n{{selected}}\n\nFollow conventional commits format:\n- feat: for new features\n- fix: for bug fixes\n- docs: for documentation\n- style: for formatting\n- refactor: for code restructuring\n- test: for adding tests\n- chore: for maintenance",
+      "content": "## Bug Description\nA clear and concise description of the bug.\n\n## Steps to Reproduce\n1. Step 1: ...\n2. Step 2: ...\n3. ...\n\n## Expected Behavior\nWhat should happen instead?\n\n## Actual Behavior\nWhat happens instead?\n\n## Environment\n- Browser:\n- OS:\n- Device:\n\n## Screenshots\nIf applicable, add screenshots to help explain the issue.",
+      "description": "Structured bug report template",
       "favorite": false,
       "createdAt": 1709825600000
     },
@@ -52,15 +47,27 @@
       "category": "business",
       "tags": ["meeting", "summary", "notes"],
       "content": "# Meeting Summary\n\n**Date:** {{date}}\n**Attendees:** {{attendees}}\n\n## Key Points\n1. First point\n2. Second point\n3. Third point\n\n## Action Items\n- [ ] Action item 1\n- [ ] Action item 2\n\n## Next Steps\n- [ ] Next step 1\n- [ ] Next step 2",
+      "description": "Meeting notes and action items",
       "favorite": false,
       "createdAt": 1709825600000
     },
     {
       "id": "tpl_email",
-      "name": "Professional Email",
+      "name": "Email Draft",
       "category": "writing",
       "tags": ["email", "professional", "communication"],
       "content": "Subject: {{subject}}\n\nDear {{name}},\n\n{{cursor}}\n\nBest regards,\n{{signature}}",
+      "description": "Professional email template",
+      "favorite": false,
+      "createdAt": 1709825600000
+    },
+    {
+      "id": "tpl_blog_post",
+      "name": "Blog Post",
+      "category": "writing",
+      "tags": ["blog", "content", "article"],
+      "content": "# {{title}}\n\nPublished: {{date}}\n\n## Introduction\n{{introduction}}\n\n## Main Content\n{{main_content}}\n\n## Conclusion\n{{conclusion}}\n\n---\n\n{{author}}",
+      "description": "Blog post structure template",
       "favorite": false,
       "createdAt": 1709825600000
     },
@@ -70,7 +77,28 @@
       "category": "analysis",
       "tags": ["data", "analysis", "report"],
       "content": "Please analyze the following data:\n\nFocus on:\n- Key trends and patterns\n- Anomalies\n- Insights\n- Recommendations\n\nProvide a summary of findings with actionable recommendations.",
+      "description": "Data analysis and insights",
       "favorite": true,
+      "createdAt": 1709825600000
+    },
+    {
+      "id": "tpl_creative_story",
+      "name": "Creative Story",
+      "category": "creative",
+      "tags": ["story", "creative", "fiction"],
+      "content": "Write a short story about {{topic}}.\n\nStyle: {{style}}\nTone: {{tone}}\nLength: {{length}} words\n\nInclude:\n- Engaging opening\n- Character development\n- Unexpected twist\n- Satisfying conclusion",
+      "description": "Creative writing prompt",
+      "favorite": false,
+      "createdAt": 1709825600000
+    },
+    {
+      "id": "tpl_product_description",
+      "name": "Product Description",
+      "category": "business",
+      "tags": ["product", "marketing", "description"],
+      "content": "# {{product_name}}\n\n## Overview\n{{overview}}\n\n## Features\n- {{feature_1}}\n- {{feature_2}}\n- {{feature_3}}\n\n## Benefits\n- {{benefit_1}}\n- {{benefit_2}}\n\n## Pricing\n{{pricing}}\n\n## Call to Action\n{{cta}}",
+      "description": "Product marketing description",
+      "favorite": false,
       "createdAt": 1709825600000
     }
   ]

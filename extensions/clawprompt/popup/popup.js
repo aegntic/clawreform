@@ -42,7 +42,7 @@ const elements = {
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
-  await initElements();
+  initElements();
   await loadTemplates();
   await loadSettings();
   setupEventListeners();
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Initialize DOM elements
-async function initElements() {
+function initElements() {
   elements.searchInput = document.getElementById('search-input');
   elements.templatesList = document.getElementById('templates-list');
   elements.emptyState = document.getElementById('empty-state');
@@ -73,7 +73,7 @@ async function initElements() {
 async function loadTemplates() {
   try {
     const result = await chrome.storage.local.get(STORAGE_KEYS.TEMPLATES);
-    templates = result || [];
+    templates = result[STORAGE_KEYS.TEMPLATES] || [];
     if (!Array.isArray(templates)) {
       templates = [];
     }
@@ -87,7 +87,7 @@ async function loadTemplates() {
 async function loadSettings() {
   try {
     const result = await chrome.storage.local.get(STORAGE_KEYS.SETTINGS);
-    Object.assign(DEFAULT_SETTINGS, result || {});
+    Object.assign(DEFAULT_SETTINGS, result[STORAGE_KEYS.SETTINGS] || {});
   } catch (error) {
     console.error('Error loading settings:', error);
   }
@@ -142,8 +142,9 @@ function setupEventListeners() {
 
   // Paste last
   document.getElementById('btn-paste-last')?.addEventListener('click', async () => {
-    const recent = await chrome.storage.local.get(STORAGE_KEYS.RECENT);
-    if (recent && recent.length > 0) {
+    const result = await chrome.storage.local.get(STORAGE_KEYS.RECENT);
+    const recent = result[STORAGE_KEYS.RECENT] || [];
+    if (recent.length > 0) {
       const lastTemplate = templates.find(t => t.id === recent[0]);
       if (lastTemplate) {
         await insertTemplate(lastTemplate);
@@ -198,9 +199,9 @@ function renderTemplates() {
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
     filtered = templates.filter(t =>
-    t.name.toLowerCase().includes(query) ||
-    t.content.toLowerCase().includes(query) ||
-    (t.tags || []).some(tag => tag.toLowerCase().includes(query))
+      t.name.toLowerCase().includes(query) ||
+      t.content.toLowerCase().includes(query) ||
+      (t.tags || []).some(tag => tag.toLowerCase().includes(query))
     );
   }
 
@@ -253,16 +254,18 @@ function renderTemplates() {
   // Add click listeners
   elements.templatesList?.querySelectorAll('.template-item').forEach(item => {
     item.addEventListener('click', (e) => {
-      if (e.target.closest('button')) return;
-      const action = e.target.closest('button')?.dataset.action;
-      if (action) {
-        e.stopPropagation();
-        handleTemplateAction(item.dataset.id, action);
-      } else {
-        // Double click to insert
-        if (e.detail === 2) {
-          handleTemplateAction(item.dataset.id, 'insert');
+      const button = e.target.closest('button');
+      if (button) {
+        const action = button.dataset.action;
+        if (action) {
+          e.stopPropagation();
+          handleTemplateAction(item.dataset.id, action);
         }
+        return;
+      }
+      // Double click to insert
+      if (e.detail === 2) {
+        handleTemplateAction(item.dataset.id, 'insert');
       }
     });
   });
@@ -271,13 +274,14 @@ function renderTemplates() {
 // Render recent templates
 async function renderRecentTemplates() {
   try {
-    const recent = await chrome.storage.local.get(STORAGE_KEYS.RECENT) || [];
+    const result = await chrome.storage.local.get(STORAGE_KEYS.RECENT);
+    const recent = result[STORAGE_KEYS.RECENT] || [];
     elements.emptyState?.classList.add('hidden');
     elements.templatesList?.classList.remove('hidden');
 
     if (recent.length === 0) {
-    elements.templatesList.innerHTML = '<div class="empty-message">No recent templates</div>';
-    return;
+      elements.templatesList.innerHTML = '<div class="empty-message">No recent templates</div>';
+      return;
     }
 
     const recentTemplates = templates.filter(t => recent.includes(t.id));
@@ -325,17 +329,10 @@ async function insertTemplate(template) {
       return;
     }
 
-    // Process template content
-    let content = template.content;
-
-    // Handle placeholders
-    // {{selected}} - will be replaced by currently selected text
- // {{cursor}} - cursor will be positioned here
-
     // Send to content script
     await chrome.tabs.sendMessage(tab.id, {
       type: 'INSERT_TEMPLATE',
-      template: content
+      template: template.content
     });
 
     // Update recent list
@@ -352,9 +349,10 @@ async function insertTemplate(template) {
 // Update recent list
 async function updateRecent(templateId) {
   try {
-    const recent = await chrome.storage.local.get(STORAGE_KEYS.RECENT) || [];
+    const result = await chrome.storage.local.get(STORAGE_KEYS.RECENT);
+    const recent = result[STORAGE_KEYS.RECENT] || [];
     const updated = [templateId, ...recent.filter(id => id !== templateId)].slice(0, 10);
-    await chrome.storage.local.set(STORAGE_KEYS.RECENT, updated);
+    await chrome.storage.local.set({ [STORAGE_KEYS.RECENT]: updated });
   } catch (error) {
     console.error('Error updating recent:', error);
   }
@@ -461,7 +459,7 @@ function showContextMenu(event, templateItem) {
     <div class="context-menu-item" data-action="edit">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4-4 9.5-3.5z"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
       </svg>
       Edit
     </div>
@@ -478,8 +476,8 @@ function showContextMenu(event, templateItem) {
     <div class="context-menu-divider"></div>
     <div class="context-menu-item danger" data-action="delete">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="3 6 5 6 21 18"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 0h6"></path>
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
       </svg>
       Delete
     </div>
@@ -519,7 +517,9 @@ async function handleContextAction(action) {
       await duplicateTemplate(contextMenuTarget);
       break;
     case 'delete':
-      await deleteTemplate(contextMenuTarget.id);
+      if (confirm(`Delete "${contextMenuTarget.name}"?`)) {
+        await deleteTemplate(contextMenuTarget.id);
+      }
       break;
   }
 }
@@ -577,7 +577,7 @@ async function exportTemplates() {
     a.href = url;
     a.download = `clawprompt-templates-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
-    URL.revokeObject(url);
+    URL.revokeObjectURL(url);
     showToast('Templates exported!', 'success');
   } catch (error) {
     console.error('Error exporting:', error);
@@ -601,7 +601,7 @@ async function handleImport(event) {
     // Merge with existing templates
     const newTemplates = data.templates.map(t => ({
       ...t,
-      id: generateId(), // Generate new IDs to avoid conflicts
+      id: generateId(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     }));

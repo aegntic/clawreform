@@ -21,6 +21,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       showTemplatePicker(message.templates);
       sendResponse({ success: true });
       break;
+    case 'SHOW_NOTIFICATION':
+      showNotification(message.message, message.notificationType || 'info');
+      sendResponse({ success: true });
+      break;
     default:
       sendResponse({ error: 'Unknown message type' });
   }
@@ -123,14 +127,16 @@ function createTemplatePicker() {
   picker.id = 'clawprompt-picker';
   picker.className = 'clawprompt-picker hidden';
   picker.innerHTML = `
-    <div class="clawprompt-picker-header">
-      <span>ClawPrompt</span>
-      <button class="clawprompt-picker-close">&times;</button>
+    <div class="clawprompt-picker-content">
+      <div class="clawprompt-picker-header">
+        <span>ClawPrompt</span>
+        <button class="clawprompt-picker-close">&times;</button>
+      </div>
+      <div class="clawprompt-picker-search">
+        <input type="text" placeholder="Search templates...">
+      </div>
+      <div class="clawprompt-picker-list"></div>
     </div>
-    <div class="clawprompt-picker-search">
-      <input type="text" placeholder="Search templates...">
-    </div>
-    <div class="clawprompt-picker-list"></div>
   `;
 
   document.body.appendChild(picker);
