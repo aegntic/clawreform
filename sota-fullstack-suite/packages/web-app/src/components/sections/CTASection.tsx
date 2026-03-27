@@ -13,34 +13,29 @@ export function CTASection() {
       className="py-20 sm:py-32 bg-surface-950"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 p-8 sm:p-16">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1a1408] via-[#2a1f0a] to-[#1a1408] p-8 sm:p-16">
           {/* Background pattern */}
           <div
             className="absolute inset-0 opacity-10"
             style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)`,
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(212,175,55,0.5) 1px, transparent 0)`,
               backgroundSize: '32px 32px',
             }}
           />
 
           <div className="relative z-10 text-center">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to build faster?
+              Start building with clawREFORM
             </h2>
-            <p className="max-w-2xl mx-auto text-primary-200 text-lg mb-10">
-              Start building high-performance web experiences today.
-              No credit card required.
+            <p className="max-w-2xl mx-auto text-surface-400 text-lg mb-10">
+              An open-source Agent OS that evolves with you.
+              Fork, extend, and deploy intelligent automation in minutes.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                variant="accent"
-                size="xl"
-                className="bg-white text-primary-900 hover:bg-primary-50"
-                asChild
-              >
-                <Link href="/get-started">
-                  Get Started Free
+              <Button variant="accent" size="xl" asChild>
+                <Link href="https://github.com/aegntic/clawreform" target="_blank" rel="noopener noreferrer">
+                  Get Started
                 </Link>
               </Button>
               <Button
@@ -49,15 +44,14 @@ export function CTASection() {
                 className="border-white/30 text-white hover:bg-white/10"
                 asChild
               >
-                <Link href="/contact">
-                  Talk to Sales
+                <Link href="https://www.skool.com/clawreform" target="_blank" rel="noopener noreferrer">
+                  Join the Community
                 </Link>
               </Button>
             </div>
 
-            <p className="mt-8 text-sm text-primary-300">
-              Trusted by developers at{' '}
-              <span className="text-white font-medium">1000+</span> companies
+            <p className="mt-8 text-sm text-surface-500">
+              Built with Rust. 1,744+ tests. Zero clippy warnings.
             </p>
           </div>
         </div>

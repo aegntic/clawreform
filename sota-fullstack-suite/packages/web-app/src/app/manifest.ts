@@ -1,11 +1,11 @@
 {
-  "name": "SOTA Suite",
-  "short_name": "SOTA",
-  "description": "State-of-the-Art Full-Stack Suite with aggressive performance optimization",
+  "name": "clawREFORM",
+  "short_name": "clawREFORM",
+  "description": "The self-evolving Agent OS by aegntic.ai",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#09090b",
-  "theme_color": "#9333ea",
+  "theme_color": "#d4af37",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -35,17 +35,17 @@
       "form_factor": "narrow"
     }
   ],
-  "categories": ["productivity", "utilities"],
+  "categories": ["developer tools", "utilities"],
   "shortcuts": [
     {
-      "name": "Dashboard",
-      "url": "/dashboard",
-      "description": "View your performance dashboard"
+      "name": "Extensions",
+      "url": "/#extensions",
+      "description": "Browse ClawPrompt & DevScribe extensions"
     },
     {
-      "name": "New Project",
-      "url": "/projects/new",
-      "description": "Create a new project"
+      "name": "GitHub",
+      "url": "https://github.com/aegntic/clawreform",
+      "description": "View source on GitHub"
     }
   ]
 }

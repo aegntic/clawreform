@@ -19,34 +19,47 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'SOTA Suite - High-Performance Web Application',
-    template: '%s | SOTA Suite',
+    default: 'clawREFORM by aegntic.ai — The Self-Evolving Agent OS',
+    template: '%s | clawREFORM',
   },
-  description: 'State-of-the-Art web application with aggressive performance optimization, PWA support, and solid design system.',
-  keywords: ['performance', 'web app', 'PWA', 'react', 'next.js'],
-  authors: [{ name: 'SOTA Suite' }],
-  creator: 'SOTA Suite',
-  metadataBase: new URL('https://sota-suite.dev'),
+  description:
+    'clawREFORM is an open-source Agent Operating System written in Rust. 14 crates, 60+ skills, 23+ MCP servers, self-modification kernel, and multi-agent orchestration.',
+  keywords: [
+    'agent OS',
+    'AI agents',
+    'Rust',
+    'self-evolving',
+    'MCP servers',
+    'multi-agent',
+    'automation',
+    'open source',
+    'aegntic',
+  ],
+  authors: [{ name: 'aegntic.ai' }],
+  creator: 'aegntic.ai',
+  metadataBase: new URL('https://clawreform.com'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://sota-suite.dev',
-    siteName: 'SOTA Suite',
-    title: 'SOTA Suite - High-Performance Web Application',
-    description: 'State-of-the-Art web application with aggressive performance optimization.',
+    url: 'https://clawreform.com',
+    siteName: 'clawREFORM',
+    title: 'clawREFORM by aegntic.ai — The Self-Evolving Agent OS',
+    description:
+      'An open-source Agent Operating System written in Rust. Self-modification kernel, 23+ MCP servers, and multi-agent orchestration.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'SOTA Suite',
+        alt: 'clawREFORM by aegntic.ai',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SOTA Suite - High-Performance Web Application',
-    description: 'State-of-the-Art web application with aggressive performance optimization.',
+    title: 'clawREFORM by aegntic.ai — The Self-Evolving Agent OS',
+    description:
+      'An open-source Agent Operating System written in Rust. Self-modification kernel, 23+ MCP servers, and multi-agent orchestration.',
     images: ['/og-image.png'],
   },
   robots: {

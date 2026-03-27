@@ -4,34 +4,34 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, useScrollAni
 
 const features = [
   {
-    icon: '⚡',
-    title: 'Aggressive Performance',
-    description: '45-70% faster Core Web Vitals with automatic optimization and GPU-accelerated animations.',
+    icon: '🧬',
+    title: 'Self-Modification Kernel',
+    description: 'Write, compile, and execute new code at runtime. Automatic rollback on failure keeps the system stable while it evolves.',
   },
   {
-    icon: '📱',
-    title: 'PWA Ready',
-    description: 'Full Progressive Web App support with offline capabilities, push notifications, and install prompts.',
+    icon: '🦀',
+    title: 'Built for Performance',
+    description: 'Written in Rust with 14 crates, 1,744+ tests, and zero clippy warnings. Memory-safe, fast, and battle-tested.',
   },
   {
-    icon: '🎨',
-    title: 'Solid Design System',
-    description: 'Professional aesthetics without gradients or glassmorphism. Clean, purposeful design.',
+    icon: '🔌',
+    title: '23+ MCP Servers',
+    description: 'GitHub, Playwright, Supabase, Notion, Chrome DevTools, and more. Connect to any tool through the Model Context Protocol.',
   },
   {
-    icon: '📊',
-    title: 'Real Analytics',
-    description: 'Genuine Web Vitals tracking with business impact metrics, not vanity numbers.',
+    icon: '🌐',
+    title: 'Tailscale Mesh Networking',
+    description: 'Encrypted peer-to-peer networking via Tailscale. Agents discover and communicate across machines with zero config.',
   },
   {
-    icon: '🧩',
-    title: 'Modular Architecture',
-    description: '9 specialized modules for different use cases. Use what you need, nothing more.',
+    icon: '🤝',
+    title: 'Multi-Agent / A2A',
+    description: 'Agent-to-agent protocol for delegation and collaboration. Agents hand off tasks, share context, and coordinate autonomously.',
   },
   {
     icon: '🔒',
-    title: 'Security First',
-    description: 'Built-in security headers, CSP support, and best practices by default.',
+    title: 'Enterprise Security',
+    description: 'Capability-based auth, approval workflows, and full audit logs. Control exactly what each agent can access and modify.',
   },
 ];
 
@@ -49,17 +49,17 @@ export function FeaturesSection() {
         {/* Section header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-surface-50 mb-4">
-            Everything you need for{' '}
-            <span className="text-primary-400">high-performance</span> apps
+            Everything you need to build{' '}
+            <span className="text-accent-gold">intelligent automation</span>
           </h2>
           <p className="max-w-2xl mx-auto text-surface-400 text-lg">
-            Built with real performance optimization, not just pretty templates.
+            A complete operating system for AI agents — from kernel to networking to security.
           </p>
         </div>
 
         {/* Features grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <Card
               key={feature.title}
               variant="default"

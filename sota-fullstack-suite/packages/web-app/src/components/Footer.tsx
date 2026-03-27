@@ -1,28 +1,20 @@
 import Link from 'next/link';
 
 const footerLinks = {
-  product: [
-    { label: 'Features', href: '#features' },
-    { label: 'Performance', href: '#performance' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'Changelog', href: '/changelog' },
+  extensions: [
+    { label: 'ClawPrompt', href: '/clwprmpt' },
+    { label: 'DevScribe', href: '/devscribe' },
   ],
   resources: [
-    { label: 'Documentation', href: '/docs' },
-    { label: 'API Reference', href: '/docs/api' },
-    { label: 'Guides', href: '/docs/guides' },
-    { label: 'Examples', href: '/examples' },
+    { label: 'Documentation', href: 'https://github.com/aegntic/clawreform', external: true },
+    { label: 'GitHub', href: 'https://github.com/aegntic/clawreform', external: true },
+    { label: 'Community', href: 'https://www.skool.com/clawreform', external: true },
   ],
   company: [
-    { label: 'About', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Careers', href: '/careers' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'aegntic.ai', href: 'https://aegntic.ai', external: true },
   ],
   legal: [
-    { label: 'Privacy', href: '/privacy' },
-    { label: 'Terms', href: '/terms' },
-    { label: 'License', href: '/license' },
+    { label: 'MIT License', href: 'https://github.com/aegntic/clawreform/blob/main/LICENSE', external: true },
   ],
 };
 
@@ -34,24 +26,25 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <Link href="/" className="flex items-center space-x-2 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
+              <div className="h-8 w-8 rounded-lg bg-accent-gold flex items-center justify-center">
+                <span className="text-surface-900 font-bold text-sm">CR</span>
               </div>
-              <span className="font-semibold text-lg text-surface-50">
-                SOTA Suite
-              </span>
+              <div className="flex flex-col leading-none">
+                <span className="font-semibold text-base text-surface-50">clawREFORM</span>
+                <span className="text-[10px] text-surface-500">by aegntic.ai</span>
+              </div>
             </Link>
             <p className="text-surface-500 text-sm max-w-xs">
-              State-of-the-Art template suite with real performance optimization
-              and measurable business impact.
+              The self-evolving Agent Operating System.
+              Open source, written in Rust.
             </p>
           </div>
 
-          {/* Product */}
+          {/* Extensions */}
           <div>
-            <h3 className="font-semibold text-surface-50 mb-4">Product</h3>
+            <h3 className="font-semibold text-surface-50 mb-4">Extensions</h3>
             <ul className="space-y-3">
-              {footerLinks.product.map((link) => (
+              {footerLinks.extensions.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
@@ -72,6 +65,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
+                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     className="text-surface-500 hover:text-surface-300 text-sm transition-colors"
                   >
                     {link.label}
@@ -89,6 +83,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
+                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     className="text-surface-500 hover:text-surface-300 text-sm transition-colors"
                   >
                     {link.label}
@@ -106,6 +101,7 @@ export function Footer() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
+                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     className="text-surface-500 hover:text-surface-300 text-sm transition-colors"
                   >
                     {link.label}
@@ -119,22 +115,22 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-surface-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-surface-500 text-sm">
-            &copy; {new Date().getFullYear()} SOTA Suite. All rights reserved.
+            &copy; 2026 aegntic.ai
           </p>
           <div className="flex items-center gap-6">
             <a
-              href="https://twitter.com/sotasuite"
+              href="https://x.com/clawreform"
               target="_blank"
               rel="noopener noreferrer"
               className="text-surface-500 hover:text-surface-300 transition-colors"
-              aria-label="Twitter"
+              aria-label="X / Twitter"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
             </a>
             <a
-              href="https://github.com/sotasuite"
+              href="https://github.com/aegntic/clawreform"
               target="_blank"
               rel="noopener noreferrer"
               className="text-surface-500 hover:text-surface-300 transition-colors"

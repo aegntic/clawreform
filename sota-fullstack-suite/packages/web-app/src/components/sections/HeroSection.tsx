@@ -13,8 +13,8 @@ export function HeroSection() {
       style={animationStyles}
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary-950/20 via-surface-950 to-surface-950" />
+      {/* Background gradient - gold tinted */}
+      <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-surface-950 to-surface-950" />
 
       {/* Grid pattern */}
       <div
@@ -33,33 +33,32 @@ export function HeroSection() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-gold opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-gold" />
             </span>
-            45-70% faster Core Web Vitals
+            Open source Agent OS in Rust
           </div>
 
           {/* Headline */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-surface-50 mb-6">
-            Build{' '}
-            <span className="text-primary-400">high-performance</span>
+            The Agent OS
             <br />
-            web experiences
+            <span className="text-accent-gold">that rewrites its own code</span>
           </h1>
 
           {/* Subheadline */}
           <p className="max-w-2xl mx-auto text-lg sm:text-xl text-surface-400 mb-10">
-            State-of-the-Art template suite with aggressive performance optimization,
-            real Core Web Vitals tracking, and solid design principles.
+            clawREFORM is a self-evolving Agent Operating System written in Rust.
+            14 crates, 60+ skills, 23+ MCP servers, and a kernel that can modify its own source code at runtime.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button variant="primary" size="lg" asChild>
-              <Link href="/get-started">
-                Get Started Free
+            <Button variant="accent" size="lg" asChild>
+              <Link href="https://github.com/aegntic/clawreform" target="_blank" rel="noopener noreferrer">
+                Get Started
               </Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
-              <Link href="/demo">
-                View Demo
+              <Link href="https://github.com/aegntic/clawreform" target="_blank" rel="noopener noreferrer">
+                View on GitHub
               </Link>
             </Button>
           </div>
@@ -67,10 +66,10 @@ export function HeroSection() {
           {/* Stats */}
           <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto">
             {[
-              { value: '45-70%', label: 'Faster CWV' },
-              { value: '15-35%', label: 'More Conversions' },
-              { value: '60%', label: 'Less Dev Time' },
-              { value: '300%', label: 'Avg ROI' },
+              { value: '14', label: 'Rust Crates' },
+              { value: '60+', label: 'Skills' },
+              { value: '23+', label: 'MCP Servers' },
+              { value: 'MIT', label: 'Open Source' },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-surface-50">
