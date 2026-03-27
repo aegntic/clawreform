@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>clawREFORM — The Agent OS</title>
+    <title>aegntic.ai — The Agentic Intelligence Company</title>
     <meta name="description"
-        content="The open-source operating system for AI agents. 146K lines of Rust. Organ System. Memory Ladder. Self-Modification.">
+        content="aegntic.ai builds the next generation of AI infrastructure. clawREFORM: The Self-Evolving Agent OS. Extensions: Enterprise-grade AI tooling.">
     <script>
         (function () { var t = localStorage.getItem('cr-theme'); if (!t) t = matchMedia('(prefers-color-scheme:light)').matches ? 'light' : 'dark'; if (t === 'light') document.documentElement.classList.remove('dark'); })();
     </script>
@@ -29,17 +29,21 @@
         }
 
         :root {
-            --bg: #1a1a1e;
-            --bg-card: rgba(26, 26, 30, 0.9);
-            --bg-inv: #111114;
-            --wire: #4b5563;
-            --wire-dim: #333;
-            --wire-sub: #262626;
-            --text: #d1d5db;
-            --text-dim: #9ca3af;
+            --bg: #0a0a0c;
+            --bg-card: rgba(10, 10, 12, 0.9);
+            --bg-inv: #080809;
+            --wire: #3a3a42;
+            --wire-dim: #252528;
+            --wire-sub: #1a1a1c;
+            --text: #e8e4dc;
+            --text-dim: #9a9890;
             --text-inv: #fff;
             --accent: #c9a227;
             --accent-dim: #8a6f1a;
+            --accent-glow: rgba(201, 162, 39, 0.15);
+            --brand-cyan: #00d4aa;
+            --brand-purple: #8b5cf6;
+            --brand-rose: #f43f5e;
             --sans: 'Space Grotesk', system-ui, sans-serif;
             --display: 'Playfair Display', Georgia, serif;
             --mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -47,12 +51,12 @@
         }
 
         html.light {
-            --bg: #e8e7e3;
-            --bg-card: rgba(232, 231, 227, 0.9);
-            --bg-inv: #d6d5d1;
-            --wire: #b0b0a8;
-            --wire-dim: #d0cfcb;
-            --wire-sub: #ddddd8;
+            --bg: #f5f4f0;
+            --bg-card: rgba(245, 244, 240, 0.9);
+            --bg-inv: #e8e7e3;
+            --wire: #c0bfb8;
+            --wire-dim: #d8d7d2;
+            --wire-sub: #e5e4e0;
             --text: #1a1a1a;
             --text-dim: #6b6b6b;
             --text-inv: #1a1a1a;
@@ -130,6 +134,18 @@
             color: var(--accent)
         }
 
+        .cyan {
+            color: var(--brand-cyan)
+        }
+
+        .purple {
+            color: var(--brand-purple)
+        }
+
+        .rose {
+            color: var(--brand-rose)
+        }
+
         code {
             font-family: var(--mono);
             font-size: 0.8em;
@@ -151,7 +167,7 @@
 
         /* Layout */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 clamp(1.5rem, 4vw, 3rem)
         }
@@ -377,6 +393,16 @@
             color: var(--bg)
         }
 
+        .btn-wire.accent {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent)
+        }
+
+        .btn-wire.accent:hover {
+            background: var(--accent-dim)
+        }
+
         .hero-visual {
             position: relative;
             z-index: 1;
@@ -423,6 +449,202 @@
 
             .hero-visual {
                 display: none
+            }
+        }
+
+        /* Product Cards */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem
+        }
+
+        .product-card {
+            border: 1px solid var(--wire);
+            padding: 2.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .product-card:hover {
+            border-color: var(--accent)
+        }
+
+        html.light .product-card {
+            background: rgba(255, 255, 255, 0.3)
+        }
+
+        .product-card.featured {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(201, 162, 39, 0.05) 0%, rgba(0, 212, 170, 0.03) 100%);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-family: var(--mono);
+            font-size: 0.45rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 0.3rem 0.6rem;
+            border: 1px solid var(--wire);
+            color: var(--text-dim)
+        }
+
+        .product-badge.active {
+            background: var(--brand-cyan);
+            color: var(--bg);
+            border-color: var(--brand-cyan)
+        }
+
+        .product-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--wire);
+            background: var(--bg-inv)
+        }
+
+        .product-icon span {
+            font-size: 24px
+        }
+
+        .product-card h3 {
+            font-family: var(--sans);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-inv);
+            margin-bottom: 0.5rem
+        }
+
+        .product-card .product-tagline {
+            font-family: var(--mono);
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            margin-bottom: 1rem
+        }
+
+        .product-card p {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            line-height: 1.8;
+            color: var(--text-dim);
+            margin-bottom: 1.5rem
+        }
+
+        .product-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem
+        }
+
+        .product-features span {
+            font-family: var(--mono);
+            font-size: 0.45rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.3rem 0.6rem;
+            background: rgba(201, 162, 39, 0.08);
+            color: var(--accent);
+            border: 1px solid var(--wire)
+        }
+
+        .product-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap
+        }
+
+        .product-links a {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem
+        }
+
+        .product-links a:hover {
+            color: var(--accent)
+        }
+
+        @media(max-width:900px) {
+            .products-grid {
+                grid-template-columns: 1fr
+            }
+
+            .product-card.featured {
+                grid-column: span 1
+            }
+        }
+
+        /* Extensions Grid */
+        .extensions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem
+        }
+
+        .extension-card {
+            border: 1px solid var(--wire);
+            padding: 1.5rem;
+            background: var(--bg-card);
+            transition: all 0.3s;
+        }
+
+        .extension-card:hover {
+            border-color: var(--brand-cyan);
+            transform: translateY(-2px)
+        }
+
+        .extension-card .ext-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.8rem;
+            display: block
+        }
+
+        .extension-card h4 {
+            font-family: var(--sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-inv);
+            margin-bottom: 0.3rem
+        }
+
+        .extension-card p {
+            font-family: var(--mono);
+            font-size: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            line-height: 1.6;
+            color: var(--text-dim)
+        }
+
+        @media(max-width:900px) {
+            .extensions-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media(max-width:600px) {
+            .extensions-grid {
+                grid-template-columns: 1fr
             }
         }
 
@@ -588,53 +810,6 @@
             }
         }
 
-        /* Pipeline */
-        .pipeline {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 1px;
-            margin-top: 2rem
-        }
-
-        .pipe-step {
-            border: 1px solid var(--wire);
-            padding: clamp(0.8rem, 1.5vw, 1.2rem);
-            text-align: center;
-            background: var(--bg-card)
-        }
-
-        .pipe-step .sn {
-            font-family: var(--display);
-            font-size: 1.8rem;
-            font-style: italic;
-            color: var(--text-inv);
-            opacity: 0.07;
-            line-height: 1;
-            margin-bottom: 0.4rem
-        }
-
-        .pipe-step h3 {
-            font-size: 0.8rem;
-            color: var(--text-inv);
-            margin-bottom: 0.2rem
-        }
-
-        .pipe-step p {
-            font-family: var(--mono);
-            font-size: 0.5rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            line-height: 1.5
-        }
-
-        @media(max-width:768px) {
-            .pipeline {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem
-            }
-        }
-
         /* Comparison */
         .compare-table {
             width: 100%;
@@ -697,94 +872,49 @@
             flex-wrap: wrap
         }
 
-        /* Protocol Section (offset card) */
-        .protocol-section {
+        /* Company Section */
+        .company-grid {
             display: grid;
-            grid-template-columns: 7fr 5fr;
-            gap: 0;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
             align-items: center
         }
 
-        .protocol-visual {
-            position: relative;
-            order: 1
+        .company-values {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem
         }
 
-        .protocol-visual .wire-border {
-            padding: 1rem;
-            background: var(--bg-inv)
+        .value-item {
+            padding: 1.5rem;
+            border: 1px solid var(--wire);
+            background: var(--bg-card)
         }
 
-        .protocol-visual img {
-            width: 100%;
-            opacity: 0.15;
-            filter: grayscale(1)
-        }
-
-        .protocol-content {
-            position: relative;
-            z-index: 10;
-            order: 2
-        }
-
-        .protocol-content .decon {
-            background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            padding: 3rem;
-            border: 1px solid var(--wire)
-        }
-
-        .protocol-item {
-            display: flex;
-            gap: 1.5rem;
-            align-items: flex-start
-        }
-
-        .protocol-item .hex {
-            font-family: var(--mono);
-            font-size: 0.6rem;
-            color: var(--text-dim);
-            flex-shrink: 0
-        }
-
-        .protocol-item .pi-title {
+        .value-item h4 {
             font-family: var(--sans);
-            font-weight: 700;
+            font-size: 0.9rem;
+            font-weight: 600;
             color: var(--text-inv);
-            display: block;
-            font-size: 0.85rem;
-            margin-bottom: 0.2rem
+            margin-bottom: 0.5rem
         }
 
-        .protocol-item p {
+        .value-item p {
             font-family: var(--mono);
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            line-height: 1.7;
+            line-height: 1.6;
             color: var(--text-dim)
         }
 
-        @media(max-width:768px) {
-            .protocol-section {
+        @media(max-width:900px) {
+            .company-grid {
                 grid-template-columns: 1fr
             }
 
-            .protocol-visual {
-                display: none
-            }
-        }
-
-        /* Engineering cards */
-        .eng-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 2rem
-        }
-
-        @media(max-width:768px) {
-            .eng-grid {
+            .company-values {
                 grid-template-columns: 1fr
             }
         }
@@ -803,8 +933,8 @@
 
         .footer-grid {
             display: grid;
-            grid-template-columns: 4fr 2fr 2fr 4fr;
-            gap: 3rem;
+            grid-template-columns: 3fr 2fr 2fr 2fr 3fr;
+            gap: 2rem;
             padding: 3rem 0
         }
 
@@ -869,10 +999,16 @@
             color: var(--bg)
         }
 
-        @media(max-width:768px) {
+        @media(max-width:1000px) {
             .footer-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 2rem
+            }
+        }
+
+        @media(max-width:600px) {
+            .footer-grid {
+                grid-template-columns: 1fr
             }
         }
 
@@ -942,16 +1078,16 @@
     <nav class="nav">
         <div class="container">
             <div class="nav-brand">
-                <h2>CR.SYS <span class="gold">·</span> REFORM</h2>
-                <p>COORD: AGENT_OS // v0.2.1</p>
+                <h2>AEGNTIC <span class="gold">·</span> AI</h2>
+                <p>COORD: AEGNTIC_INTELLIGENCE // ae.ltd</p>
             </div>
             <div style="display:flex;align-items:center;gap:1rem">
                 <div class="nav-links">
-                    <a href="#organs">Organs</a>
-                    <a href="#memory">Memory</a>
-                    <a href="#self-mod">Self-Mod</a>
-                    <a href="#compare">Position</a>
-                    <a href="https://github.com/aegntic/clawreform">GitHub</a>
+                    <a href="#products">Products</a>
+                    <a href="#extensions">Extensions</a>
+                    <a href="#company">Company</a>
+                    <a href="#clawreform">clawREFORM</a>
+                    <a href="https://github.com/aegntic">GitHub</a>
                 </div>
                 <button class="theme-toggle" aria-label="Toggle theme" role="switch">
                     <span class="theme-toggle-thumb"></span>
@@ -967,20 +1103,22 @@
                 <div class="hero-bg-block"></div>
                 <div class="hero-content">
                     <div>
-                        <span class="sys-label">PROTOCOL::AGENT_OPERATING_SYSTEM</span>
-                        <div class="hero-logo-box reveal" style="margin-top:1.5rem; margin-bottom:1rem;">
-                            <img src="logo.png" alt="clawREFORM Logo" class="hero-logo">
-                        </div>
+                        <span class="sys-label">PROTOCOL::AEGNTIC_INTELLIGENCE</span>
+                        <h1 class="reveal" style="margin-top:1.5rem; font-size: clamp(3rem, 7vw, 5.5rem);">
+                            aegntic<span class="gold">.</span>ai
+                        </h1>
+                        <p class="reveal" style="color:var(--text-dim);margin-top:1rem;max-width:50ch;font-size:0.9rem;font-style:italic;">
+                            The agentic intelligence company. Building the infrastructure layer for autonomous AI systems.
+                        </p>
                     </div>
                     <div class="hero-desc decon">
-                        <p>Self-evolving Rust-based agent OS. Persistent memory, organ-driven identity, multi-channel
-                            presence, and a self-modification engine — in a single binary.</p>
+                        <p>We build open-source AI infrastructure that thinks, evolves, and scales. From self-modifying agent operating systems to enterprise-grade extensions — we're defining how AI works with code, data, and itself.</p>
                         <div class="hero-cta">
-                            <a href="https://github.com/aegntic/clawreform" class="btn-wire">GitHub →</a>
-                            <a href="#organs" class="btn-wire"
-                                style="border-color:transparent;display:flex;align-items:center;gap:0.5rem">
-                                <span class="material-symbols-outlined" style="font-size:14px">account_tree</span>
-                                Explore
+                            <a href="#products" class="btn-wire accent">Explore Products</a>
+                            <a href="https://github.com/aegntic" class="btn-wire"
+                                style="display:flex;align-items:center;gap:0.5rem">
+                                <span class="material-symbols-outlined" style="font-size:14px">code</span>
+                                GitHub
                             </a>
                         </div>
                     </div>
@@ -990,34 +1128,30 @@
                             <div class="stat-label">K Lines Rust</div>
                         </div>
                         <div>
-                            <div class="stat-number" data-count="141">0</div>
-                            <div class="stat-label">Models</div>
-                        </div>
-                        <div>
-                            <div class="stat-number" data-count="20">0</div>
-                            <div class="stat-label">+ Providers</div>
+                            <div class="stat-number" data-count="1744">0</div>
+                            <div class="stat-label">Tests Passing</div>
                         </div>
                         <div>
                             <div class="stat-number" data-count="61">0</div>
-                            <div class="stat-label">Skills</div>
+                            <div class="stat-label">Bundled Skills</div>
                         </div>
                         <div>
                             <div class="stat-number" data-count="0">0</div>
-                            <div class="stat-label">Deps</div>
+                            <div class="stat-label">Clippy Warnings</div>
                         </div>
                     </div>
                 </div>
                 <div class="hero-visual">
                     <div class="wire-border">
                         <div class="spline-box" style="min-height:450px">
-                            <span>SPLINE_SCENE_01 · KERNEL_CONSTRUCT</span>
+                            <span>AEGNTIC_CORE · INTELLIGENCE_MESH</span>
                         </div>
                         <div style="margin-top:0.4rem;display:flex;justify-content:space-between;padding:0 0.3rem">
                             <span
-                                style="font-family:var(--mono);font-size:0.45rem;color:var(--text-dim)">KERNEL_RENDER.OBJ</span>
+                                style="font-family:var(--mono);font-size:0.45rem;color:var(--text-dim)">AEGNTIC_RENDER.OBJ</span>
                             <span
-                                style="font-family:var(--mono);font-size:0.45rem;color:var(--text-dim)">ACTIVE_MODULES:
-                                15</span>
+                                style="font-family:var(--mono);font-size:0.45rem;color:var(--text-dim)">ACTIVE_PRODUCTS:
+                                3</span>
                         </div>
                     </div>
                 </div>
@@ -1025,218 +1159,172 @@
         </div>
     </section>
 
-    <!-- ── PROBLEM (Feature Cards) ── -->
-    <section>
+    <!-- ── PRODUCTS ── -->
+    <section id="products" style="background:rgba(0,0,0,0.1)">
         <div class="container">
-            <div style="display:flex;flex-wrap:wrap;gap:0;align-items:stretch">
-                <div style="flex:1 1 300px;padding:3rem;background:var(--text-inv);color:var(--bg);border:1px solid var(--wire);position:relative;z-index:2;margin-bottom:-3rem"
-                    class="reveal">
-                    <h2 style="color:var(--bg);line-height:1.1;margin-bottom:2rem">The<br>Problem</h2>
-                    <div style="height:1px;width:60px;background:var(--bg);margin-bottom:1.5rem"></div>
-                    <p
-                        style="font-family:var(--mono);font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;line-height:1.8;color:var(--bg);opacity:0.6">
-                        Agents today are fragile, opaque, and stateless. Toolkits without infrastructure. Prompt soup
-                        without auditability.
-                    </p>
+            <span class="sys-label reveal">PRODUCT_MATRIX</span>
+            <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">Our <em>Products</em></h2>
+            <p class="reveal" style="color:var(--text-dim);max-width:50ch;margin-top:1rem;font-size:0.9rem">
+                Open-source infrastructure for the agentic future. Built in Rust, designed for production.</p>
+
+            <div class="products-grid">
+                <!-- clawREFORM - Featured Product -->
+                <div class="product-card featured stagger-child">
+                    <span class="product-badge active">FLAGSHIP</span>
+                    <div class="product-icon">
+                        <span class="material-symbols-outlined gold">hub</span>
+                    </div>
+                    <h3>clawREFORM</h3>
+                    <span class="product-tagline">The Self-Evolving Agent Operating System</span>
+                    <p>The first open-source Agent OS that can safely rewrite its own code through natural language. Built in Rust with 146K lines, 1744+ tests, zero clippy warnings. Organ System for identity, Memory Ladder for persistence, Self-Modification Engine for evolution.</p>
+                    <div class="product-features">
+                        <span>Organ System</span>
+                        <span>Memory Ladder</span>
+                        <span>Self-Modification</span>
+                        <span>20+ LLM Providers</span>
+                        <span>25+ Channels</span>
+                        <span>61 Skills</span>
+                    </div>
+                    <div class="product-links">
+                        <a href="https://github.com/aegntic/clawreform">
+                            <span class="material-symbols-outlined" style="font-size:14px">open_in_new</span>
+                            GitHub Repository
+                        </a>
+                        <a href="https://www.npmjs.com/package/@clawreform/sdk">
+                            <span class="material-symbols-outlined" style="font-size:14px">download</span>
+                            npm SDK
+                        </a>
+                        <a href="#clawreform">
+                            <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+                            Learn More
+                        </a>
+                    </div>
                 </div>
-                <div style="flex:2 1 500px;display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding-top:4rem">
-                    <div class="feature-card stagger-child">
-                        <div class="card-num">01</div>
-                        <h3>Prompt Soup</h3>
-                        <p>Identity, permissions, memory crammed into one string. Zero auditability.</p>
+
+                <!-- OpenClaw Extension Platform -->
+                <div class="product-card stagger-child">
+                    <span class="product-badge">PLATFORM</span>
+                    <div class="product-icon">
+                        <span class="material-symbols-outlined cyan">extension</span>
                     </div>
-                    <div class="feature-card stagger-child" style="margin-top:-2rem">
-                        <div class="card-num">02</div>
-                        <h3>Amnesia</h3>
-                        <p>Flat vector stores. No forgetting curve. Memory bloats until useless.</p>
+                    <h3>OpenClaw</h3>
+                    <span class="product-tagline">Extension Platform for clawREFORM</span>
+                    <p>Extend clawREFORM with custom skills, hands, and channel adapters. Plugin architecture for enterprise integrations, custom tools, and specialized workflows.</p>
+                    <div class="product-features">
+                        <span>Plugin SDK</span>
+                        <span>Custom Skills</span>
+                        <span>Channel Adapters</span>
                     </div>
-                    <div class="feature-card stagger-child" style="grid-column:span 2">
-                        <div style="display:flex;gap:2rem">
-                            <div style="flex:1">
-                                <div class="card-num">03</div>
-                                <h3>Single Point of Failure</h3>
-                                <p>One API key. One provider. When it crashes, everything stops.</p>
-                            </div>
-                            <div style="flex:1;border-left:1px solid var(--wire);padding-left:2rem">
-                                <div class="card-num">04</div>
-                                <h3>Toolkits, Not Products</h3>
-                                <p>LangChain, CrewAI, AutoGen — assemble everything from SDK primitives.</p>
-                            </div>
-                        </div>
+                    <div class="product-links">
+                        <a href="#extensions">
+                            <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+                            Browse Extensions
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ae.ltd Services -->
+                <div class="product-card stagger-child">
+                    <span class="product-badge">ENTERPRISE</span>
+                    <div class="product-icon">
+                        <span class="material-symbols-outlined purple">business</span>
+                    </div>
+                    <h3>ae.ltd Services</h3>
+                    <span class="product-tagline">Enterprise AI Infrastructure</span>
+                    <p>Managed deployments, custom integrations, and enterprise support for organizations adopting agentic AI at scale.</p>
+                    <div class="product-features">
+                        <span>Managed Hosting</span>
+                        <span>Custom Training</span>
+                        <span>SLA Support</span>
+                    </div>
+                    <div class="product-links">
+                        <a href="mailto:hello@aegntic.ai">
+                            <span class="material-symbols-outlined" style="font-size:14px">mail</span>
+                            Contact Sales
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ── ORGAN SYSTEM ── -->
-    <section id="organs" style="padding-top:6rem">
+    <!-- ── EXTENSIONS ── -->
+    <section id="extensions">
         <div class="container">
-            <div class="split-layout">
-                <div>
-                    <span class="sys-label reveal">KEY_INNOVATION::ORGAN_SYSTEM</span>
-                    <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">The Organ<br><em>System</em></h2>
-                    <p class="reveal" style="color:var(--text-dim);margin-top:1rem;max-width:38ch;font-size:0.9rem">
-                        Agent context as discrete, human-editable, git-trackable files — not a prompt blob.</p>
-                    <p class="reveal"
-                        style="color:var(--text-dim);margin-top:0.8rem;font-style:italic;font-size:0.8rem">Edit
-                        <code>SOUL.md</code> in any editor → personality changes instantly. Version in git → full audit
-                        trail.
-                    </p>
+            <span class="sys-label reveal">EXTENSION_REGISTRY</span>
+            <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">OpenClaw <em>Extensions</em></h2>
+            <p class="reveal" style="color:var(--text-dim);max-width:50ch;margin-top:1rem;font-size:0.9rem">
+                Extend clawREFORM with specialized capabilities. Install via CLI or build your own.</p>
 
-                    <div class="organ-label reveal">CORE_ORGANS</div>
-                    <div class="organ-grid">
-                        <div class="organ-card stagger-child"><span class="fname">IDENTITY.md</span><span
-                                class="role">Mission</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">SOUL.md</span><span
-                                class="role">Character</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">HANDS.md</span><span
-                                class="role">Actions</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">MEMORY.md</span><span
-                                class="role">Memory Law</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">HEARTBEAT.md</span><span
-                                class="role">Autonomy</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">COLLECTIVE.md</span><span
-                                class="role">Evidence</span></div>
-                    </div>
-                    <div class="organ-label reveal">SUPPORT_ORGANS</div>
-                    <div class="organ-grid">
-                        <div class="organ-card stagger-child"><span class="fname">USER.md</span><span class="role">Human
-                                Model</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">TOOLS.md</span><span
-                                class="role">Constraints</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">SKILLS.md</span><span
-                                class="role">Methods</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">AGENTS.md</span><span
-                                class="role">Peers</span></div>
-                        <div class="organ-card stagger-child"><span class="fname">BOOTSTRAP.md</span><span
-                                class="role">Init</span></div>
-                    </div>
+            <div class="extensions-grid">
+                <div class="extension-card stagger-child">
+                    <span class="ext-icon cyan">🔐</span>
+                    <h4>Security Audit</h4>
+                    <p>Continuous vulnerability scanning, OWASP compliance, threat analysis</p>
                 </div>
-                <div class="spline-box reveal" style="margin-top:4rem">
-                    <span>SPLINE_SCENE_02 · ORGAN_CONSTELLATION</span>
+                <div class="extension-card stagger-child">
+                    <span class="ext-icon purple">🐳</span>
+                    <h4>Docker & K8s</h4>
+                    <p>Container orchestration, Helm charts, deployment automation</p>
                 </div>
+                <div class="extension-card stagger-child">
+                    <span class="ext-icon gold">☁️</span>
+                    <h4>Cloud Providers</h4>
+                    <p>AWS, GCP, Azure integration modules for infrastructure management</p>
+                </div>
+                <div class="extension-card stagger-child">
+                    <span class="ext-icon rose">📊</span>
+                    <h4>Analytics</h4>
+                    <p>Usage metrics, cost tracking, performance dashboards</p>
+                </div>
+                <div class="extension-card stagger-child">
+                    <span class="ext-icon cyan">🔗</span>
+                    <h4>Integrations</h4>
+                    <p>Jira, Linear, Notion, Slack, Discord, Telegram connectors</p>
+                </div>
+                <div class="extension-card stagger-child">
+                    <span class="ext-icon purple">🤖</span>
+                    <h4>Code Generation</h4>
+                    <p>Multi-language code generation, refactoring, documentation</p>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin-top:2.5rem" class="reveal">
+                <a href="https://github.com/aegntic/clawreform/tree/main/crates/clawreform-skills/bundled" class="btn-wire">
+                    View All 61 Skills →
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- ── MEMORY LADDER ── -->
-    <section id="memory">
-        <div class="container" style="text-align:center">
-            <span class="sys-label reveal">KEY_INNOVATION::MEMORY_LADDER</span>
-            <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">The Memory<br><em>Ladder</em></h2>
-            <p class="reveal" style="color:var(--text-dim);max-width:38ch;margin:1rem auto 0;font-size:0.9rem">Four-tier
-                memory with biological decay. Important things persist — the rest fades.</p>
-            <div class="tier-row">
-                <div class="tier-card stagger-child">
-                    <h3>Core</h3>
-                    <p>Durable truths. High edit friction. Survives across projects and time.</p>
-                </div>
-                <div class="tier-card stagger-child">
-                    <h3>Overview</h3>
-                    <p>Strategic map of current priorities. Updated when direction changes.</p>
-                </div>
-                <div class="tier-card stagger-child">
-                    <h3>Project</h3>
-                    <p>Auto-curated ledgers per initiative. Promoted from validated detail.</p>
-                </div>
-                <div class="tier-card stagger-child">
-                    <h3>Collective</h3>
-                    <p>Cross-agent evidence pool. Claims promoted through Overview → Core.</p>
-                </div>
-            </div>
-            <p class="reveal"
-                style="margin-top:1.5rem;font-family:var(--mono);font-size:0.55rem;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase">
-                + CROSS_CHANNEL_CANONICAL_SESSIONS :: TELEGRAM → DISCORD → IRC</p>
-        </div>
-    </section>
-
-    <!-- ── SELF-MODIFICATION (Protocol Section) ── -->
-    <section id="self-mod" style="overflow:hidden">
+    <!-- ── CLAWREFORM DEEP DIVE ── -->
+    <section id="clawreform" style="background:rgba(0,0,0,0.1)">
         <div class="container">
-            <div class="protocol-section">
-                <div class="protocol-visual">
-                    <div class="wire-border">
-                        <div class="spline-box" style="min-height:350px">
-                            <span>SPLINE_SCENE_03 · SELF_MOD_ENGINE</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="protocol-content">
-                    <div class="decon" style="margin-left:-3rem">
-                        <h2 style="color:var(--text-inv);margin-bottom:2rem">The<br><em>Self-Modification</em><br>Engine
-                        </h2>
-                        <div style="display:flex;flex-direction:column;gap:1.5rem">
-                            <div class="protocol-item stagger-child">
-                                <div class="hex">0x01</div>
-                                <div><span class="pi-title">Analyze → Backup</span>
-                                    <p>Parse request, identify affected files. Snapshot everything before touching code.
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="protocol-item stagger-child">
-                                <div class="hex">0x02</div>
-                                <div><span class="pi-title">Modify → Validate</span>
-                                    <p>Apply changes under max_files_per_mod safety limits. Run cargo build, test,
-                                        clippy.</p>
-                                </div>
-                            </div>
-                            <div class="protocol-item stagger-child">
-                                <div class="hex">0x03</div>
-                                <div><span class="pi-title">Rollback → Approve</span>
-                                    <p>Auto-restore from backup if validation fails. Human-in-the-loop optional.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--wire);display:flex;justify-content:space-between;align-items:center">
-                            <span
-                                style="font-family:var(--mono);font-size:0.45rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em">STATUS:
-                                PIPELINE_ARMED // SAFETY_RAILS_ACTIVE</span>
-                            <span class="material-symbols-outlined"
-                                style="font-size:14px;color:var(--text-inv)">north_east</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            <span class="sys-label reveal">FLAGSHIP_PRODUCT::CLAWREFORM</span>
+            <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">claw<span class="gold">REFORM</span><br><em>Deep Dive</em></h2>
+            <p class="reveal" style="color:var(--text-dim);max-width:50ch;margin-top:1rem;font-size:0.9rem">
+                The open-source Agent Operating System that can evolve itself. Three key innovations define the platform.</p>
 
-    <!-- ── PRODUCTION ENGINEERING ── -->
-    <section>
-        <div class="container">
-            <span class="sys-label reveal">PRODUCTION_ENGINEERING</span>
-            <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">Built for<br><em>Reliability</em></h2>
-            <div class="eng-grid">
+            <!-- Feature Cards -->
+            <div class="feature-grid">
                 <div class="feature-card stagger-child">
                     <div class="card-num">01</div>
-                    <h3>Circuit Breaker</h3>
-                    <p>Per-provider cooldown. Exponential backoff. Intelligent error classification.</p>
+                    <h3>The Organ System</h3>
+                    <p>Agent context as discrete, human-editable, git-trackable files — not a prompt blob. Edit SOUL.md in any editor → personality changes instantly. Version in git → full audit trail.</p>
                 </div>
                 <div class="feature-card stagger-child">
                     <div class="card-num">02</div>
-                    <h3>Context Budgeting</h3>
-                    <p>Dynamic overflow recovery. Tool results truncated proportionally. LLM compaction.</p>
+                    <h3>The Memory Ladder</h3>
+                    <p>Four-tier memory with biological decay. Core, Overview, Project, and Working Detail. Important things persist — the rest fades naturally. Cross-channel canonical sessions.</p>
                 </div>
                 <div class="feature-card stagger-child">
                     <div class="card-num">03</div>
-                    <h3>Loop Guard</h3>
-                    <p>Detects repetitive tool calls. Configurable breaker. Prevents runaway costs.</p>
-                </div>
-                <div class="feature-card stagger-child">
-                    <div class="card-num">04</div>
-                    <h3>Session Repair</h3>
-                    <p>Auto-repairs orphaned tool results. Merges consecutive messages. Model recovery.</p>
+                    <h3>Self-Modification Engine</h3>
+                    <p>ClawReform can rewrite its own Rust source code with a full safety pipeline: Analyze → Backup → Modify → Validate → Rollback → Approve. Human-in-the-loop optional.</p>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- ── COMPARISON ── -->
-    <section id="compare">
-        <div class="container">
-            <span class="sys-label reveal">COMPETITIVE_POSITION</span>
-            <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">vs. Everything<br><em>Else</em></h2>
+            <!-- Comparison Table -->
             <table class="compare-table reveal">
                 <thead>
                     <tr>
@@ -1281,26 +1369,72 @@
                         <td class="col-them">HTTP only</td>
                         <td class="col-us">IRC, Email, WhatsApp, Discord, Telegram</td>
                     </tr>
-                    <tr>
-                        <td>Autonomy</td>
-                        <td class="col-them">Triggered only</td>
-                        <td class="col-us">Cron, heartbeats, background</td>
-                    </tr>
                 </tbody>
             </table>
+
+            <!-- Quick Start -->
+            <div style="margin-top:3rem;padding:2rem;border:1px solid var(--wire);background:var(--bg-inv)" class="reveal">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                    <span style="font-family:var(--mono);font-size:0.55rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em">QUICK_START::INSTALL</span>
+                    <span style="font-family:var(--mono);font-size:0.45rem;color:var(--accent)">30_SECONDS_TO_RUNNING</span>
+                </div>
+                <pre style="font-family:var(--mono);font-size:0.75rem;color:var(--text-inv);line-height:1.8;overflow-x:auto"><code># Install clawREFORM
+curl -fsSL https://clawreform.com/install | sh
+
+# Start the daemon
+clawreform start
+
+# Chat with your agent
+clawreform chat "Hello, clawREFORM!"
+
+# Dashboard → http://127.0.0.1:4332</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── COMPANY ── -->
+    <section id="company">
+        <div class="container">
+            <div class="company-grid">
+                <div>
+                    <span class="sys-label reveal">ORGANIZATION::AEGNTIC_AI</span>
+                    <h2 class="reveal" style="margin-top:1.5rem;color:var(--text-inv)">The <em>Company</em></h2>
+                    <p class="reveal" style="color:var(--text-dim);margin-top:1rem;font-size:0.9rem;max-width:45ch">
+                        aegntic.ai is building the infrastructure layer for autonomous AI systems. We believe AI should be open, auditable, and self-improving — not black boxes that require constant human intervention.</p>
+                    <p class="reveal" style="color:var(--text-dim);margin-top:1rem;font-size:0.9rem;max-width:45ch;font-style:italic">
+                        Our mission: make AI systems that can maintain themselves, so your team can focus on what matters.</p>
+                </div>
+                <div class="company-values">
+                    <div class="value-item stagger-child">
+                        <h4>Open Source First</h4>
+                        <p>MIT/Apache-2.0 licensed. No vendor lock-in. Transparent development.</p>
+                    </div>
+                    <div class="value-item stagger-child">
+                        <h4>Production Ready</h4>
+                        <p>1744+ tests, zero warnings. Built for scale, not demos.</p>
+                    </div>
+                    <div class="value-item stagger-child">
+                        <h4>Self-Evolving</h4>
+                        <p>Systems that improve themselves. Less maintenance burden.</p>
+                    </div>
+                    <div class="value-item stagger-child">
+                        <h4>Community Driven</h4>
+                        <p>Built by developers, for developers. Contributions welcome.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- ── CTA ── -->
-    <section class="cta-section">
+    <section class="cta-section" style="background:rgba(0,0,0,0.1)">
         <div class="container">
-            <h1 class="reveal" style="color:var(--text-inv)">claw<span class="gold">REFORM</span></h1>
-            <p class="cta-sub reveal">Install in 30 seconds. Configure in 2 minutes. Run forever.</p>
+            <h1 class="reveal" style="color:var(--text-inv)">aegntic<span class="gold">.</span>ai</h1>
+            <p class="cta-sub reveal">The agentic intelligence company. Building AI infrastructure that evolves.</p>
             <div class="cta-buttons">
-                <a href="https://github.com/aegntic/clawreform" class="btn-wire reveal"
-                    style="background:var(--text-inv);color:var(--bg)">GitHub →</a>
-                <a href="https://www.npmjs.com/package/@clawreform/sdk" class="btn-wire reveal">npm install
-                    @clawreform/sdk</a>
+                <a href="https://github.com/aegntic/clawreform" class="btn-wire reveal accent">Get Started →</a>
+                <a href="https://github.com/aegntic" class="btn-wire reveal">View on GitHub</a>
+                <a href="mailto:hello@aegntic.ai" class="btn-wire reveal">Contact Us</a>
             </div>
         </div>
     </section>
@@ -1310,36 +1444,39 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <h3>CLAWREFORM</h3>
-                    <p>AGENT_OPERATING_SYSTEM<br>CORE_VERSION::0.2.1_RUST_STABLE<br>APACHE-2.0 / MIT // AEGNTIC.AI</p>
+                    <h3>AEGNTIC.AI</h3>
+                    <p>THE AGENTIC INTELLIGENCE COMPANY<br>ae.ltd ENTERPRISE SERVICES<br>APACHE-2.0 / MIT</p>
                 </div>
                 <div class="footer-col">
-                    <div class="footer-col-title">Platform</div>
+                    <div class="footer-col-title">Products</div>
+                    <a href="#clawreform">clawREFORM</a>
+                    <a href="#extensions">OpenClaw Extensions</a>
+                    <a href="#">ae.ltd Services</a>
+                </div>
+                <div class="footer-col">
+                    <div class="footer-col-title">Resources</div>
                     <a href="https://github.com/aegntic/clawreform">GitHub</a>
                     <a href="https://www.npmjs.com/package/@clawreform/sdk">npm SDK</a>
                     <a href="#">Documentation</a>
                 </div>
                 <div class="footer-col">
-                    <div class="footer-col-title">Access</div>
-                    <a href="#">CLI Manual</a>
-                    <a href="https://aegntic.ai">aegntic.ai</a>
-                    <a href="#">Rust Core</a>
+                    <div class="footer-col-title">Community</div>
+                    <a href="https://skool.com/autoclaw">Skool Community</a>
+                    <a href="https://x.com/clawreform">X / Twitter</a>
+                    <a href="#">Discord</a>
                 </div>
-                <div style="border-left:1px solid var(--wire);padding-left:2rem;display:flex;align-items:flex-end">
-                    <div style="width:100%;background:var(--bg);padding:1.5rem;border:1px solid var(--wire)">
-                        <p
-                            style="font-family:var(--mono);font-size:0.55rem;color:var(--text-dim);font-style:italic;margin-bottom:1rem">
-                            "The open-source agent operating system. One binary. Organ System. Memory Ladder.
-                            Self-Modification."</p>
-                        <div style="height:1px;width:100%;background:var(--wire)"></div>
-                    </div>
+                <div class="footer-col">
+                    <div class="footer-col-title">Company</div>
+                    <a href="#company">About</a>
+                    <a href="mailto:hello@aegntic.ai">Contact</a>
+                    <a href="#">Careers</a>
                 </div>
             </div>
         </div>
         <div class="footer-bar">
             <div class="container" style="display:flex;justify-content:space-between;align-items:center">
-                <span>SYSTEM_STATUS :: OPERATIONAL // CODEBASE_INDEXED</span>
-                <span>TERMINAL_LOG_CR.2.1</span>
+                <span>SYSTEM_STATUS :: OPERATIONAL // aegntic.ai</span>
+                <span>TERMINAL_LOG_AE.1.0</span>
             </div>
         </div>
     </footer>

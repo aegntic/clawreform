@@ -1,105 +1,147 @@
-# clawREFORM by aegntic.ai
-## The Self-Evolving Agent OS
+# aegntic.ai — The Agentic Intelligence Company
 
 ---
 
-### 🎯 The One-Line Pitch
+## 🎯 Company Overview
 
-clawREFORM is the first open-source Agent Operating System that can safely rewrite its own code through natural language — built in Rust, production-ready from day one.
+**aegntic.ai** builds the infrastructure layer for autonomous AI systems. We create open-source tools that enable AI to think, evolve, and scale — without constant human intervention.
 
----
-
-### 🔄 The Problem
-
-Today's AI agent frameworks are stuck in 2023:
-- ❌ Static after deployment — can't improve without developers
-- ❌ Python-based — memory bloat, GIL limits, slow startup
-- ❌ Bolt-on security — audit logs and approvals are afterthoughts
-- ❌ Shallow skill sets — you build everything from scratch
-
-The average team spends $200K–500K/year maintaining AI systems that can't maintain themselves.
+Our mission: make AI systems that can maintain themselves, so your team can focus on what matters.
 
 ---
 
-### 💡 Our Answer: The Self-Modification Kernel
+## 📦 Product Portfolio
 
-clawREFORM can:
+### 1. clawREFORM (Flagship)
+**The Self-Evolving Agent Operating System**
 
-1. **Receive** a natural language request ("add caching to the API")
-2. **Analyse** the codebase — map affected modules, estimate risk
-3. **Snapshot** — atomic backup before touching a line
-4. **Apply** a scoped, validated diff
-5. **Validate** — `cargo build + test + clippy`, zero-tolerance
-6. **Rollback** — auto-restore from snapshot if anything fails
-
-No human in the loop required. Full audit trail if you want it.
-
----
-
-### 📦 What's Included
-
-| Component | Count | Examples |
-|-----------|-------|---------|
-| Skills | 60+ | Docker, K8s, AWS, GCP, security audit, Ansible |
-| Hands | 7 | Browser, Clip, Lead, Collector, Predictor, Researcher, Twitter |
-| Channels | 25+ | Slack, Discord, Telegram, WhatsApp, Teams, Matrix |
-| MCP Servers | 23+ | GitHub, GitLab, Playwright, Supabase, memory, filesystem |
-
----
-
-### 🏗️ Technical Foundation
+The first open-source Agent OS that can safely rewrite its own code through natural language.
 
 | Metric | Value |
 |--------|-------|
 | Language | Rust |
-| Crates | 14 modular crates |
-| Tests | 1,744+ |
-| Clippy warnings | 0 |
-| Networking | Tailscale mesh (P2P) |
-| Multi-agent | A2A protocol |
+| Lines of Code | 146K+ |
+| Tests | 1,744+ passing |
+| Clippy Warnings | 0 |
+| LLM Providers | 20+ |
+| Models Supported | 141 |
+| Bundled Skills | 61 |
+| Channels | 25+ |
 | License | MIT / Apache-2.0 |
 
+**Key Innovations:**
+- **Organ System** — Agent identity as discrete, git-trackable files
+- **Memory Ladder** — 4-tier memory with biological decay
+- **Self-Modification Engine** — Safe code rewriting with backup/validate/rollback
+
+### 2. OpenClaw Extensions
+**Extension Platform for clawREFORM**
+
+Extend clawREFORM with custom skills, hands, and channel adapters.
+
+**Categories:**
+- 🔐 Security Audit — Vulnerability scanning, OWASP compliance
+- 🐳 Infrastructure — Docker, Kubernetes, Ansible
+- ☁️ Cloud — AWS, GCP, Azure modules
+- 📊 Analytics — Usage metrics, cost tracking
+- 🔗 Integrations — Slack, Discord, Telegram, Jira, Linear
+- 🤖 Code Generation — Multi-language, refactoring, docs
+
+### 3. ae.ltd Services
+**Enterprise AI Infrastructure**
+
+Managed deployments, custom integrations, and enterprise support for organizations adopting agentic AI at scale.
+
+- Managed Hosting
+- Custom Training
+- SLA Support
+- Private Deployments
+
 ---
 
-### 🎯 Target Users
+## 🏗️ Technical Foundation
 
-1. **DevOps Engineers** — automate infra, deploys, and incident response
-2. **Security Teams** — continuous vuln scanning, compliance, threat analysis
-3. **Developers** — code review bots, test generation, documentation
+| Capability | Details |
+|------------|---------|
+| Architecture | Kernel-level OS (not SDK/library) |
+| Runtime | Single binary, zero dependencies |
+| Multi-tenant | A2A protocol for agent-to-agent |
+| Networking | Tailscale mesh (P2P optional) |
+| Safety | Backup → Validate → Rollback pipeline |
+| Memory | 4-tier with biological decay |
+
+---
+
+## 🎯 Target Users
+
+1. **DevOps Engineers** — Automate infra, deploys, incident response
+2. **Security Teams** — Continuous vuln scanning, compliance
+3. **Developers** — Code review bots, test generation, docs
 4. **Data Teams** — ETL pipelines, ML workflows, dashboards
-5. **Startups** — ship AI-powered products without Python overhead
+5. **Startups** — Ship AI products without Python overhead
+6. **Enterprise** — Managed AI infrastructure at scale
 
 ---
 
-### 🚀 Get Running in 3 Commands
+## 🚀 Quick Start
 
 ```bash
+# Install clawREFORM
 curl -fsSL https://clawreform.com/install | sh
+
+# Start the daemon
 clawreform start
-clawreform chat "Hello!"
+
+# Chat with your agent
+clawreform chat "Hello, clawREFORM!"
+
 # Dashboard → http://127.0.0.1:4332
 ```
 
 ---
 
-### 🔗 Links
+## 📊 Competitive Position
+
+| Feature | Typical Frameworks | clawREFORM |
+|---------|-------------------|------------|
+| Architecture | SDK / library | Kernel-level OS |
+| Identity | System prompt | Organ files (git-trackable) |
+| Memory | Flat vector store | 4-tier + decay |
+| Self-Modification | Not present | Full pipeline + safety |
+| Providers | 2–3 manual | 20+ circuit breaker |
+| Language | Python / TypeScript | Rust — zero deps |
+| Channels | HTTP only | IRC, Email, WhatsApp, Discord, Telegram |
+| Autonomy | Triggered only | Cron, heartbeats, background |
+
+---
+
+## 🔗 Links
 
 | Resource | URL |
 |----------|-----|
 | GitHub | github.com/aegntic/clawreform |
-| Website | clawreform.com |
+| Website | aegntic.ai |
+| npm SDK | npmjs.com/package/@clawreform/sdk |
 | Community | skool.com/autoclaw |
 | X / Twitter | x.com/clawreform |
 
 ---
 
-### 📞 Contact
+## 📞 Contact
 
-- Email: hello@clawreform.com
-- X/Twitter: @clawreform
-- Community: skool.com/autoclaw
+- **Email:** hello@aegntic.ai
+- **Enterprise Sales:** sales@ae.ltd
+- **X/Twitter:** @clawreform, @aegntic_ai
+- **Community:** skool.com/autoclaw
 
 ---
 
-*clawREFORM by aegntic.ai — The self-evolving Agent OS* 🦾
+## 📜 Licensing
 
+- **clawREFORM:** Apache-2.0 / MIT
+- **OpenClaw Extensions:** Apache-2.0 / MIT
+- **ae.ltd Services:** Enterprise license
+
+---
+
+*aegntic.ai — The agentic intelligence company. Building AI infrastructure that evolves.* 🦾
