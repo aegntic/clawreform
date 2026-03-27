@@ -23,6 +23,14 @@ Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai 
 | [Workflows](workflows.md) | Multi-agent pipelines with branching, fan-out, loops, and triggers |
 | [Security](security.md) | 16 defense-in-depth security systems |
 
+## Extensions
+
+| Guide | Description |
+|-------|-------------|
+| [DevScribe README](../extensions/devscribe/README.md) | Dashboard companion — notes, capture, inspection, GitHub issues |
+| [ClawPrompt README](../extensions/clawprompt/README.md) | AI prompt template manager — create, organize, and insert templates |
+| [Extensions User Guide](extensions-user-guide.md) | Combined deep-dive guide for both extensions |
+
 ## Integrations
 
 | Guide | Description |
