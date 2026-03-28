@@ -1,11 +1,22 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@sota/shared-ui';
 import { useScrollAnimation } from '@sota/shared-ui';
 import Link from 'next/link';
 
 export function HeroSection() {
   const { ref: heroRef, animationStyles } = useScrollAnimation({ delay: 0 });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   return (
     <section
@@ -13,14 +24,35 @@ export function HeroSection() {
       style={animationStyles}
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
     >
-      {/* Background gradient - gold tinted */}
-      <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-surface-950 to-surface-950" />
+      {/* Background video */}
+      <video
+        ref={videoRef}
+        autoPlay={!prefersReducedMotion}
+        muted
+        loop={!prefersReducedMotion}
+        playsInline
+        preload="metadata"
+        poster="/hero-poster.jpg"
+        className="absolute inset-0 w-full h-full object-cover"
+        aria-hidden="true"
+      >
+        <source src="/hero-scroll.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dark gradient overlay — fades video into surface-950 background */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(to bottom, rgba(9,9,11,0.4) 0%, rgba(9,9,11,0.6) 40%, rgba(9,9,11,0.92) 80%, rgba(9,9,11,1) 100%)',
+        }}
+      />
 
       {/* Grid pattern */}
       <div
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 opacity-[0.08]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0)`,
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
           backgroundSize: '40px 40px',
         }}
       />
@@ -28,7 +60,7 @@ export function HeroSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
         <div className="text-center">
           {/* Badge */}
-          <div className="inline-flex items-center rounded-full border border-surface-700 bg-surface-900/50 px-4 py-1.5 text-sm text-surface-300 mb-8">
+          <div className="inline-flex items-center rounded-full border border-surface-700 bg-surface-900/50 backdrop-blur-sm px-4 py-1.5 text-sm text-surface-300 mb-8">
             <span className="relative flex h-2 w-2 mr-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-gold opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-gold" />
