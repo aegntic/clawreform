@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { HeroSection } from '@/components/sections/HeroSection';
 import { FeaturesSection } from '@/components/sections/FeaturesSection';
 import { ExtensionsSection } from '@/components/sections/ExtensionsSection';
+import { HowItWorksSection } from '@/components/sections/HowItWorksSection';
 import { CTASection } from '@/components/sections/CTASection';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/components/Footer';
@@ -24,6 +25,7 @@ export default function HomePage() {
         <HeroSection />
         <ExtensionsSection />
         <FeaturesSection />
+        <HowItWorksSection />
         <CTASection />
       </main>
 
