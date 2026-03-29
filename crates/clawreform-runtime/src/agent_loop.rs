@@ -48,8 +48,8 @@ const TOOL_TIMEOUT_SECS: u64 = 120;
 /// Raised from 3 to 5 to allow longer-form generation.
 const MAX_CONTINUATIONS: u32 = 5;
 
-/// Maximum message history size before auto-trimming to prevent context overflow.
-const MAX_HISTORY_MESSAGES: usize = 20;
+/// Emergency message history ceiling after recovery and compaction safeguards run.
+const EMERGENCY_HISTORY_MESSAGE_LIMIT: usize = 100;
 
 /// Default context window size (tokens) for token-based trimming.
 const DEFAULT_CONTEXT_WINDOW: usize = 200_000;
@@ -89,6 +89,58 @@ pub struct AgentLoopResult {
     pub silent: bool,
     /// Reply directives extracted from the agent's response.
     pub directives: clawreform_types::message::ReplyDirectives,
+}
+
+fn log_repair_stats(
+    agent_name: &str,
+    loop_kind: &str,
+    repair_stats: &crate::session_repair::RepairStats,
+) {
+    let major_changes = repair_stats.orphaned_results_removed > 0
+        || repair_stats.results_reordered > 0
+        || repair_stats.synthetic_results_inserted > 0
+        || repair_stats.duplicates_removed > 0;
+    let minor_changes =
+        repair_stats.empty_messages_removed > 0 || repair_stats.messages_merged > 0;
+
+    if major_changes {
+        warn!(
+            agent = %agent_name,
+            loop_kind,
+            orphaned_results_removed = repair_stats.orphaned_results_removed,
+            empty_messages_removed = repair_stats.empty_messages_removed,
+            messages_merged = repair_stats.messages_merged,
+            results_reordered = repair_stats.results_reordered,
+            synthetic_results_inserted = repair_stats.synthetic_results_inserted,
+            duplicates_removed = repair_stats.duplicates_removed,
+            "Session repair modified history before LLM call"
+        );
+    } else if minor_changes {
+        debug!(
+            agent = %agent_name,
+            loop_kind,
+            empty_messages_removed = repair_stats.empty_messages_removed,
+            messages_merged = repair_stats.messages_merged,
+            "Session repair normalized history before LLM call"
+        );
+    }
+}
+
+fn apply_emergency_history_limit(messages: &mut Vec<Message>, agent_name: &str, loop_kind: &str) {
+    if messages.len() <= EMERGENCY_HISTORY_MESSAGE_LIMIT {
+        return;
+    }
+
+    let trim_count = messages.len() - EMERGENCY_HISTORY_MESSAGE_LIMIT;
+    warn!(
+        agent = %agent_name,
+        loop_kind,
+        total_messages = messages.len(),
+        trimming = trim_count,
+        limit = EMERGENCY_HISTORY_MESSAGE_LIMIT,
+        "Emergency history trim applied after recovery/compaction safeguards"
+    );
+    messages.drain(..trim_count);
 }
 
 /// Run the agent execution loop for a single user message.
@@ -214,23 +266,11 @@ pub async fn run_agent_loop(
         .collect();
 
     // Validate and repair session history (drop orphans, merge consecutive)
-    let mut messages = crate::session_repair::validate_and_repair(&llm_messages);
+    let (mut messages, repair_stats) =
+        crate::session_repair::validate_and_repair_with_stats(&llm_messages);
+    log_repair_stats(&manifest.name, "non_streaming", &repair_stats);
     let mut total_usage = TokenUsage::default();
     let final_response;
-
-    // Safety valve: trim excessively long message histories to prevent context overflow.
-    // The full compaction system handles sophisticated summarization, but this prevents
-    // the catastrophic case where 200+ messages cause instant context overflow.
-    if messages.len() > MAX_HISTORY_MESSAGES {
-        let trim_count = messages.len() - MAX_HISTORY_MESSAGES;
-        warn!(
-            agent = %manifest.name,
-            total_messages = messages.len(),
-            trimming = trim_count,
-            "Trimming old messages to prevent context overflow"
-        );
-        messages.drain(..trim_count);
-    }
 
     // Use autonomous config max_iterations if set, else default
     let max_iterations = manifest
@@ -263,6 +303,7 @@ pub async fn run_agent_loop(
         if recovery == RecoveryStage::FinalError {
             warn!("Context overflow unrecoverable — suggest /reset or /compact");
         }
+        apply_emergency_history_limit(&mut messages, &manifest.name, "non_streaming");
 
         // Context guard: compact oversized tool results before LLM call
         apply_context_guard(&mut messages, &context_budget, available_tools);
@@ -1085,21 +1126,11 @@ pub async fn run_agent_loop_streaming(
         .collect();
 
     // Validate and repair session history (drop orphans, merge consecutive)
-    let mut messages = crate::session_repair::validate_and_repair(&llm_messages);
+    let (mut messages, repair_stats) =
+        crate::session_repair::validate_and_repair_with_stats(&llm_messages);
+    log_repair_stats(&manifest.name, "streaming", &repair_stats);
     let mut total_usage = TokenUsage::default();
     let final_response;
-
-    // Safety valve: trim excessively long message histories to prevent context overflow.
-    if messages.len() > MAX_HISTORY_MESSAGES {
-        let trim_count = messages.len() - MAX_HISTORY_MESSAGES;
-        warn!(
-            agent = %manifest.name,
-            total_messages = messages.len(),
-            trimming = trim_count,
-            "Trimming old messages to prevent context overflow (streaming)"
-        );
-        messages.drain(..trim_count);
-    }
 
     // Use autonomous config max_iterations if set, else default
     let max_iterations = manifest
@@ -1148,6 +1179,7 @@ pub async fn run_agent_loop_streaming(
                 }
             }
         }
+        apply_emergency_history_limit(&mut messages, &manifest.name, "streaming");
 
         // Context guard: compact oversized tool results before LLM call
         apply_context_guard(&mut messages, &context_budget, available_tools);
@@ -1827,8 +1859,16 @@ mod tests {
     }
 
     #[test]
-    fn test_max_history_messages() {
-        assert_eq!(MAX_HISTORY_MESSAGES, 20);
+    fn test_emergency_history_message_limit_constant() {
+        assert_eq!(EMERGENCY_HISTORY_MESSAGE_LIMIT, 100);
+    }
+
+    #[test]
+    fn test_emergency_history_limit_exceeds_compaction_thresholds() {
+        let config = crate::compactor::CompactionConfig::default();
+        assert!(EMERGENCY_HISTORY_MESSAGE_LIMIT > config.threshold);
+        assert!(EMERGENCY_HISTORY_MESSAGE_LIMIT > config.keep_recent);
+        assert!(EMERGENCY_HISTORY_MESSAGE_LIMIT >= config.threshold * 3);
     }
 
     // --- Integration tests for empty response guards ---
@@ -1841,6 +1881,83 @@ mod tests {
                 ..Default::default()
             },
             ..Default::default()
+        }
+    }
+
+    fn alternating_history_with_sentinel(sentinel: &str, turns: usize) -> Vec<Message> {
+        let mut messages = Vec::with_capacity(turns * 2);
+        for i in 0..turns {
+            let user_text = if i == 0 {
+                format!("user-{i} {sentinel}")
+            } else {
+                format!("user-{i}")
+            };
+            messages.push(Message::user(user_text));
+            messages.push(Message::assistant(format!("assistant-{i}")));
+        }
+        messages
+    }
+
+    fn message_contains_text(message: &Message, needle: &str) -> bool {
+        match &message.content {
+            MessageContent::Text(text) => text.contains(needle),
+            MessageContent::Blocks(blocks) => blocks.iter().any(|block| match block {
+                ContentBlock::Text { text } => text.contains(needle),
+                _ => false,
+            }),
+        }
+    }
+
+    fn message_text(message: &Message) -> Option<&str> {
+        match &message.content {
+            MessageContent::Text(text) => Some(text.as_str()),
+            MessageContent::Blocks(blocks) => blocks.iter().find_map(|block| match block {
+                ContentBlock::Text { text } => Some(text.as_str()),
+                _ => None,
+            }),
+        }
+    }
+
+    /// Mock driver that reports whether a sentinel from earlier history survived.
+    struct HistorySentinelDriver {
+        sentinel: String,
+    }
+
+    impl HistorySentinelDriver {
+        fn new(sentinel: &str) -> Self {
+            Self {
+                sentinel: sentinel.to_string(),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl LlmDriver for HistorySentinelDriver {
+        async fn complete(
+            &self,
+            request: CompletionRequest,
+        ) -> Result<CompletionResponse, LlmError> {
+            let response_text = if request
+                .messages
+                .iter()
+                .any(|message| message_contains_text(message, &self.sentinel))
+            {
+                "sentinel-present"
+            } else {
+                "sentinel-missing"
+            };
+
+            Ok(CompletionResponse {
+                content: vec![ContentBlock::Text {
+                    text: response_text.to_string(),
+                }],
+                stop_reason: StopReason::EndTurn,
+                tool_calls: vec![],
+                usage: TokenUsage {
+                    input_tokens: 10,
+                    output_tokens: 4,
+                },
+            })
         }
     }
 
@@ -2118,6 +2235,49 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_non_streaming_history_continuity_above_twenty_messages() {
+        let memory = clawreform_memory::MemorySubstrate::open_in_memory(0.01).unwrap();
+        let agent_id = clawreform_types::agent::AgentId::new();
+        let sentinel = "SENTINEL-KEEP-ME";
+        let mut session = clawreform_memory::session::Session {
+            id: clawreform_types::agent::SessionId::new(),
+            agent_id,
+            messages: alternating_history_with_sentinel(sentinel, 12),
+            context_window_tokens: 0,
+            label: None,
+        };
+        let manifest = test_manifest();
+        let driver: Arc<dyn LlmDriver> = Arc::new(HistorySentinelDriver::new(sentinel));
+
+        let result = run_agent_loop(
+            &manifest,
+            "Follow up on the earlier thread.",
+            &mut session,
+            &memory,
+            driver,
+            &[],
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None, // on_phase
+            None, // media_engine
+            None, // tts_engine
+            None, // docker_config
+            None, // hooks
+            None, // context_window_tokens
+            None, // process_manager
+        )
+        .await
+        .expect("Loop should preserve short multi-turn history");
+
+        assert_eq!(result.response, "sentinel-present");
+    }
+
+    #[tokio::test]
     async fn test_thinking_remains_visible_but_is_not_saved_in_session_text() {
         let memory = clawreform_memory::MemorySubstrate::open_in_memory(0.01).unwrap();
         let agent_id = clawreform_types::agent::AgentId::new();
@@ -2386,8 +2546,58 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_max_history_messages_constant() {
-        assert_eq!(MAX_HISTORY_MESSAGES, 20);
+    async fn test_streaming_history_continuity_above_twenty_messages() {
+        let memory = clawreform_memory::MemorySubstrate::open_in_memory(0.01).unwrap();
+        let agent_id = clawreform_types::agent::AgentId::new();
+        let sentinel = "SENTINEL-KEEP-ME-STREAMING";
+        let mut session = clawreform_memory::session::Session {
+            id: clawreform_types::agent::SessionId::new(),
+            agent_id,
+            messages: alternating_history_with_sentinel(sentinel, 12),
+            context_window_tokens: 0,
+            label: None,
+        };
+        let manifest = test_manifest();
+        let driver: Arc<dyn LlmDriver> = Arc::new(HistorySentinelDriver::new(sentinel));
+        let (tx, _rx) = mpsc::channel(64);
+
+        let result = run_agent_loop_streaming(
+            &manifest,
+            "Follow up on the earlier streaming thread.",
+            &mut session,
+            &memory,
+            driver,
+            &[],
+            None,
+            tx,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None, // on_phase
+            None, // media_engine
+            None, // tts_engine
+            None, // docker_config
+            None, // hooks
+            None, // context_window_tokens
+            None, // process_manager
+        )
+        .await
+        .expect("Streaming loop should preserve short multi-turn history");
+
+        assert_eq!(result.response, "sentinel-present");
+    }
+
+    #[test]
+    fn test_emergency_history_limit_keeps_newest_messages() {
+        let mut messages = alternating_history_with_sentinel("SENTINEL-DROP-ME", 55);
+        apply_emergency_history_limit(&mut messages, "test-agent", "unit_test");
+
+        assert_eq!(messages.len(), EMERGENCY_HISTORY_MESSAGE_LIMIT);
+        assert_eq!(message_text(&messages[0]), Some("user-5"));
+        assert_eq!(message_text(messages.last().unwrap()), Some("assistant-54"));
     }
 
     #[tokio::test]

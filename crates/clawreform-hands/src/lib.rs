@@ -112,6 +112,12 @@ pub struct HandRequirement {
     pub requirement_type: RequirementType,
     /// The value to check (binary name, env var name, etc.).
     pub check_value: String,
+    /// Optional minimum version for binary requirements (inclusive).
+    #[serde(default)]
+    pub min_version: Option<String>,
+    /// Arguments used to query a binary version. Defaults to `--version` when omitted.
+    #[serde(default)]
+    pub version_args: Vec<String>,
     /// Human-readable description of why this is needed.
     #[serde(default)]
     pub description: Option<String>,
@@ -453,6 +459,7 @@ key = "test_bin"
 label = "test must be installed"
 requirement_type = "binary"
 check_value = "test"
+min_version = "1.88.0"
 
 [agent]
 name = "test-hand"
@@ -466,7 +473,39 @@ metrics = []
         assert_eq!(def.id, "test");
         assert_eq!(def.category, HandCategory::Content);
         assert_eq!(def.requires.len(), 1);
+        assert_eq!(def.requires[0].min_version.as_deref(), Some("1.88.0"));
         assert_eq!(def.agent.name, "test-hand");
+    }
+
+    #[test]
+    fn hand_definition_version_requirement_backward_compat() {
+        let toml_str = r#"
+id = "test"
+name = "Test Hand"
+description = "A test hand"
+category = "content"
+tools = []
+
+[[requires]]
+key = "rustc"
+label = "Rust 1.88.0 or higher"
+requirement_type = "binary"
+check_value = "rustc"
+min_version = "1.88.0"
+version_args = ["--version"]
+
+[agent]
+name = "test-hand"
+description = "Test agent"
+system_prompt = "You are a test agent."
+
+[dashboard]
+metrics = []
+"#;
+        let def: HandDefinition = toml::from_str(toml_str).unwrap();
+        assert_eq!(def.requires.len(), 1);
+        assert_eq!(def.requires[0].min_version.as_deref(), Some("1.88.0"));
+        assert_eq!(def.requires[0].version_args, vec!["--version"]);
     }
 
     #[test]

@@ -3583,7 +3583,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
                           <span :style="req.satisfied ? 'color:var(--success)' : 'color:var(--danger)'"
                             x-text="req.satisfied ? '\u2713' : '\u2717'"></span>
                           <span x-text="req.label"></span>
-                          <code class="text-xs text-dim" x-text="req.check_value" style="margin-left:auto"></code>
+                          <code class="text-xs text-dim" x-text="getRequirementCheckLabel(req)" style="margin-left:auto"></code>
                         </div>
                       </template>
                     </div>
@@ -3666,7 +3666,7 @@ args = ["-y", "@modelcontextprotocol/server-filesystem", "/path"]</pre>
 
                           <!-- Satisfied: green message -->
                           <template x-if="req.satisfied">
-                            <div class="dep-met-msg">&check; Detected on your system</div>
+                            <div class="dep-met-msg">&check; <span x-text="getRequirementMetLabel(req)"></span></div>
                           </template>
 
                           <!-- Not satisfied: show install instructions -->
