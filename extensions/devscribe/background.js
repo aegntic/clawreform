@@ -2,6 +2,13 @@ const KEYS = {
   NOTES: "devscribe_notes",
   TOKEN: "devscribe_github_token",
   REPO: "devscribe_github_repo",
+  SETTINGS: "devscribe_settings",
+};
+
+const DEFAULT_SETTINGS = {
+  tooltip_enabled: true,
+  search_history: [],
+  keyboard_shortcuts: true,
 };
 
 function uuid() {
@@ -32,6 +39,17 @@ async function setGithubConfig({ token, repo }) {
   await chrome.storage.local.set(updates);
 }
 
+async function getSettings() {
+  const res = await chrome.storage.local.get(KEYS.SETTINGS);
+  return { ...DEFAULT_SETTINGS, ...(res[KEYS.SETTINGS] || {}) };
+}
+
+async function saveSettings(settings) {
+  const current = await getSettings();
+  const merged = { ...current, ...settings };
+  await chrome.storage.local.set({ [KEYS.SETTINGS]: merged });
+}
+
 async function handleSaveNote(note) {
   const notes = await getNotes();
   const entry = {
@@ -43,7 +61,7 @@ async function handleSaveNote(note) {
     screenshot: note.screenshot || null,
     element: note.element || null,
     tags: note.tags || [],
-    created_at: new Date().toISOString(),
+    created_at: note.created_at || new Date().toISOString(),
   };
   notes.push(entry);
   await saveNotes(notes);
@@ -132,6 +150,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
     case "SET_GITHUB_CONFIG":
       setGithubConfig(msg).then(() =>
+        sendResponse({ success: true })
+      );
+      return true;
+    case "GET_SETTINGS":
+      getSettings().then((settings) =>
+        sendResponse({ success: true, data: settings })
+      );
+      return true;
+    case "SAVE_SETTINGS":
+      saveSettings(msg.settings || msg).then(() =>
         sendResponse({ success: true })
       );
       return true;
