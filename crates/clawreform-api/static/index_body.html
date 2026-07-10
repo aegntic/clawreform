@@ -77,14 +77,10 @@
       @mouseenter="onSidebarMouseEnter()" @mouseleave="onSidebarMouseLeave()"
       @focusin="onSidebarFocusIn()" @focusout="onSidebarFocusOut()">
       <div class="sidebar-header sidebar-header-minimal">
-        <button class="sidebar-home-btn sidebar-home-icon-btn" @click="navigate('overview')" title="Home"
-          aria-label="Go to Home">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m3 11 9-7 9 7" />
-            <path d="M5 10v10h14V10" />
-            <path d="M10 20v-6h4v6" />
-          </svg>
-        </button>
+         <button class="sidebar-home-btn sidebar-home-icon-btn" @click="navigate('overview')" title="Home"
+           aria-label="Go to Home">
+           <img src="/logo.png" alt="Home" style="width:20px;height:20px;object-fit:contain;">
+         </button>
       </div>
 
       <div class="sidebar-status" :class="{ offline: !connected && !$store.app.booting }">
@@ -443,8 +439,8 @@
             </div>
             <div class="dashboard-hero-screen" x-show="!loading && !loadError && isBeginnerSetupView"
               style="animation:fadeIn 0.3s var(--ease-smooth)">
-              <div class="dashboard-hero-title">Dashboard: Asset Utilization</div>
-              <div class="dashboard-hero-subtitle">Real-time insights for clawREFORM assets</div>
+              <div class="dashboard-hero-title">Welcome to clawREFORM</div>
+              <div class="dashboard-hero-subtitle">Self-evolving Agent Operating System by aegntic.ai</div>
               <img src="/logo.png" alt="clawREFORM by aegntic.ai" class="dashboard-hero-logo">
               <button class="dashboard-hero-cta" @click="location.hash='wizard'">Get Started</button>
             </div>
@@ -489,6 +485,18 @@
                 <button class="btn btn-primary" @click="location.hash='wizard'">Launch Setup Wizard</button>
                 <button class="btn btn-ghost" @click="location.hash='settings'">Configure Manually</button>
                 <button class="btn btn-ghost" @click="$store.app.dismissOnboarding()">Dismiss</button>
+              </div>
+            </div>
+            <!-- Start Here card for beginner view -->
+            <div class="card card-accent-left card-accent-success mb-3" x-show="!loading && !loadError && isBeginnerSetupView">
+              <div class="card-header">Start Here</div>
+              <p class="text-xs text-dim" style="margin:8px 0 12px">
+                Complete setup first, then the full dashboard unlocks automatically.
+              </p>
+              <div class="flex gap-2" style="flex-wrap:wrap">
+                <button class="btn btn-primary btn-sm" @click="location.hash='wizard'">Open Setup Wizard</button>
+                <button class="btn btn-ghost btn-sm" @click="location.hash='settings'">Configure Provider</button>
+                <button class="btn btn-ghost btn-sm" @click="location.hash='agents'">Create First Agent</button>
               </div>
             </div>
             <div x-show="!loading && !loadError && !isBeginnerSetupView" style="animation:fadeIn 0.3s">

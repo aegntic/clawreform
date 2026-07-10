@@ -1,0 +1,14 @@
+# Cloudflare Pages configuration for clawreform.com
+# Deploy: npx wrangler pages deploy out --project-name clawreform
+
+name = "clawreform"
+compatibility_date = "2024-12-01"
+pages_build_output_dir = "./out"
+
+# Pages Functions run from the /functions directory automatically.
+# Static assets are served from the /out directory (Next.js static export).
+
+[[d1_databases]]
+binding = "DB"
+database_name = "clawreform-waitlist"
+database_id = "e834cde9-61f5-4ccd-b7cf-aa9fe125dc3c"

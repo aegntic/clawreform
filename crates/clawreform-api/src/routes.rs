@@ -2541,6 +2541,124 @@ pub async fn health_detail(State(state): State<Arc<AppState>>) -> impl IntoRespo
 }
 
 // ---------------------------------------------------------------------------
+// Extension sync endpoint (ClawPrompt browser extension)
+// ---------------------------------------------------------------------------
+
+/// Request from extension to sync with CLI
+#[derive(serde::Deserialize)]
+pub struct ExtensionSyncRequest {
+    /// Extension version
+    pub version: Option<String>,
+    /// Current tab URL (for context)
+    pub current_tab: Option<String>,
+    /// Captured chat data from current tab
+    pub captured_chat: Option<serde_json::Value>,
+    /// Selected prompt to send to CLI for logging/processing
+    pub injected_prompt: Option<String>,
+}
+
+/// Response to extension with sync data
+#[derive(serde::Serialize)]
+pub struct ExtensionSyncResponse {
+    /// CLI version
+    pub cli_version: String,
+    /// Server timestamp
+    pub timestamp: String,
+    /// Number of active agents
+    pub active_agents: usize,
+    /// Whether CLI is healthy
+    pub healthy: bool,
+    /// Optional message to display in extension
+    pub message: Option<String>,
+    /// Prompts to add to extension library (if any)
+    pub new_prompts: Option<Vec<PromptDefinition>>,
+}
+
+/// Prompt definition for extension
+#[derive(serde::Serialize)]
+pub struct PromptDefinition {
+    pub title: String,
+    pub text: String,
+    pub category: String,
+}
+
+/// POST /api/extension/sync — Bidirectional sync with ClawPrompt browser extension.
+///
+/// This endpoint enables:
+/// - Extension → CLI: Send captured chats, log injected prompts
+/// - CLI → Extension: Send new prompts, status updates
+///
+/// No authentication required (localhost only via CORS restrictions).
+pub async fn extension_sync(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<ExtensionSyncRequest>,
+) -> impl IntoResponse {
+    // Log what we received from extension
+    if let Some(ref prompt) = req.injected_prompt {
+        tracing::info!(
+            target: "extension_sync",
+            prompt_preview = prompt.chars().take(100).collect::<String>(),
+            "Extension injected prompt"
+        );
+    }
+
+    if let Some(ref chat) = req.captured_chat {
+        tracing::debug!(
+            target: "extension_sync",
+            chat_preview = format!("{:?}", chat).chars().take(200).collect::<String>(),
+            "Extension captured chat"
+        );
+    }
+
+    // Get current CLI status
+    let agents = state.kernel.registry.list();
+    let active_count = agents
+        .iter()
+        .filter(|a| matches!(a.state, clawreform_types::agent::AgentState::Running))
+        .count();
+
+    // Check database health
+    let shared_id = clawreform_types::agent::AgentId(uuid::Uuid::from_bytes([
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    ]));
+    let db_ok = state
+        .kernel
+        .memory
+        .structured_get(shared_id, "__health_check__")
+        .is_ok();
+
+    // Build response
+    let response = ExtensionSyncResponse {
+        cli_version: env!("CARGO_PKG_VERSION").to_string(),
+        timestamp: chrono::Utc::now().to_rfc3339(),
+        active_agents: active_count,
+        healthy: db_ok,
+        message: if active_count == 0 {
+            Some("No agents running. Spawn an agent to begin.".to_string())
+        } else {
+            Some(format!("{} agent(s) active", active_count))
+        },
+        new_prompts: None, // Future: push new prompts from CLI to extension
+    };
+
+    Json(response)
+}
+
+/// GET /api/extension/prompts — Get prompts from CLI for extension library.
+///
+/// Returns prompts that can be added to the extension's library.
+/// Future: could be user-customized prompts stored in CLI.
+pub async fn extension_prompts(State(_state): State<Arc<AppState>>) -> impl IntoResponse {
+    // For now, return empty — extension has its own built-in prompts
+    // Future: return user-customized prompts from CLI storage
+    let prompts: Vec<PromptDefinition> = vec![];
+    Json(serde_json::json!({
+        "prompts": prompts,
+        "version": env!("CARGO_PKG_VERSION"),
+    }))
+}
+
+// ---------------------------------------------------------------------------
 // Prometheus metrics endpoint
 // ---------------------------------------------------------------------------
 

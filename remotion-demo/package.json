@@ -4,7 +4,8 @@
   "description": "ClawReform Demo Video",
   "scripts": {
     "start": "remotion studio",
-    "render": "remotion render ClawReformDemo ../demo/clawreform-remotion.mp4"
+    "render": "remotion render ClawReformDemo ../demo/clawreform-remotion.mp4",
+    "render:site-sequences": "bash scripts/render-site-sequences.sh"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.431",

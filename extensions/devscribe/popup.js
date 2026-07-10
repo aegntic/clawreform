@@ -34,34 +34,42 @@ async function sendMessageToTab(tabId, msg) {
 async function init() {
   const tab = await getDashboardTab();
   setConnected(!!tab);
+  console.log("Popup init, dashboard tab:", tab);
 
   await loadNoteCount();
 
-  $("btnNewNote").addEventListener("click", async () => {
-    if (!tab) return;
-    await sendMessageToTab(tab.id, { type: "OPEN_PANEL" });
-    window.close();
-  });
+   $("btnNewNote").addEventListener("click", async () => {
+     console.log("New Note clicked");
+     if (!tab) { console.log("No dashboard tab found"); return; }
+     console.log("Sending OPEN_PANEL to tab", tab.id);
+     await sendMessageToTab(tab.id, { type: "OPEN_PANEL" });
+     window.close();
+   });
 
-  $("btnElementSelect").addEventListener("click", async () => {
-    if (!tab) return;
-    await sendMessageToTab(tab.id, { type: "TOGGLE_ELEMENT_SELECT" });
-    window.close();
-  });
+   $("btnElementSelect").addEventListener("click", async () => {
+     console.log("Element Select clicked");
+     if (!tab) { console.log("No dashboard tab found"); return; }
+     console.log("Sending TOGGLE_ELEMENT_SELECT to tab", tab.id);
+     await sendMessageToTab(tab.id, { type: "TOGGLE_ELEMENT_SELECT" });
+     window.close();
+   });
 
-  $("btnExport").addEventListener("click", async () => {
-    const res = await chrome.runtime.sendMessage({ type: "GET_NOTES" });
-    if (!res?.success || res.data.length === 0) return;
-    const blob = new Blob([JSON.stringify(res.data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `devscribe-notes-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
+   $("btnExport").addEventListener("click", async () => {
+     console.log("Export clicked");
+     const res = await chrome.runtime.sendMessage({ type: "GET_NOTES" });
+     console.log("GET_NOTES response:", res);
+     if (!res?.success || res.data.length === 0) { console.log("No notes to export"); return; }
+     const blob = new Blob([JSON.stringify(res.data, null, 2)], {
+       type: "application/json",
+     });
+     const url = URL.createObjectURL(blob);
+     const a = document.createElement("a");
+     a.href = url;
+     a.download = `devscribe-notes-${new Date().toISOString().slice(0, 10)}.json`;
+     a.click();
+     URL.revokeObjectURL(url);
+     console.log("Export completed");
+   });
 
   $("optionsLink").addEventListener("click", (e) => {
     e.preventDefault();

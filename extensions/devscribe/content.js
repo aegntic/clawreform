@@ -6,16 +6,14 @@
 
   // ─── Console Ring Buffer ───────────────────────────────────────────────
   const consoleBuffer = [];
-  let MAX_CONSOLE = 100;
+  const MAX_CONSOLE = 100;
   const origConsole = { log: console.log, warn: console.warn, error: console.error };
 
   ["log", "warn", "error"].forEach((level) => {
     console[level] = function (...args) {
       origConsole[level].apply(console, args);
-      if (settings.capture_console) {
-        consoleBuffer.push({ level, args: args.map((a) => serializeArg(a)), ts: Date.now() });
-        if (consoleBuffer.length > MAX_CONSOLE) consoleBuffer.shift();
-      }
+      consoleBuffer.push({ level, args: args.map((a) => serializeArg(a)), ts: Date.now() });
+      if (consoleBuffer.length > MAX_CONSOLE) consoleBuffer.shift();
     };
   });
 
@@ -29,7 +27,7 @@
 
   // ─── Network Ring Buffer ───────────────────────────────────────────────
   const networkBuffer = [];
-  let MAX_NETWORK = 50;
+  const MAX_NETWORK = 50;
 
   const origFetch = window.fetch;
   window.fetch = function (input, init) {
@@ -73,7 +71,6 @@
   };
 
   function pushNetwork(entry) {
-    if (!settings.capture_network) return;
     networkBuffer.push(entry);
     if (networkBuffer.length > MAX_NETWORK) networkBuffer.shift();
   }
@@ -101,11 +98,12 @@
         expandPanel();
         sendResponse({ success: true });
         break;
-      case "TOGGLE_ELEMENT_SELECT":
-        if (state.selectingElement) finishSelection(null);
-        else startElementSelection();
-        sendResponse({ success: true, data: state.selectingElement });
-        break;
+       case "TOGGLE_ELEMENT_SELECT":
+         console.log("TOGGLE_ELEMENT_SELECT received");
+         if (state.selectingElement) finishElementSelection();
+         else startElementSelection();
+         sendResponse({ success: true, data: state.selectingElement });
+         break;
       case "TRIGGER_CAPTURE":
         handleCaptureAction(msg.action);
         sendResponse({ success: true });
@@ -143,38 +141,13 @@
     return { hash, alpine: alpineStore, apiAvailable, url: location.href };
   }
 
-  // ─── Internal State ────────────────────────────────────────────────────
-  const state = {
-    notes: [],
-    selectingElement: false,
-    tooltipEnabled: true,
-    searchQuery: "",
-    searchHistory: [],
-    searchFilters: { type: "all", dateRange: "all" },
-  };
-
-  // ─── Settings Cache ─────────────────────────────────────────────
-  let settings = {
-    tooltip_enabled: true,
-    search_history: [],
-    keyboard_shortcuts: true,
-    capture_console: true,
-    capture_network: false,
-    show_toasts: true,
-    max_console_entries: 100,
-    max_network_entries: 50,
-    panel_auto_open: true,
-    panel_minimized: false,
-    default_note_type: "observation",
-    default_labels: "",
-  };
-
-  async function loadSettings() {
-    const resp = await sendToBackground("GET_SETTINGS");
-    if (resp && resp.success && resp.data) {
-      settings = { ...settings, ...resp.data };
-    }
-  }
+   // ─── Internal State ────────────────────────────────────────────────────
+   const state = {
+     notes: [],
+     selectingElement: false,
+     selectedElements: [],
+     replacingIndex: undefined,
+   };
 
   // ─── Inject Fonts ──────────────────────────────────────────────────────
   const fontLink = document.createElement("link");
@@ -231,7 +204,7 @@
         0 26px 56px rgba(0,0,0,0.62), 0 10px 22px rgba(0,0,0,0.42),
         inset 0 1px 0 rgba(255,255,255,0.09);
       font-size:13px;line-height:1.5;overflow:hidden;
-      animation:scaleIn 0.2s cubic-bezier(0.34,1.56, 0.64,1);
+      animation:scaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
     }
     .panel.collapsed{display:none}
 
@@ -397,7 +370,7 @@
       box-shadow:0 1px 0 rgba(255,255,255,0.6), 0 12px 28px rgba(184,134,11,0.45), 0 0 24px rgba(255,215,0,0.3), inset 0 -2px 4px rgba(139,105,20,0.4), inset 0 2px 4px rgba(255,255,255,0.4);
     }
 
-    .btn-sm{min-height:28px;padding:5px 10px;font-size:11px}
+    .btn-sm{min-height:28px;padding:4px 10px;font-size:11px}
 
     /* Ghost button — deep debossed gunmetal */
     .btn-ghost{
@@ -457,11 +430,12 @@
       border:1px solid rgba(255,255,255,0.1);
       box-shadow:inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.3);
     }
-    .badge-bug{background:rgba(240,113,120,0.18);color:#f07178;text-shadow:0 0 6px rgba(240,113,120,0.3)}
-    .badge-feature{background:rgba(87,211,155,0.18);color:#57d39b;text-shadow:0 0 6px rgba(87,211,155,0.3)}
-    .badge-debt{background:rgba(242,187,88,0.18);color:#f2bb58;text-shadow:0 0 6px rgba(242,187,88,0.3)}
-    .badge-performance{background:rgba(120,176,255,0.18);color:#78b0ff;text-shadow:0 0 6px rgba(120,176,255,0.3)}
-    .badge-observation{background:rgba(165,142,240,0.18);color:#a58ef0;text-shadow:0 0 6px rgba(165,142,240,0.3)}
+     .badge-bug{background:rgba(240,113,120,0.18);color:#f07178;text-shadow:0 0 6px rgba(240,113,120,0.3)}
+     .badge-feature{background:rgba(87,211,155,0.18);color:#57d39b;text-shadow:0 0 6px rgba(87,211,155,0.3)}
+     .badge-debt{background:rgba(242,187,88,0.18);color:#f2bb58;text-shadow:0 0 6px rgba(242,187,88,0.3)}
+     .badge-performance{background:rgba(120,176,255,0.18);color:#78b0ff;text-shadow:0 0 6px rgba(120,176,255,0.3)}
+     .badge-observation{background:rgba(165,142,240,0.18);color:#a58ef0;text-shadow:0 0 6px rgba(165,142,240,0.3)}
+     .badge-aesthetics{background:rgba(217,70,239,0.18);color:#d946ef;text-shadow:0 0 6px rgba(217,70,239,0.3)}
 
     .note-meta{
       font-size:10px;display:flex;gap:8px;font-family:'IBM Plex Mono',monospace;
@@ -498,13 +472,13 @@
     .capture-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .capture-grid .btn{width:100%;text-align:center;padding:12px 8px;font-size:11px;flex-direction:column;gap:4px}
 
-    /* ── Selection Overlay ── */
-    .ds-overlay{
-      position:fixed;pointer-events:none;z-index:999998;
-      background:rgba(255,215,0,0.10);border:2px solid #ffd700;
-      border-radius:6px;transition:all 0.08s;display:none;
-      box-shadow:0 0 0 1px rgba(255,215,0,0.15), 0 0 18px rgba(255,215,0,0.2), 0 0 40px rgba(255,215,0,0.08);
-    }
+     /* ── Selection Overlay ── */
+     .ds-overlay{
+       position:fixed;pointer-events:none;z-index:999998;
+       background:rgba(255,255,255,0.1);border:2px solid #000;
+       border-radius:0;transition:all 0.08s;display:none;
+       box-shadow:0 0 0 1px rgba(255,255,255,0.2), 0 0 20px rgba(0,0,0,0.1);
+     }
 
     /* ── Empty ── */
     .empty{
@@ -537,340 +511,55 @@
     @keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
     @keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-
-    /* ── Hover Tooltip ── */
-    .hover-tooltip{
-      position:fixed;z-index:999997;
-      max-width:320px;padding:10px 14px;
-      background:
-        repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.015) 1px, rgba(255,255,255,0.015) 2px),
-        linear-gradient(180deg, #1e2236 0%, #141726 40%, #0e1020 100%);
-      border:1px solid rgba(255,215,0,0.22);
-      border-radius:12px;
-      color:#e0e0f0;font-family:'Manrope',sans-serif;font-size:11px;line-height:1.5;
-      box-shadow:0 1px 0 rgba(255,215,0,0.12),0 8px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.09);
-      pointer-events:none;opacity:0;transition:opacity 0.15s;
-    }
-    .hover-tooltip.visible{opacity:1}
-    .hover-tooltip-title{
-      font-weight:700;font-size:12px;margin-bottom:6px;
-      background:linear-gradient(180deg, #fff8dc 0%, #ffd700 40%, #b8860b 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    }
-    .hover-tooltip-section{padding:4px 0;border-top:1px solid rgba(255,215,0,0.08)}
-    .hover-tooltip-section:first-child{border-top:none;padding-top:0}
-    .hover-tooltip-label{
-      font-size:9px;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;
-      background:linear-gradient(180deg, #606080 0%, #404060 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    }
-    .hover-tooltip-value{
-      font-family:'IBM Plex Mono',monospace;font-size:10px;
-      background:linear-gradient(180deg, #c0c0d8 0%, #9090a8 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-      word-break:break-all;
-    }
-    .hover-tooltip .badge{margin:2px 4px 2px 0;font-size:8px;padding:2px 6px}
-
-    /* ── Search Tab ── */
-    .search-input-wrap{position:relative;margin-bottom:8px}
-    .search-input-wrap input{padding-right:26px}
-    .search-clear{
-      position:absolute;right:8px;top:50%;transform:translateY(-50%);
-      width:20px;height:20px;border:none;border-radius:50%;
-      background:transparent;color:#555570;cursor:pointer;font-size:14px;
-      display:flex;align-items:center;justify-content:center;
-    }
-    .search-clear:hover{color:#ffd700}
-    .search-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-    .search-filter{
-      padding:4px 10px;border-radius:999px;font-size:10px;font-weight:600;
-      background:linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.08) 100%), #181b2a;
-      border:1px solid rgba(255,215,0,0.12);color:#8888aa;cursor:pointer;
-      transition:all 0.15s;
-    }
-    .search-filter.active{
-      border-color:rgba(255,215,0,0.4);color:#ffd700;
-      box-shadow:0 0 8px rgba(255,215,0,0.15);
-    }
-    .search-history{margin-top:8px}
-    .search-history-title{
-      font-size:9px;text-transform:uppercase;letter-spacing:0.6px;font-weight:600;
-      background:linear-gradient(180deg, #606080 0%, #404060 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-      margin-bottom:4px
-    }
-    .search-history-item{
-      padding:6px 8px;border-radius:8px;cursor:pointer;
-      font-size:11px;color:#8888aa;
-      transition:all 0.15s;
-    }
-    .search-history-item:hover{
-      background:rgba(255,215,0,0.08);color:#e0e0f0;
-    }
-    .search-result-count{
-      font-size:10px;margin-bottom:6px;
-      background:linear-gradient(180deg, #606080 0%, #404060 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    }
-    /* ── Shortcuts Help ── */
-    .shortcuts-help{padding:8px 12px}
-    .shortcut-item{
-      display:flex;justify-content:space-between;align-items:center;
-      padding:4px 0;font-size:11px;color:#8888aa;
-    }
-    .shortcut-key{
-      font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;
-      background:linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.08) 100%), #181b2a;
-      border:1px solid rgba(255,215,0,0.15);border-radius:6px;
-      padding:2px 8px;color:#ffd700;
-    }
   `;
   root.appendChild(style);
 
-  // ─── Selector Overlay ──────────────────────────────────────────
+  // ─── Selector Overlay ──────────────────────────────────────────────────
   const overlay = document.createElement("div");
   overlay.className = "ds-overlay";
   document.body.appendChild(overlay);
 
-  // ─── Hover Tooltip ──────────────────────────────────────────────
-  const hoverTooltip = document.createElement("div");
-  hoverTooltip.className = "hover-tooltip";
-  root.appendChild(hoverTooltip);
-
-  let tooltipTimeout = null;
-  let tooltipEnabled = true;
-
-  function showTooltip(x, y, content) {
-    clearTimeout(tooltipTimeout);
-    tooltipTimeout = setTimeout(() => {
-      hoverTooltip.innerHTML = content;
-      hoverTooltip.classList.add("visible");
-
-      const rect = hoverTooltip.getBoundingClientRect();
-      let left = x + 12;
-      let top = y + 12;
-
-      if (left + rect.width > window.innerWidth - 12) {
-        left = x - rect.width - 12;
-      }
-      if (top + rect.height > window.innerHeight - 12) {
-        top = y - rect.height - 12;
-      }
-
-      hoverTooltip.style.left = Math.max(12, left) + "px";
-      hoverTooltip.style.top = Math.max(12, top) + "px";
-    }, 300);
-  }
-
-  function hideTooltip() {
-    clearTimeout(tooltipTimeout);
-    hoverTooltip.classList.remove("visible");
-  }
-
-  function analyzeElement(el) {
-    if (!el || host.contains(el)) return null;
-
-    const info = {
-      tag: el.tagName.toLowerCase(),
-      id: el.id || null,
-      classes: el.className && typeof el.className === "string"
-        ? el.className.trim().split(/\s+/).filter(c => c && !c.startsWith("ds-"))
-        : [],
-      ariaLabel: el.getAttribute("aria-label"),
-      role: el.getAttribute("role"),
-      dataAttrs: {},
-      alpine: null,
-      apiEndpoint: null,
-      agentInfo: null,
-    };
-
-    for (const attr of el.attributes || []) {
-      if (attr.name.startsWith("data-")) {
-        info.dataAttrs[attr.name] = attr.value;
-      }
-    }
-
-    // Alpine.js bindings
-    try {
-      const alpineAttrs = [];
-      for (const attr of el.attributes || []) {
-        if (attr.name.startsWith("x-") || attr.name.startsWith("@") || attr.name.startsWith(":")) {
-          alpineAttrs.push({ name: attr.name, value: attr.value.slice(0, 50) });
-        }
-      }
-      if (alpineAttrs.length) {
-        info.alpine = alpineAttrs;
-      }
-
-      if (el.__x && el.__x.$data) {
-        const data = el.__x.$data;
-        info.alpine = info.alpine || [];
-        const keys = Object.keys(data).filter(k => !k.startsWith("$")).slice(0, 5);
-        if (keys.length) {
-          info.alpine.push({ name: "x-data keys", value: keys.join(", ") });
-        }
-      }
-    } catch {}
-
-    // API endpoint detection
-    const apiPatterns = [
-      { regex: /\/api\/agents\/?/i, label: "Agents API" },
-      { regex: /\/api\/budget\/?/i, label: "Budget API" },
-      { regex: /\/api\/network\/?/i, label: "Network API" },
-      { regex: /\/api\/a2a\/?/i, label: "A2A API" },
-      { regex: /\/api\/peers\/?/i, label: "Peers API" },
-      { regex: /\/api\/health\/?/i, label: "Health API" },
-    ];
-
-    const checkApiEndpoint = (str) => {
-      if (!str) return null;
-      for (const p of apiPatterns) {
-        if (p.regex.test(str)) return p.label;
-      }
-      return null;
-    }
-
-    info.apiEndpoint = checkApiEndpoint(el.href || el.action ||
-      el.getAttribute("data-url") || el.getAttribute("data-endpoint") ||
-      el.getAttribute("data-api") || el.getAttribute("data-href"));
-
-    // Agent info detection
-    if (el.closest && el.closest("[data-agent-id]")) {
-      info.agentInfo = {
-        id: el.closest("[data-agent-id]").getAttribute("data-agent-id"),
-        name: el.closest("[data-agent-name]")?.getAttribute("data-agent-name"),
-      }
-    }
-
-    return info
-  }
-
-  function buildTooltipContent(info) {
-    if (!info) return ""
-
-    let html = '<div class="hover-tooltip-title">Element: ' + esc(info.tag) + '</div>'
-
-    let basicInfo = []
-    if (info.id) basicInfo.push('<div class="hover-tooltip-label">ID</div><div class="hover-tooltip-value">#' + esc(info.id) + '</div>')
-    if (info.classes.length) basicInfo.push('<div class="hover-tooltip-label">Classes</div><div class="hover-tooltip-value">.' + esc(info.classes.slice(0, 5).join(" .")) + '</div>')
-    if (info.ariaLabel) basicInfo.push('<div class="hover-tooltip-label">Aria Label</div><div class="hover-tooltip-value">' + esc(info.ariaLabel) + '</div>')
-    if (info.role) basicInfo.push('<div class="hover-tooltip-label">Role</div><div class="hover-tooltip-value">' + esc(info.role) + '</div>')
-
-    if (basicInfo.length) {
-      html += '<div class="hover-tooltip-section">' + basicInfo.join("") + '</div>'
-    }
-
-    if (info.alpine && info.alpine.length) {
-      html += '<div class="hover-tooltip-section"><div class="hover-tooltip-label">Alpine.js Bindings</div>'
-      info.alpine.forEach(a => {
-        html += '<div class="hover-tooltip-value">' + esc(a.name) + '="' + esc(a.value) + '"</div>'
-      })
-      html += '</div>'
-    }
-
-    const dataKeys = Object.keys(info.dataAttrs)
-    if (dataKeys.length) {
-      html += '<div class="hover-tooltip-section"><div class="hover-tooltip-label">Data Attributes</div>'
-      dataKeys.slice(0, 4).forEach(k => {
-        html += '<div class="hover-tooltip-value">' + esc(k) + ': ' + esc(info.dataAttrs[k].slice(0, 30)) + '</div>'
-      })
-      if (dataKeys.length > 4) {
-        html += '<div class="hover-tooltip-value">+ ' + (dataKeys.length - 4) + ' more</div>'
-      }
-      html += '</div>'
-    }
-
-    if (info.apiEndpoint) {
-      html += '<div class="hover-tooltip-section"><div class="hover-tooltip-label">API Endpoint</div>'
-      html += '<span class="badge badge-feature">' + esc(info.apiEndpoint) + '</span>'
-      html += '</div>'
-    }
-
-    if (info.agentInfo) {
-      html += '<div class="hover-tooltip-section"><div class="hover-tooltip-label">Agent Context</div>'
-      html += '<div class="hover-tooltip-value">ID: ' + esc(info.agentInfo.id) + '</div>'
-      if (info.agentInfo.name) {
-        html += '<div class="hover-tooltip-value">Name: ' + esc(info.agentInfo.name) + '</div>'
-      }
-      html += '</div>'
-    }
-
-    return html
-  }
-
-  // Global hover listener for tooltip
-  document.addEventListener("mousemove", (e) => {
-    if (!tooltipEnabled || state.selectingElement) {
-      hideTooltip()
-      return
-    }
-
-    const info = analyzeElement(e.target)
-    if (info && (info.alpine || info.apiEndpoint || info.agentInfo || Object.keys(info.dataAttrs).length > 0)) {
-      showTooltip(e.clientX, e.clientY, buildTooltipContent(info))
-    } else {
-      hideTooltip()
-    }
-  }, { passive: true })
-
-  document.addEventListener("mouseleave", hideTooltip, { passive: true })
-
-  // ─── FAB ───────────────────────────────────────────────────
+  // ─── FAB ───────────────────────────────────────────────────────────────
   const fab = document.createElement("button");
   fab.className = "fab";
-  fab.textContent = "D"
-  fab.title = "DevScribe"
+  fab.textContent = "D";
+  fab.title = "DevScribe";
   root.appendChild(fab);
 
-  // ─── Panel ─────────────────────────────────────────────────
+  // ─── Panel ─────────────────────────────────────────────────────────────
   const panel = document.createElement("div");
-  panel.className = "panel collapsed"
-  root.appendChild(panel)
+  panel.className = "panel collapsed";
+  root.appendChild(panel);
 
   // Handle
-  const handleEl = document.createElement("div")
-  handleEl.className = "handle"
-  handleEl.innerHTML = '<span class="handle-title">DEVScribe</span><div class="handle-btns"><button class="handle-btn" id="ds-minimize" title="Minimize">&#x2212;</button></div>'
-  panel.appendChild(handleEl)
+  const handle = document.createElement("div");
+  handle.className = "handle";
+  handle.innerHTML = '<span class="handle-title">DEVSCRIBE</span><div class="handle-btns"><button class="handle-btn" id="ds-minimize" title="Minimize">&#x2212;</button></div>';
+  panel.appendChild(handle);
 
   // Tabs
   const tabs = document.createElement("div");
-  tabs.className = "tabs"
-  ; ["Notes", "Capture", "Search", "State"].forEach((name) => {
+  tabs.className = "tabs";
+  ["Notes", "Capture", "State"].forEach((name) => {
     const b = document.createElement("button");
     b.className = "tab";
     b.dataset.pane = name.toLowerCase();
-    b.textContent = name
-    if (name === "Notes") b.classList.add("active")
-    b.addEventListener("click", () => switchTab(name.toLowerCase()))
-    tabs.appendChild(b)
-  })
-  panel.appendChild(tabs)
+    b.textContent = name;
+    if (name === "Notes") b.classList.add("active");
+    b.addEventListener("click", () => switchTab(name.toLowerCase()));
+    tabs.appendChild(b);
+  });
+  panel.appendChild(tabs);
 
   // Body
   const body = document.createElement("div");
-  body.className = "body"
-  panel.appendChild(body)
+  body.className = "body";
+  panel.appendChild(body);
 
-  // ─── Keyboard Shortcuts Help ─────────────────────────────────────
-  const shortcutsHelp = document.createElement("div")
-  shortcutsHelp.className = "shortcuts-help"
-  shortcutsHelp.innerHTML = `
-    <div class="divider"></div>
-    <div class="shortcut-item"><span class="shortcut-key">Ctrl+Shift+N</span> New Note</div>
-    <div class="shortcut-item"><span class="shortcut-key">Ctrl+Shift+S</span> Screenshot</div>
-    <div class="shortcut-item"><span class="shortcut-key">Ctrl+Shift+E</span> Element Select</div>
-    <div class="shortcut-item"><span class="shortcut-key">Ctrl+Shift+F</span> Search</div>
-    <div class="shortcut-item"><span class="shortcut-key">Ctrl+Shift+H</span> Toggle Tooltips</div>
-    <div class="shortcut-item"><span class="shortcut-key">Esc</span> Cancel</div>
-  `
-  body.appendChild(shortcutsHelp)
-
-  // ─── Notes Pane ────────────────────────────────────────────────
+  // ─── Notes Pane ────────────────────────────────────────────────────────
   const notesPane = document.createElement("div");
-  notesPane.className = "pane active"
-  notesPane.dataset.pane = "notes"
+  notesPane.className = "pane active";
+  notesPane.dataset.pane = "notes";
   notesPane.innerHTML =
     '<div class="note-form">' +
       '<label>Title</label>' +
@@ -878,68 +567,47 @@
       '<label>Body</label>' +
       '<textarea id="ds-note-body" placeholder="Details..."></textarea>' +
       '<label>Type</label>' +
-      '<select id="ds-note-type">' +
-        '<option value="observation">Observation</option>' +
-        '<option value="bug">Bug</option>' +
-        '<option value="feature">Feature</option>' +
-        '<option value="debt">Debt</option>' +
-        '<option value="performance">Performance</option>' +
-      '</select>' +
+       '<select id="ds-note-type">' +
+         '<option value="observation">Observation</option>' +
+         '<option value="bug">Bug</option>' +
+         '<option value="feature">Feature</option>' +
+         '<option value="debt">Debt</option>' +
+         '<option value="performance">Performance</option>' +
+         '<option value="aesthetics">Aesthetics</option>' +
+       '</select>' +
       '<label>Tags (comma-separated)</label>' +
       '<input type="text" id="ds-note-tags" placeholder="ui, api, auth..." />' +
       '<div class="btn-row"><button class="btn btn-primary" id="ds-save-note">Save Note</button></div>' +
     '</div>' +
     '<div class="divider"></div>' +
-    '<div id="ds-notes-list"></div>'
-  body.appendChild(notesPane)
+    '<div id="ds-notes-list"></div>';
+  body.appendChild(notesPane);
 
-  // ─── Capture Pane ──────────────────────────────────────────────
-  const capturePane = document.createElement("div");
-  capturePane.className = "pane"
-  capturePane.dataset.pane = "capture"
-  capturePane.innerHTML =
-    '<div class="capture-grid">' +
-      '<button class="btn btn-ghost" data-action="screenshot">&#128247; Screenshot</button>' +
-      '<button class="btn btn-ghost" data-action="element">&#128269; Capture Element</button>' +
-      '<button class="btn btn-ghost" data-action="state">&#128196; Capture State</button>' +
-      '<button class="btn btn-ghost" data-action="console">&#128220; Capture Console</button>' +
-      '<button class="btn btn-ghost" data-action="network">&#128268; Capture Network</button>' +
-    '</div>' +
-    '<div class="divider"></div>' +
-    '<div id="ds-capture-preview" class="scroll-list"></div>'
-  body.appendChild(capturePane)
+   // ─── Capture Pane ──────────────────────────────────────────────────────
+   const capturePane = document.createElement("div");
+   capturePane.className = "pane";
+   capturePane.dataset.pane = "capture";
+   capturePane.innerHTML =
+     '<div id="ds-capture-normal" class="capture-grid">' +
+       '<button class="btn btn-ghost" data-action="screenshot">&#128247; Screenshot</button>' +
+       '<button class="btn btn-ghost" data-action="element">&#128269; Capture Element</button>' +
+       '<button class="btn btn-ghost" data-action="state">&#128196; Capture State</button>' +
+       '<button class="btn btn-ghost" data-action="console">&#128220; Capture Console</button>' +
+       '<button class="btn btn-ghost" data-action="network">&#128268; Capture Network</button>' +
+     '</div>' +
+     '<div id="ds-element-select-mode" style="display:none;">' +
+       '<p style="font-size:12px;margin-bottom:8px;color:#8888aa;">Click elements on the page to select them. Selected elements will appear below.</p>' +
+       '<div id="ds-selected-elements-list" class="scroll-list"></div>' +
+       '<div class="btn-row"><button class="btn btn-primary" id="ds-done-select">Done Selecting</button></div>' +
+     '</div>' +
+     '<div class="divider"></div>' +
+     '<div id="ds-capture-preview" class="scroll-list"></div>';
+   body.appendChild(capturePane);
 
-  // ─── Search Pane ────────────────────────────────────────────────
-  const searchPane = document.createElement("div");
-  searchPane.className = "pane"
-  searchPane.dataset.pane = "search"
-  searchPane.innerHTML =
-    '<div class="search-input-wrap">' +
-      '<input type="text" id="ds-search-input" placeholder="Search notes, logs, requests..." />' +
-      '<button class="search-clear" id="ds-search-clear">&times;</button>' +
-    '</div>' +
-    '<div class="search-filters">' +
-      '<button class="search-filter active" data-filter="all">All</button>' +
-      '<button class="search-filter" data-filter="notes">Notes</button>' +
-      '<button class="search-filter" data-filter="console">Console</button>' +
-      '<button class="search-filter" data-filter="network">Network</button>' +
-    '</div>' +
-    '<div class="search-filters">' +
-      '<button class="search-filter active" data-date="all">All Time</button>' +
-      '<button class="search-filter" data-date="today">Today</button>' +
-      '<button class="search-filter" data-date="week">This Week</button>' +
-    '</div>' +
-    '<div class="search-result-count" id="ds-search-count" style="display:none"></div>' +
-    '<div id="ds-search-results" class="scroll-list"></div>' +
-    '<div class="search-history" id="ds-search-history">' +
-      '<div class="search-history-title">Recent Searches</div>' +
-    '</div>'
-  body.appendChild(searchPane)
-
-  // ─── State Pane ────────────────────────────────────────────────
+  // ─── State Pane ────────────────────────────────────────────────────────
   const statePane = document.createElement("div");
-  statePane.className = "pane"
-  statePane.dataset.pane = "state"
+  statePane.className = "pane";
+  statePane.dataset.pane = "state";
   statePane.innerHTML =
     '<div id="ds-state-info"></div>' +
     '<div class="divider"></div>' +
@@ -947,12 +615,12 @@
     '<div class="btn-row">' +
       '<button class="btn btn-ghost" id="ds-dev-toggle">Toggle DevMode</button>' +
       '<button class="btn btn-ghost" id="ds-state-refresh">Refresh</button>' +
-    '</div>'
-  body.appendChild(statePane)
+    '</div>';
+  body.appendChild(statePane);
 
   // ─── Selector Inline Form ──────────────────────────────────────────────
   const selectorForm = document.createElement("div");
-  selectorForm.style.cssText = "display:none"
+  selectorForm.style.cssText = "display:none";
   selectorForm.innerHTML =
     '<div class="divider"></div>' +
     '<label>Captured Element</label>' +
@@ -961,62 +629,61 @@
     '<div class="btn-row">' +
       '<button class="btn btn-primary btn-sm" id="ds-el-save">Save Note</button>' +
       '<button class="btn btn-ghost btn-sm" id="ds-el-cancel">Cancel</button>' +
-    '</div>'
-  capturePane.appendChild(selectorForm)
+    '</div>';
+  capturePane.appendChild(selectorForm);
 
-  // ─── Tab Switching ─────────────────────────────────────────────────
+  // ─── Tab Switching ─────────────────────────────────────────────────────
   function switchTab(name) {
-    panel.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.pane === name))
-    panel.querySelectorAll(".pane").forEach((p) => p.classList.toggle("active", p.dataset.pane === name))
-    if (name === "state") refreshState()
-    if (name === "notes") renderNotes()
-    if (name === "search") initSearchPane()
+    panel.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.pane === name));
+    panel.querySelectorAll(".pane").forEach((p) => p.classList.toggle("active", p.dataset.pane === name));
+    if (name === "state") refreshState();
+    if (name === "notes") renderNotes();
   }
 
   function expandPanel() {
-    panel.classList.remove("collapsed")
-    fab.style.display = "none"
+    panel.classList.remove("collapsed");
+    fab.style.display = "none";
   }
 
   function collapsePanel() {
-    panel.classList.add("collapsed")
-    fab.style.display = "block"
+    panel.classList.add("collapsed");
+    fab.style.display = "block";
   }
 
   // ─── Collapse / Expand ─────────────────────────────────────────────────
-  fab.addEventListener("click", expandPanel)
-  handleEl.querySelector("#ds-minimize").addEventListener("click", collapsePanel)
+  fab.addEventListener("click", expandPanel);
+  handle.querySelector("#ds-minimize").addEventListener("click", collapsePanel);
 
-  // ─── Dragging ──────────────────────────────────────────────────
-  let dragOffsetX = 0, dragOffsetY = 0, dragging = false
-  handleEl.addEventListener("mousedown", (e) => {
-    dragging = true
-    const rect = panel.getBoundingClientRect()
-    dragOffsetX = e.clientX - rect.left
-    dragOffsetY = e.clientY - rect.top
-    e.preventDefault()
-  })
+  // ─── Dragging ──────────────────────────────────────────────────────────
+  let dragOffsetX = 0, dragOffsetY = 0, dragging = false;
+  handle.addEventListener("mousedown", (e) => {
+    dragging = true;
+    const rect = panel.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    e.preventDefault();
+  });
   document.addEventListener("mousemove", (e) => {
-    if (!dragging) return
-    host.style.right = "auto"
-    host.style.bottom = "auto"
-    host.style.left = (e.clientX - dragOffsetX) + "px"
-    host.style.top = (e.clientY - dragOffsetY) + "px"
-  })
-  document.addEventListener("mouseup", () => { dragging = false })
+    if (!dragging) return;
+    host.style.right = "auto";
+    host.style.bottom = "auto";
+    host.style.left = (e.clientX - dragOffsetX) + "px";
+    host.style.top = (e.clientY - dragOffsetY) + "px";
+  });
+  document.addEventListener("mouseup", () => { dragging = false; });
 
-  // ─── Notes CRUD ──────────────────────────────────────────────────
+  // ─── Notes CRUD ────────────────────────────────────────────────────────
   async function loadNotes() {
-    const resp = await sendToBackground("GET_NOTES")
-    if (resp && resp.success && resp.data) state.notes = resp.data
-    renderNotes()
+    const resp = await sendToBackground("GET_NOTES");
+    if (resp && resp.success && resp.data) state.notes = resp.data;
+    renderNotes();
   }
 
   function renderNotes() {
-    const list = panel.querySelector("#ds-notes-list")
+    const list = panel.querySelector("#ds-notes-list");
     if (!state.notes.length) {
-      list.innerHTML = '<div class="empty">No notes yet</div>'
-      return
+      list.innerHTML = '<div class="empty">No notes yet</div>';
+      return;
     }
     list.innerHTML = state.notes.map((n, i) =>
       '<div class="note-card">' +
@@ -1035,24 +702,24 @@
           '<button class="btn btn-danger btn-sm" data-del="' + n.id + '">&#10005;</button>' +
         '</div>' +
       '</div>'
-    ).join("")
+    ).join("");
 
     list.querySelectorAll("[data-del]").forEach((b) =>
       b.addEventListener("click", () => {
-        sendToBackground("DELETE_NOTE", { id: b.dataset.del }).then(loadNotes)
+        sendToBackground("DELETE_NOTE", { id: b.dataset.del }).then(loadNotes);
       })
-    )
+    );
     list.querySelectorAll("[data-gh]").forEach((b) =>
       b.addEventListener("click", () => {
-        const note = state.notes.find((n) => n.id === b.dataset.gh)
-        if (note) sendToBackground("CREATE_GITHUB_ISSUE", { note })
+        const note = state.notes.find((n) => n.id === b.dataset.gh);
+        if (note) sendToBackground("CREATE_GITHUB_ISSUE", { note });
       })
-    )
+    );
   }
 
   panel.querySelector("#ds-save-note").addEventListener("click", async () => {
-    const title = panel.querySelector("#ds-note-title").value.trim()
-    if (!title) return
+    const title = panel.querySelector("#ds-note-title").value.trim();
+    if (!title) return;
     const note = {
       id: "n_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
       title,
@@ -1061,544 +728,293 @@
       tags: panel.querySelector("#ds-note-tags").value.split(",").map((t) => t.trim()).filter(Boolean),
       page: window.location.hash || "#/",
       ts: Date.now(),
-    }
-    await sendToBackground("SAVE_NOTE", { note })
-    panel.querySelector("#ds-note-title").value = ""
-    panel.querySelector("#ds-note-body").value = ""
-    panel.querySelector("#ds-note-tags").value = ""
-    loadNotes()
-  })
+    };
+    await sendToBackground("SAVE_NOTE", { note });
+    panel.querySelector("#ds-note-title").value = "";
+    panel.querySelector("#ds-note-body").value = "";
+    panel.querySelector("#ds-note-tags").value = "";
+    loadNotes();
+  });
 
   // ─── Capture Actions ───────────────────────────────────────────────────
   capturePane.querySelectorAll("[data-action]").forEach((btn) =>
     btn.addEventListener("click", () => handleCaptureAction(btn.dataset.action))
-  )
+  );
 
   function handleCaptureAction(action) {
+    console.log("handleCaptureAction called with action:", action);
     switch (action) {
       case "screenshot":
         sendToBackground("CAPTURE_SCREENSHOT").then((resp) => {
-          if (resp && resp.success && resp.data) {
-            showCapturePreview("<img src='" + resp.data + "' style='max-width:100%;border-radius:4px;margin-top:6px'/>")
-            promptNoteFromCapture("Screenshot", "Screenshot captured at " + fmtTime(Date.now()), "observation")
+          if (resp && resp.dataUrl) {
+            showCapturePreview("<img src='" + resp.dataUrl + "' style='max-width:100%;border-radius:4px;margin-top:6px'/>");
+            promptNoteFromCapture("Screenshot", "Screenshot captured at " + fmtTime(Date.now()), "observation");
           }
-        })
-        break
+        });
+        break;
       case "element":
-        startElementSelection()
-        break
+        startElementSelection();
+        break;
       case "state": {
-        const st = getAppState()
-        const json = JSON.stringify(st.alpine, null, 2)
-        showCapturePreview("<pre style='white-space:pre-wrap;color:#ffd700;font-size:11px;font-family:\"IBM Plex Mono\",monospace;text-shadow:0 0 4px rgba(255,215,0,0.3)'>" + esc(json) + "</pre>")
-        promptNoteFromCapture("State Snapshot", json, "observation")
-        break
+        const st = getAppState();
+        const json = JSON.stringify(st.alpine, null, 2);
+        showCapturePreview("<pre style='white-space:pre-wrap;color:#ffd700;font-size:11px;font-family:\"IBM Plex Mono\",monospace;text-shadow:0 0 4px rgba(255,215,0,0.3)'>" + esc(json) + "</pre>");
+        promptNoteFromCapture("State Snapshot", json, "observation");
+        break;
       }
       case "console": {
-        const logs = consoleBuffer.slice(-30)
+        const logs = consoleBuffer.slice(-30);
         const html = logs.map((l) =>
           "<div class='log-entry'><span class='lvl-" + l.level + "'>[" + l.level.toUpperCase() + "]</span> " +
           l.args.map(esc).join(" ") + "</div>"
-        ).join("")
-        showCapturePreview(html || '<div class="empty">No console output</div>')
+        ).join("");
+        showCapturePreview(html || '<div class="empty">No console output</div>');
         if (logs.length) {
           promptNoteFromCapture(
             "Console Capture",
             logs.map((l) => "[" + l.level + "] " + l.args.join(" ")).join("\n"),
             "observation"
-          )
+          );
         }
-        break
+        break;
       }
       case "network": {
-        const reqs = networkBuffer.slice(-20)
+        const reqs = networkBuffer.slice(-20);
         const html = reqs.map((r) =>
           "<div class='log-entry'><span style='color:#ffd700;text-shadow:0 0 4px rgba(255,215,0,0.3)'>" + esc(r.method) + "</span> " +
           "<span class='lvl-" + (r.status >= 400 ? "error" : "log") + "'>" + r.status + "</span> " +
           esc(r.url) + " <span style='color:#666'>" + Math.round(r.ms) + "ms</span></div>"
-        ).join("")
-        showCapturePreview(html || '<div class="empty">No API requests captured</div>')
-        break
+        ).join("");
+        showCapturePreview(html || '<div class="empty">No API requests captured</div>');
+        break;
       }
     }
   }
 
   function showCapturePreview(html) {
-    capturePane.querySelector("#ds-capture-preview").innerHTML = html
+    capturePane.querySelector("#ds-capture-preview").innerHTML = html;
   }
 
   function promptNoteFromCapture(title, body, type) {
-    panel.querySelector("#ds-note-title").value = title
-    panel.querySelector("#ds-note-body").value = body
-    panel.querySelector("#ds-note-type").value = type || settings.default_note_type || "observation"
-    switchTab("notes")
+    panel.querySelector("#ds-note-title").value = title;
+    panel.querySelector("#ds-note-body").value = body;
+    panel.querySelector("#ds-note-type").value = type || "observation";
+    switchTab("notes");
   }
 
-  // ─── Element Selection Mode ────────────────────────────────────────────
-  let hoverMoveHandler = null
-  let hoverClickHandler = null
-  let hoverKeyHandler = null
+   function addSelectedElement(el) {
+     const dataAttrs = {};
+     for (const attr of el.attributes || []) {
+       if (attr.name.startsWith("data-")) dataAttrs[attr.name] = attr.value;
+     }
+     const captured = {
+       selector: buildSelector(el),
+       text: (el.textContent || "").slice(0, 200),
+       rect: el.getBoundingClientRect().toJSON(),
+       dataAttributes: dataAttrs,
+       ariaLabel: el.getAttribute("aria-label") || null,
+       tagName: el.tagName,
+       id: el.id,
+     };
+     if (state.replacingIndex !== undefined) {
+       state.selectedElements[state.replacingIndex] = captured;
+       delete state.replacingIndex;
+     } else {
+       state.selectedElements.push(captured);
+     }
+   }
 
-  function startElementSelection() {
-    state.selectingElement = true
-    overlay.style.display = "block"
-    document.body.style.cursor = "crosshair"
+   function startElementSelection() {
+     console.log("startElementSelection called");
+     if (state.selectingElement) {
+       finishElementSelection();
+       return;
+     }
+     state.selectingElement = true;
+     state.selectedElements = [];
+     overlay.style.display = "block";
+     document.body.style.cursor = "crosshair";
+     switchTab("capture");
+     updateCapturePane();
 
-    hoverMoveHandler = (e) => {
-      if (!state.selectingElement) return
-      const el = e.target
-      if (host.contains(el)) return
-      const rect = el.getBoundingClientRect()
-      overlay.style.left = rect.left + "px"
-      overlay.style.top = rect.top + "px"
-      overlay.style.width = rect.width + "px"
-      overlay.style.height = rect.height + "px"
-    }
+     hoverMoveHandler = (e) => {
+       if (!state.selectingElement) return;
+       const el = e.target;
+       if (host.contains(el)) return;
+       const rect = el.getBoundingClientRect();
+       overlay.style.left = rect.left + "px";
+       overlay.style.top = rect.top + "px";
+       overlay.style.width = rect.width + "px";
+       overlay.style.height = rect.height + "px";
+     };
 
-    hoverClickHandler = (e) => {
-      if (!state.selectingElement) return
-      if (host.contains(e.target)) return
-      e.preventDefault()
-      e.stopPropagation()
-      finishSelection(e.target)
-    }
+     hoverClickHandler = (e) => {
+       if (!state.selectingElement) return;
+       if (host.contains(e.target)) return;
+       e.preventDefault();
+       e.stopPropagation();
+       const el = e.target;
+       addSelectedElement(el);
+       updateCapturePane();
+     };
 
-    hoverKeyHandler = (e) => {
-      if (e.key === "Escape") {
-        finishSelection(null)
-      }
-    }
+     hoverKeyHandler = (e) => {
+       if (e.key === "Escape") {
+         finishElementSelection();
+       }
+     };
 
-    document.addEventListener("mousemove", hoverMoveHandler, true)
-    document.addEventListener("click", hoverClickHandler, true)
-    document.addEventListener("keydown", hoverKeyHandler, true)
-  }
+     document.addEventListener("mousemove", hoverMoveHandler, true);
+     document.addEventListener("click", hoverClickHandler, true);
+     document.addEventListener("keydown", hoverKeyHandler, true);
+   }
 
-  function finishSelection(el) {
-    state.selectingElement = false
-    overlay.style.display = "none"
-    document.body.style.cursor = ""
-    if (hoverMoveHandler) document.removeEventListener("mousemove", hoverMoveHandler, true)
-    if (hoverClickHandler) document.removeEventListener("click", hoverClickHandler, true)
-    if (hoverKeyHandler) document.removeEventListener("keydown", hoverKeyHandler, true)
-    hoverMoveHandler = null
-    hoverClickHandler = null
-    hoverKeyHandler = null
+   function finishElementSelection() {
+     state.selectingElement = false;
+     overlay.style.display = "none";
+     document.body.style.cursor = "";
+     if (hoverMoveHandler) document.removeEventListener("mousemove", hoverMoveHandler, true);
+     if (hoverClickHandler) document.removeEventListener("click", hoverClickHandler, true);
+     if (hoverKeyHandler) document.removeEventListener("keydown", hoverKeyHandler, true);
+     hoverMoveHandler = null;
+     hoverClickHandler = null;
+     hoverKeyHandler = null;
+     updateCapturePane();
+   }
 
-    if (!el) return
-
-    const dataAttrs = {}
-    for (const attr of el.attributes || []) {
-      if (attr.name.startsWith("data-")) dataAttrs[attr.name] = attr.value
-    }
-
-    const captured = {
-      selector: buildSelector(el),
-      text: (el.textContent || "").slice(0, 200),
-      rect: el.getBoundingClientRect().toJSON(),
-      dataAttributes: dataAttrs,
-      ariaLabel: el.getAttribute("aria-label") || null,
-      tagName: el.tagName,
-    }
-
-    showCapturePreview(
-      "<pre style='white-space:pre-wrap;color:#ffd700;font-size:11px;max-height:120px;overflow:auto;font-family:\"IBM Plex Mono\",monospace;text-shadow:0 0 4px rgba(255,215,0,0.3)'>" +
-      esc(JSON.stringify(captured, null, 2)) + "</pre>"
-    )
-
-    selectorForm.style.display = "block"
-    const elTitle = selectorForm.querySelector("#ds-el-title")
-    const elBody = selectorForm.querySelector("#ds-el-body")
-    elTitle.value = el.tagName + (el.id ? "#" + el.id : "") + " element"
-    elBody.value = captured.text
-
-    selectorForm.querySelector("#ds-el-save").onclick = () => {
-      const note = {
-        id: "n_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-        title: elTitle.value.trim() || "Element capture",
-        body: elBody.value.trim() + "\n\n---\nSelector: " + captured.selector + "\nRect: " + JSON.stringify(captured.rect),
-        type: "observation",
-        tags: ["element"],
-        page: window.location.hash || "#/",
-        ts: Date.now(),
-      }
-      sendToBackground("SAVE_NOTE", { note }).then(loadNotes)
-      selectorForm.style.display = "none"
-      switchTab("notes")
-    }
-
-    selectorForm.querySelector("#ds-el-cancel").onclick = () => {
-      selectorForm.style.display = "none"
-    }
-  }
+   function updateCapturePane() {
+     const normal = capturePane.querySelector("#ds-capture-normal");
+     const selectMode = capturePane.querySelector("#ds-element-select-mode");
+     const list = capturePane.querySelector("#ds-selected-elements-list");
+     if (state.selectingElement) {
+       normal.style.display = "none";
+       selectMode.style.display = "block";
+       list.innerHTML = state.selectedElements.map((el, i) =>
+         '<div class="element-item" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,215,0,0.06);">' +
+           '<div style="flex:1;">' +
+             '<div style="font-weight:600;color:#ffd700;">' + esc(el.tagName) + (el.id ? '#' + esc(el.id) : '') + '</div>' +
+             '<div style="font-size:11px;color:#8888aa;">' + esc(el.text.slice(0, 50)) + (el.text.length > 50 ? '...' : '') + '</div>' +
+           '</div>' +
+           '<button class="btn btn-ghost btn-sm" data-refine="' + i + '">Refine</button>' +
+           '<button class="btn btn-ghost btn-sm" data-replace="' + i + '">Replace</button>' +
+           '<button class="btn btn-danger btn-sm" data-cancel="' + i + '">Cancel</button>' +
+         '</div>'
+       ).join("");
+       list.querySelectorAll("[data-cancel]").forEach(b => b.addEventListener("click", () => {
+         state.selectedElements.splice(parseInt(b.dataset.cancel), 1);
+         updateCapturePane();
+       }));
+       list.querySelectorAll("[data-refine]").forEach(b => b.addEventListener("click", () => {
+         // For now, just alert or something; can implement edit later
+         alert("Refine not implemented yet");
+       }));
+       list.querySelectorAll("[data-replace]").forEach(b => b.addEventListener("click", () => {
+         const idx = parseInt(b.dataset.replace);
+         // Start replace mode for this index
+         state.replacingIndex = idx;
+         // Continue with selection
+       }));
+     } else {
+       normal.style.display = "grid";
+       selectMode.style.display = "none";
+     }
+   }
 
   function buildSelector(el) {
-    if (el.id) return "#" + el.id
-    const parts = []
-    let cur = el
+    if (el.id) return "#" + el.id;
+    const parts = [];
+    let cur = el;
     while (cur && cur !== document.body && cur !== document.documentElement) {
-      let sel = cur.tagName.toLowerCase()
-      if (cur.id) { parts.unshift("#" + cur.id); break }
+      let sel = cur.tagName.toLowerCase();
+      if (cur.id) { parts.unshift("#" + cur.id); break; }
       if (cur.className && typeof cur.className === "string") {
-        const cls = cur.className.trim().split(/\s+/).filter((c) => c && !c.startsWith("ds-")).join(".")
-        if (cls) sel += "." + cls
+        const cls = cur.className.trim().split(/\s+/).filter((c) => c && !c.startsWith("ds-")).join(".");
+        if (cls) sel += "." + cls;
       }
-      const parent = cur.parentElement
+      const parent = cur.parentElement;
       if (parent) {
-        const siblings = Array.from(parent.children).filter((c) => c.tagName === cur.tagName)
-        if (siblings.length > 1) sel += ":nth-of-type(" + (siblings.indexOf(cur) + 1) + ")"
+        const siblings = Array.from(parent.children).filter((c) => c.tagName === cur.tagName);
+        if (siblings.length > 1) sel += ":nth-of-type(" + (siblings.indexOf(cur) + 1) + ")";
       }
-      parts.unshift(sel)
-      cur = cur.parentElement
+      parts.unshift(sel);
+      cur = cur.parentElement;
     }
-    return parts.join(" > ")
+    return parts.join(" > ");
   }
 
-  // ─── State Pane ────────────────────────────────────────────────
+  // ─── State Pane ────────────────────────────────────────────────────────
   function refreshState() {
-    const s = getAppState()
-    const info = panel.querySelector("#ds-state-info")
+    const s = getAppState();
+    const info = panel.querySelector("#ds-state-info");
     const rows = [
       ["URL", s.url],
       ["Hash", s.hash],
       ["API Available", s.apiAvailable ? "Yes" : "No"],
-    ]
+    ];
     if (s.alpine) {
-      rows.push(["Page", s.alpine.page || "\u2014"])
-      rows.push(["Agents", String(s.alpine.agentsCount ?? "\u2014")])
-      rows.push(["Connected", s.alpine.connected ? "Yes" : "No"])
-      rows.push(["DevMode", s.alpine.devMode ? "On" : "Off"])
-      if (s.alpine.version) rows.push(["Version", s.alpine.version])
+      rows.push(["Page", s.alpine.page || "\u2014"]);
+      rows.push(["Agents", String(s.alpine.agentsCount ?? "\u2014")]);
+      rows.push(["Connected", s.alpine.connected ? "Yes" : "No"]);
+      rows.push(["DevMode", s.alpine.devMode ? "On" : "Off"]);
+      if (s.alpine.version) rows.push(["Version", s.alpine.version]);
     }
     info.innerHTML = rows.map(([k, v]) =>
       "<div class='kv'><span class='kv-key'>" + esc(k) + "</span><span class='kv-val'>" + esc(v) + "</span></div>"
-    ).join("")
+    ).join("");
   }
 
   panel.querySelector("#ds-dev-toggle").addEventListener("click", () => {
     try {
       if (window.Alpine) {
-        const s = Alpine.store("app")
-        if (s) s.devMode = !s.devMode
+        const s = Alpine.store("app");
+        if (s) s.devMode = !s.devMode;
       }
     } catch {}
-    refreshState()
-  })
-  panel.querySelector("#ds-state-refresh").addEventListener("click", refreshState)
+    refreshState();
+  });
+  panel.querySelector("#ds-state-refresh").addEventListener("click", refreshState);
 
-  // ─── Search Pane ────────────────────────────────────────────────
-  let searchDebounce = null
-
-  function initSearchPane() {
-    renderSearchHistory()
-  }
-
-  function performSearch(query) {
-    const resultsContainer = panel.querySelector("#ds-search-results")
-    const countEl = panel.querySelector("#ds-search-count")
-
-    if (!query || query.length < 2) {
-      resultsContainer.innerHTML = ""
-      countEl.style.display = "none"
-      renderSearchHistory()
-      return
-    }
-
-    query = query.toLowerCase().trim()
-
-    // Save to search history
-    if (!state.searchHistory.includes(query)) {
-      state.searchHistory = [query, ...state.searchHistory].slice(0, 10)
-      sendToBackground("SAVE_SETTINGS", { search_history: state.searchHistory })
-      renderSearchHistory()
-    }
-
-    // Get active filters
-    const typeFilter = panel.querySelector(".search-filter[data-filter].active")?.dataset.filter || "all"
-    const dateFilter = panel.querySelector(".search-filter[data-date].active")?.dataset.date || "all"
-
-    const results = []
-
-    // Date range calculation
-    const now = Date.now()
-    let minTs = 0
-    if (dateFilter === "today") {
-      minTs = new Date().setHours(0, 0, 0, 0)
-    } else if (dateFilter === "week") {
-      minTs = now - 7 * 24 * 60 * 60 * 1000
-    }
-
-    // Search notes
-    if (["all", "notes"].includes(typeFilter)) {
-      state.notes.forEach(n => {
-        const ts = new Date(n.created_at || n.ts).getTime()
-        if (ts < minTs) return
-        const text = (n.title + " " + (n.body || "") + " " + (n.tags || []).join(" ")).toLowerCase()
-        if (text.includes(query)) {
-          results.push({ type: "note", data: n, ts })
-        }
-      })
-    }
-
-    // Search console
-    if (["all", "console"].includes(typeFilter)) {
-      consoleBuffer.forEach(l => {
-        if (l.ts < minTs) return
-        const text = l.args.join(" ").toLowerCase()
-        if (text.includes(query)) {
-          results.push({ type: "console", data: l, ts: l.ts })
-        }
-      })
-    }
-
-    // Search network
-    if (["all", "network"].includes(typeFilter)) {
-      networkBuffer.forEach(r => {
-        if (r.ts < minTs) return
-        const text = (r.url + " " + r.method + " " + String(r.status)).toLowerCase()
-        if (text.includes(query)) {
-          results.push({ type: "network", data: r, ts: r.ts })
-        }
-      })
-    }
-
-    // Sort by timestamp (newest first)
-    results.sort((a, b) => b.ts - a.ts)
-
-    // Update count
-    countEl.textContent = results.length + " result" + (results.length !== 1 ? "s" : "")
-    countEl.style.display = "block"
-
-    // Render results
-    if (!results.length) {
-      resultsContainer.innerHTML = '<div class="empty">No results found</div>'
-      return
-    }
-
-    resultsContainer.innerHTML = results.slice(0, 50).map(r => {
-      const icon = r.type === "note" ? "&#128221;" : r.type === "console" ? "&#128187;" : "&#127760;"
-      const badgeClass = r.type === "note" ? "badge-" + (r.data.type || "observation") : ""
-      const title = r.type === "note"
-        ? esc(r.data.title)
-        : r.type === "console"
-        ? "[" + r.data.level + "] " + esc(r.data.args[0]?.slice(0, 50) || "")
-        : esc(r.data.method) + " " + esc(r.data.url)
-
-      return '<div class="note-card" style="cursor:pointer">' +
-        '<div class="note-card-header">' +
-          '<span>' + icon + '</span>' +
-          '<span class="note-title" style="flex:1">' + title + '</span>' +
-          (badgeClass ? '<span class="badge ' + badgeClass + '">' + esc(r.data.type || r.type) + '</span>' : '') +
-        '</div>' +
-        '<div class="note-meta">' + fmtTime(r.ts) + '</div>' +
-      '</div>'
-    }).join("")
-  }
-
-  function renderSearchHistory() {
-    const historyContainer = panel.querySelector("#ds-search-history")
-    const history = state.searchHistory || []
-
-    // Keep the title
-    historyContainer.innerHTML = '<div class="search-history-title">Recent Searches</div>'
-
-    if (!history.length) {
-      historyContainer.innerHTML += '<div class="empty">No recent searches</div>'
-      return
-    }
-
-    history.slice(0, 5).forEach((q) => {
-      const item = document.createElement("div")
-      item.className = "search-history-item"
-      item.textContent = q
-      item.addEventListener("click", () => {
-        state.searchQuery = q
-        panel.querySelector("#ds-search-input").value = q
-        performSearch(q)
-      })
-      historyContainer.appendChild(item)
-    })
-  }
-
-  // Search input handler
-  searchPane.querySelector("#ds-search-input").addEventListener("input", (e) => {
-    state.searchQuery = e.target.value
-    clearTimeout(searchDebounce)
-    searchDebounce = setTimeout(() => {
-      performSearch(state.searchQuery)
-    }, 200)
-  })
-
-  // Clear button
-  searchPane.querySelector("#ds-search-clear").addEventListener("click", () => {
-    state.searchQuery = ""
-    panel.querySelector("#ds-search-input").value = ""
-    panel.querySelector("#ds-search-results").innerHTML = ""
-    panel.querySelector("#ds-search-count").style.display = "none"
-    renderSearchHistory()
-  })
-
-  // Filter buttons - type
-  searchPane.querySelectorAll(".search-filter[data-filter]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const filter = btn.dataset.filter
-      searchPane.querySelectorAll(".search-filter[data-filter]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.filter === filter)
-      })
-      performSearch(state.searchQuery)
-    })
-  })
-
-  // Filter buttons - date
-  searchPane.querySelectorAll(".search-filter[data-date]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const dateFilter = btn.dataset.date
-      searchPane.querySelectorAll(".search-filter[data-date]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.date === dateFilter)
-      })
-      performSearch(state.searchQuery)
-    })
-  })
-
-  // ─── Keyboard Shortcuts ─────────────────────────────────────────────────
-  const SHORTCUTS = {
-    "ctrl+shift+n": { action: "new-note", label: "New Note" },
-    "ctrl+shift+s": { action: "screenshot", label: "Screenshot" },
-    "ctrl+shift+e": { action: "element-select", label: "Element Select" },
-    "ctrl+shift+f": { action: "search", label: "Search" },
-    "ctrl+shift+h": { action: "toggle-tooltip", label: "Toggle Tooltip" },
-    "escape": { action: "cancel", label: "Cancel/Close" },
-  }
-
-  function handleShortcut(e) {
-    if (!settings.keyboard_shortcuts) return
-    const key = []
-    if (e.ctrlKey || e.metaKey) key.push("ctrl")
-    if (e.shiftKey) key.push("shift")
-    if (e.altKey) key.push("alt")
-    key.push(e.key.toLowerCase())
-    const combo = key.join("+")
-
-    const shortcut = SHORTCUTS[combo]
-    if (!shortcut) return
-
-    e.preventDefault()
-    e.stopPropagation()
-
-    switch (shortcut.action) {
-      case "new-note":
-        expandPanel()
-        switchTab("notes")
-        panel.querySelector("#ds-note-title").focus()
-        break
-      case "screenshot":
-        expandPanel()
-        switchTab("capture")
-        handleCaptureAction("screenshot")
-        break
-      case "element-select":
-        expandPanel()
-        switchTab("capture")
-        if (state.selectingElement) {
-          finishSelection(null)
-        } else {
-          startElementSelection()
-        }
-        break
-      case "search":
-        expandPanel()
-        switchTab("search")
-        panel.querySelector("#ds-search-input")?.focus()
-        break
-      case "toggle-tooltip":
-        tooltipEnabled = !tooltipEnabled
-        sendToBackground("SAVE_SETTINGS", { tooltip_enabled: tooltipEnabled })
-        showToast("Tooltip " + (tooltipEnabled ? "enabled" : "disabled"))
-        break
-      case "cancel":
-        if (state.selectingElement) {
-          finishSelection(null)
-        } else if (!panel.classList.contains("collapsed")) {
-          collapsePanel()
-        }
-        break
-    }
-  }
-
-  document.addEventListener("keydown", handleShortcut, true)
-
-  // Toast notification helper
-  function showToast(message, type = "info") {
-    if (!settings.show_toasts) return
-    const toast = document.createElement("div")
-    toast.className = "ds-toast ds-toast-" + type
-    toast.textContent = message
-    toast.style.cssText = `
-      position:fixed;bottom:60px;right:60px;z-index:999999;
-      padding:10px 16px;border-radius:10px;font-size:12px;font-family:'Manrope',sans-serif;
-      background:linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%), #141824;
-      border:1px solid rgba(255,215,0,0.25);color:#e0e0f0;
-      box-shadow:0 8px 24px rgba(0,0,0,0.5);
-      animation:fadeIn 0.2s;
-    `
-    document.body.appendChild(toast)
-    setTimeout(() => {
-      toast.style.opacity = "0"
-      toast.style.transition = "opacity 0.3s"
-      setTimeout(() => toast.remove(), 300)
-    }, 2000)
-  }
-
-  // ─── Hash Watch ──────────────────────────────────────────────────
+  // ─── Hash Watch ────────────────────────────────────────────────────────
   window.addEventListener("hashchange", () => {
     if (panel.querySelector(".pane[data-pane='state']").classList.contains("active")) {
-      refreshState()
+      refreshState();
     }
-  })
+  });
 
-  // ─── Utilities ─────────────────────────────────────────────────
+  // ─── Utilities ─────────────────────────────────────────────────────────
   function esc(s) {
-    if (s == null) return ""
-    const d = document.createElement("div")
-    d.textContent = String(s)
-    return d.innerHTML
+    if (s == null) return "";
+    const d = document.createElement("div");
+    d.textContent = String(s);
+    return d.innerHTML;
   }
 
   function fmtTime(ts) {
-    const d = new Date(ts)
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
 
-  // ─── Init ──────────────────────────────────────────────────────
-  loadSettings().then(() => {
-    // Apply buffer limits
-    MAX_CONSOLE = settings.max_console_entries || 100;
-    MAX_NETWORK = settings.max_network_entries || 50;
+   // ─── Init ──────────────────────────────────────────────────────────────
+   loadNotes();
+   origConsole.log("[DevScribe] Content script loaded");
 
-    // Apply tooltip setting
-    state.tooltipEnabled = settings.tooltip_enabled !== false;
-
-    // Apply search history
-    if (settings.search_history) {
-      state.searchHistory = settings.search_history;
-    }
-
-    // Apply panel state
-    if (settings.panel_auto_open && !settings.panel_minimized) {
-      expandPanel();
-    } else {
-      collapsePanel();
-    }
-
-    // Apply default note type
-    const noteTypeSelect = panel.querySelector("#ds-note-type");
-    if (noteTypeSelect && settings.default_note_type) {
-      noteTypeSelect.value = settings.default_note_type;
-    }
-
-    // Load notes and initialize search
-    loadNotes();
-    initSearchPane();
-    origConsole.log("[DevScribe] Content script loaded - Phase 2 features active (settings wired)")
-  })
-})()
+   // Add event listeners for capture pane
+   capturePane.querySelector("#ds-done-select").addEventListener("click", () => {
+     // Save all selected elements as notes
+     state.selectedElements.forEach(el => {
+       const note = {
+         id: "n_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+         title: el.tagName + (el.id ? "#" + el.id : "") + " element",
+         body: el.text + "\n\n---\nSelector: " + el.selector + "\nRect: " + JSON.stringify(el.rect),
+         type: "observation",
+         tags: ["element"],
+         page: window.location.hash || "#/",
+         ts: Date.now(),
+       };
+       sendToBackground("SAVE_NOTE", { note });
+     });
+     finishElementSelection();
+     loadNotes();
+     switchTab("notes");
+   });
+})();

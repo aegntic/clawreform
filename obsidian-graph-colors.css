@@ -1,0 +1,138 @@
+/* Obsidian Graph View Color Coding and Grouping */
+/* Add this to vault/.obsidian/snippets/graph-colors.css */
+
+.graph-view.color-fill[data-color-method="tag"] .node {
+  /* Default node styling */
+  stroke-width: 1px;
+}
+
+/* Category-based colors */
+.graph-view.color-fill[data-color-method="tag"] .node[data-tag*="category/project"] {
+  fill: #4CAF50; /* Green for projects */
+  stroke: #388E3C;
+}
+
+.graph-view.color-fill[data-color-method="tag"] .node[data-tag*="category/concept"] {
+  fill: #2196F3; /* Blue for concepts */
+  stroke: #1976D2;
+}
+
+.graph-view.color-fill[data-color-method="tag"] .node[data-tag*="category/reference"] {
+  fill: #FF9800; /* Orange for references */
+  stroke: #F57C00;
+}
+
+.graph-view.color-fill[data-color-method="tag"] .node[data-tag*="category/personal"] {
+  fill: #E91E63; /* Pink for personal */
+  stroke: #C2185B;
+}
+
+/* Status-based styling */
+.graph-view.color-fill .node[data-tag*="status/active"] {
+  stroke: #4CAF50;
+  stroke-width: 2px;
+}
+
+.graph-view.color-fill .node[data-tag*="status/draft"] {
+  opacity: 0.7;
+  stroke-dasharray: 2,2;
+}
+
+.graph-view.color-fill .node[data-tag*="status/archived"] {
+  opacity: 0.4;
+  fill: #9E9E9E;
+}
+
+/* Folder-based colors */
+.graph-view.color-fill-attached .node[href^="/Projects/"] {
+  fill: #8BC34A;
+  stroke: #689F38;
+}
+
+.graph-view.color-fill-attached .node[href^="/Concepts/"] {
+  fill: #03A9F4;
+  stroke: #0288D1;
+}
+
+.graph-view.color-fill-attached .node[href^="/References/"] {
+  fill: #FFC107;
+  stroke: #FF8F00;
+}
+
+/* Priority highlighting */
+.graph-view.color-fill .node[data-tag*="priority/high"] {
+  stroke: #F44336;
+  stroke-width: 3px;
+  animation: pulse 2s infinite;
+}
+
+.graph-view.color-fill .node[data-tag*="priority/medium"] {
+  stroke: #FF9800;
+  stroke-width: 2px;
+}
+
+/* Semantic grouping - cluster styling */
+.graph-view .cluster {
+  fill-opacity: 0.1;
+  stroke: #ccc;
+  stroke-dasharray: 5,5;
+  stroke-width: 2px;
+}
+
+/* Central node highlighting */
+.graph-view .node[data-degree="high"] {
+  r: 8;
+  fill: #FFC107;
+  stroke: #FF8F00;
+  stroke-width: 2px;
+}
+
+/* Orphan node styling */
+.graph-view .node[data-orphaned="true"] {
+  fill: #F44336;
+  stroke: #B71C1C;
+  opacity: 0.8;
+  r: 3;
+}
+
+/* Link styling for different relationship types */
+.graph-view .link[data-type="bidirectional"] {
+  stroke: #4CAF50;
+  stroke-opacity: 0.6;
+}
+
+.graph-view .link[data-type="unidirectional"] {
+  stroke: #2196F3;
+  stroke-opacity: 0.4;
+}
+
+/* Animation for priority items */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Custom legend (requires additional plugin support) */
+.graph-legend {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.graph-legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.graph-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}

@@ -1,0 +1,15 @@
+[skill]
+name = "obsidian-cli"
+version = "0.1.0"
+description = "Official Obsidian CLI integration with community features for memory vault management, note operations, and semantic vector intelligence"
+author = "aegntic.ai"
+tags = ["notes", "knowledge-management", "obsidian", "memory", "cli", "semantic-search", "vector-intelligence"]
+
+[skill.capabilities]
+can_run_commands = true
+can_manage_files = true
+integrates_with_obsidian = true
+requires_obsidian_app = true
+can_use_semantic_search = true
+can_manage_plugins = true
+supports_vector_embeddings = true

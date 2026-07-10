@@ -1,0 +1,8 @@
+  >> clawREFORM by aegntic.ai
+     The open-source agent operating system
+
+  Starting daemon...
+
+2026-03-15T19:17:55.082018Z  INFO clawreform_kernel::config: Loaded configuration path=/home/ae/.clawreform/config.toml
+2026-03-15T19:17:55.082079Z  INFO clawreform_kernel::kernel: Booting ClawReform kernel...
+2026-03-15T19:17:55.094471Z  INFO clawreform_kernel::kernel: Model catalog: 141 models, 46 available from configured providers (3 local)

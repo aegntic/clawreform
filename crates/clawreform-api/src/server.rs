@@ -52,10 +52,10 @@ pub async fn build_router(
         shutdown_notify: Arc::new(tokio::sync::Notify::new()),
     });
 
-    // CORS: allow localhost origins by default. If API key is set, the API
-    // is protected anyway. For development, permissive CORS is convenient.
+    // CORS: allow localhost origins + chrome-extension:// for ClawPrompt extension.
+    // If API key is set, the API is protected anyway. For development, permissive CORS is convenient.
     let cors = if state.kernel.config.api_key.is_empty() {
-        // No auth → restrict CORS to localhost origins (include both 127.0.0.1 and localhost)
+        // No auth → restrict CORS to localhost origins + chrome-extension://
         let port = listen_addr.port();
         let mut origins: Vec<axum::http::HeaderValue> = vec![
             format!("http://{listen_addr}").parse().unwrap(),
@@ -73,33 +73,46 @@ pub async fn build_router(
                 }
             }
         }
+        // Allow chrome-extension:// origins for ClawPrompt browser extension
+        // Use predicate-based origin matching for chrome-extension:// scheme
+        use tower_http::cors::AllowOrigin;
+        let localhost_origins = origins.clone();
         CorsLayer::new()
-            .allow_origin(origins)
+            .allow_origin(AllowOrigin::predicate(move |origin, _| {
+                let origin_str = origin.to_str().unwrap_or("");
+                // Allow localhost origins
+                localhost_origins.iter().any(|o| o == origin) ||
+                // Allow chrome-extension:// origins (any extension ID)
+                origin_str.starts_with("chrome-extension://") ||
+                // Allow moz-extension:// for Firefox
+                origin_str.starts_with("moz-extension://")
+            }))
             .allow_methods(tower_http::cors::Any)
             .allow_headers(tower_http::cors::Any)
     } else {
-        // Auth enabled → restrict CORS to localhost + configured origins.
+        // Auth enabled → restrict CORS to localhost + configured origins + extensions.
         // SECURITY: CorsLayer::permissive() is dangerous — any website could
         // make cross-origin requests. Restrict to known origins instead.
         let port = listen_addr.port();
-        let mut origins: Vec<axum::http::HeaderValue> = vec![
+        let localhost_origins: Vec<axum::http::HeaderValue> = vec![
             format!("http://{listen_addr}").parse().unwrap(),
             format!("http://localhost:{port}").parse().unwrap(),
             format!("http://127.0.0.1:{port}").parse().unwrap(),
             "http://localhost:8080".parse().unwrap(),
             "http://127.0.0.1:8080".parse().unwrap(),
         ];
-        // Add the default localhost origin if the daemon is listening elsewhere.
-        if port != DEFAULT_API_PORT {
-            if let Ok(v) = format!("http://localhost:{DEFAULT_API_PORT}").parse() {
-                origins.push(v);
-            }
-            if let Ok(v) = format!("http://127.0.0.1:{DEFAULT_API_PORT}").parse() {
-                origins.push(v);
-            }
-        }
+        use tower_http::cors::AllowOrigin;
+        let origins_for_predicate = localhost_origins.clone();
         CorsLayer::new()
-            .allow_origin(origins)
+            .allow_origin(AllowOrigin::predicate(move |origin, _| {
+                let origin_str = origin.to_str().unwrap_or("");
+                // Allow localhost origins
+                origins_for_predicate.iter().any(|o| o == origin) ||
+                // Allow chrome-extension:// origins (any extension ID)
+                origin_str.starts_with("chrome-extension://") ||
+                // Allow moz-extension:// for Firefox
+                origin_str.starts_with("moz-extension://")
+            }))
             .allow_methods(tower_http::cors::Any)
             .allow_headers(tower_http::cors::Any)
     };
@@ -125,6 +138,15 @@ pub async fn build_router(
             axum::routing::get(routes::health_detail),
         )
         .route("/api/status", axum::routing::get(routes::status))
+        // Extension sync endpoints (ClawPrompt browser extension)
+        .route(
+            "/api/extension/sync",
+            axum::routing::post(routes::extension_sync),
+        )
+        .route(
+            "/api/extension/prompts",
+            axum::routing::get(routes::extension_prompts),
+        )
         .route("/api/version", axum::routing::get(routes::version))
         .route(
             "/api/agents",

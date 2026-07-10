@@ -1,0 +1,28 @@
+[package]
+name = "clawreform-teams"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Agent Team Orchestration for clawREFORM by aegntic.ai — 3-tier hierarchy (Orchestrator → Team Lead → Worker) with context bus, message bus, and quality review"
+
+[dependencies]
+clawreform-types = { path = "../clawreform-types" }
+clawreform-memory = { path = "../clawreform-memory" }
+clawreform-runtime = { path = "../clawreform-runtime" }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+dashmap = { workspace = true }
+async-trait = { workspace = true }
+futures = { workspace = true }
+walkdir = { workspace = true }
+regex-lite = { workspace = true }
+
+[dev-dependencies]
+tokio-test = { workspace = true }
+tempfile = { workspace = true }

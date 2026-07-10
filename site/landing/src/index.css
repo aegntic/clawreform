@@ -1,0 +1,414 @@
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+/* ========================================
+   TACTILE UI DESIGN SYSTEM — clawREFORM
+   Based on the Tactile UI Blueprint
+   ======================================== */
+
+/* --- Theme Tokens --- */
+:root {
+  /* Typography */
+  --font-display: 'Manrope', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+  --space-5xl: 128px;
+
+  /* Z-axis depth */
+  --shadow-contact: 0 6px 10px rgba(0, 0, 0, 0.4);
+  --shadow-distant: 2px 20px 25px rgba(0, 0, 0, 0.5);
+  --shadow-distant-hover: 2px 24px 30px rgba(0, 0, 0, 0.55);
+
+  /* Energy (Amber Glow) */
+  --glow-amber: 0 0 20px rgba(245, 165, 36, 0.25);
+  --glow-amber-intense: 0 0 30px rgba(245, 165, 36, 0.35);
+  --glow-hot-core: #FFF5E0;
+  --glow-falloff: #C47A00;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Dark Theme (Default) --- */
+html[data-theme="dark"] {
+  --bg-canvas: #1A1A1A;
+  --bg-surface: #222222;
+  --bg-surface-highlight: #2A2A2A;
+  --bg-recessed: #111111;
+  --text-primary: #F0F0F0;
+  --text-secondary: #AAAAAA;
+  --text-muted: #888888;
+  --text-on-accent: #1A1A1A;
+  --accent: #F5A524;
+  --accent-hover: #FFB833;
+  --accent-deep: #C47A00;
+  --border-highlight: rgba(255, 255, 255, 0.06);
+  --border-shadow: rgba(0, 0, 0, 0.3);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --specular-cut: rgba(255, 255, 255, 0.06);
+  --specular-catch: rgba(0, 0, 0, 0.3);
+  --noise-opacity: 0.025;
+  color-scheme: dark;
+}
+
+/* --- Light Theme --- */
+html[data-theme="light"] {
+  --bg-canvas: #F0EDE8;
+  --bg-canvas: #F0EDE8;
+  --bg-surface: #FFFFFF;
+  --bg-surface-highlight: #FFFFFF;
+  --bg-recessed: #E5E2DC;
+  --text-primary: #1A1A1A;
+  --text-secondary: #444444;
+  --text-muted: #666666;
+  --text-on-accent: #1A1A1A;
+  --accent: #D4890A;
+  --accent-hover: #E89A1A;
+  --accent-deep: #A66B00;
+  --border-highlight: rgba(255, 255, 255, 0.8);
+  --border-shadow: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --specular-cut: rgba(255, 255, 255, 0.6);
+  --specular-catch: rgba(0, 0, 0, 0.06);
+  --noise-opacity: 0.02;
+  --shadow-contact: 0 6px 10px rgba(0, 0, 0, 0.08);
+  --shadow-distant: 2px 20px 25px rgba(0, 0, 0, 0.1);
+  --shadow-distant-hover: 2px 24px 30px rgba(0, 0, 0, 0.12);
+  --glow-amber: 0 0 20px rgba(212, 137, 10, 0.2);
+  --glow-amber-intense: 0 0 30px rgba(212, 137, 10, 0.3);
+  color-scheme: light;
+}
+
+/* --- Base Reset --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-canvas) !important;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Ensure html element also has the canvas background */
+html {
+  background-color: var(--bg-canvas);
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* --- Noise Grain Overlay (THE MATTE VOID PROTOCOL) --- */
+.noise-canvas::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: var(--noise-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
+/* --- Tactile Component Classes --- */
+
+/* Raised panel — sits ON the canvas with contact shadow mass */
+.tactile-panel {
+  background: var(--bg-surface);
+  border-radius: 8px;
+  box-shadow:
+    var(--shadow-contact),
+    inset 0 1px 0 var(--specular-cut),
+    inset 0 -1px 0 var(--specular-catch);
+  position: relative;
+  transition: box-shadow var(--duration-normal) var(--ease-out-expo),
+              transform var(--duration-normal) var(--ease-out-expo);
+}
+
+.tactile-panel:hover {
+  box-shadow:
+    var(--shadow-distant-hover),
+    inset 0 1px 0 var(--specular-cut),
+    inset 0 -1px 0 var(--specular-catch),
+    var(--glow-amber);
+  transform: translateY(-2px);
+}
+
+/* Debossed track — recessed INTO the canvas */
+.tactile-deboss {
+  background: var(--bg-recessed);
+  border-radius: 6px;
+  box-shadow:
+    inset 2px 2px 4px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 2px var(--specular-cut);
+  position: relative;
+}
+
+.tactile-deboss::after {
+  content: '';
+  position: absolute;
+  inset: -1px 0 0 0;
+  border-radius: inherit;
+  border-top: 1px solid var(--border-highlight);
+  border-left: 1px solid var(--border-highlight);
+  pointer-events: none;
+}
+
+/* Amber energy glow — multiply over grain to prove physical surface */
+.tactile-glow {
+  position: relative;
+}
+
+.tactile-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 10%;
+  right: 10%;
+  height: 20px;
+  background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%);
+  opacity: 0;
+  filter: blur(8px);
+  mix-blend-mode: screen;
+  transition: opacity var(--duration-normal) var(--ease-out-expo);
+  pointer-events: none;
+}
+
+.tactile-glow:hover::after {
+  opacity: 0.6;
+}
+
+/* Tactile button — physically depresses on click */
+.tactile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 12px 28px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  position: relative;
+  transition:
+    transform var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tactile-btn:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+/* Primary amber button */
+.tactile-btn-primary {
+  background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+  color: var(--text-on-accent);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+    var(--glow-amber);
+}
+
+.tactile-btn-primary:hover {
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+    var(--glow-amber-intense);
+  transform: translateY(-1px);
+}
+
+.tactile-btn-primary:active {
+  box-shadow:
+    0 0px 2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Ghost button */
+.tactile-btn-ghost {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  box-shadow:
+    inset 0 1px 0 var(--specular-cut),
+    inset 0 -1px 0 var(--specular-catch);
+}
+
+.tactile-btn-ghost:hover {
+  border-color: var(--accent-deep);
+  box-shadow:
+    inset 0 1px 0 var(--specular-cut),
+    inset 0 -1px 0 var(--specular-catch),
+    var(--glow-amber);
+  color: var(--accent-deep);
+  transform: translateY(-1px);
+}
+
+/* --- Typography Utilities --- */
+.font-display { font-family: var(--font-display); }
+.font-body { font-family: var(--font-body); }
+.font-mono { font-family: var(--font-mono); }
+
+.brand-claw {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.brand-reform {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--accent);
+}
+
+/* Claw mark SVG gradient stops — theme-aware */
+.claw-grad-start { stop-color: var(--accent); }
+.claw-grad-end { stop-color: var(--accent-deep); }
+
+/* --- Flip Card --- */
+.flip-card {
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s var(--ease-out-expo);
+  transform-style: preserve-3d;
+}
+
+.flip-card-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 8px;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/* --- Dark/Light Toggle --- */
+.theme-toggle {
+  width: 52px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--bg-recessed);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  box-shadow:
+    inset 2px 2px 4px rgba(0, 0, 0, 0.3),
+    inset -1px -1px 2px var(--specular-cut),
+    0 1px 0 var(--specular-cut);
+  padding: 0;
+  transition: background var(--duration-normal) var(--ease-out-expo);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 var(--specular-cut);
+  transition:
+    transform var(--duration-normal) var(--ease-spring),
+    background var(--duration-normal) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+
+.theme-toggle[data-active="true"] .theme-toggle-thumb {
+  transform: translateX(24px);
+  background: var(--accent);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(245, 165, 36, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* --- Section spacing --- */
+.section-padding {
+  padding: var(--space-5xl) var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .section-padding {
+    padding: var(--space-5xl) var(--space-3xl);
+  }
+}
+
+@media (min-width: 1280px) {
+  .section-padding {
+    padding: var(--space-5xl) var(--space-4xl);
+  }
+}
+
+/* --- Scrollbar styling --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface-highlight);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 var(--specular-cut);
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

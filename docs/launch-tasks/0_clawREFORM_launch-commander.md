@@ -26,6 +26,7 @@ Design baseline for all visual work:
 | 12 | Email list super sherlock | Yes | 10 | gemini | `gemini-2.5-pro` / Google Gemini | segmentation and outreach mapping |
 | 13 | Launch control room | Yes | None | pi | `gemini-2.5-pro` / Google Gemini | cross-task summarization |
 | 14 | Design system translation | Yes | None | claude | `claude-sonnet-4-20250514` / Anthropic | design rule extraction |
+| 16 | Stitch Website Variations | Yes | None | claude | `glm-5.1` / Anthropic | website brand exploration |
 
 ## Standard Execution Contract
 

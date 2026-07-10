@@ -1,0 +1,9 @@
+{
+  "composition": "SiteFabricSequence",
+  "slug": "fabric",
+  "frameCount": 150,
+  "width": 960,
+  "height": 540,
+  "video": "/scroll-sequences/fabric/fabric.mp4",
+  "pattern": "/scroll-sequences/fabric/frame-%04d.jpg"
+}

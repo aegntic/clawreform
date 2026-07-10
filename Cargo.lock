@@ -818,7 +818,7 @@ checksum = "3a822ea5bc7590f9d40f1ba12c0dc3c2760f3482c6984db1573ad11031420831"
 
 [[package]]
 name = "clawreform-api"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -855,7 +855,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-channels"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "async-trait",
  "axum",
@@ -886,7 +886,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-cli"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "clap",
  "clap_complete",
@@ -913,7 +913,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-desktop"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "axum",
  "clawreform-api",
@@ -939,7 +939,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-extensions"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -967,7 +967,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-hands"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "chrono",
  "clawreform-types",
@@ -984,7 +984,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-kernel"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1020,7 +1020,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-memory"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1039,7 +1039,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-migrate"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "chrono",
  "clawreform-types",
@@ -1058,7 +1058,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-runtime"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1089,7 +1089,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-skills"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "chrono",
  "clawreform-types",
@@ -1110,8 +1110,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "clawreform-teams"
+version = "0.35.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "clawreform-memory",
+ "clawreform-runtime",
+ "clawreform-types",
+ "dashmap",
+ "futures",
+ "regex-lite",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-test",
+ "tracing",
+ "uuid",
+ "walkdir",
+]
+
+[[package]]
 name = "clawreform-types"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1130,7 +1154,7 @@ dependencies = [
 
 [[package]]
 name = "clawreform-wire"
-version = "0.3.0"
+version = "0.35.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -8790,7 +8814,7 @@ checksum = "b9cc00251562a284751c9973bace760d86c0276c471b4be569fe6b068ee97a56"
 
 [[package]]
 name = "xtask"
-version = "0.3.0"
+version = "0.35.1"
 
 [[package]]
 name = "yoke"

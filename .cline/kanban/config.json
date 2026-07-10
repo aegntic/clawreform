@@ -1,0 +1,34 @@
+{
+  "shortcuts": [
+    {
+      "label": "Run",
+      "command": "bun run dev",
+      "icon": "play"
+    },
+    {
+      "label": "Build",
+      "command": "cargo build --release -p clawreform-cli",
+      "icon": "hammer"
+    },
+    {
+      "label": "Test",
+      "command": "cargo test --workspace",
+      "icon": "check-circle"
+    },
+    {
+      "label": "Lint",
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "icon": "shield"
+    },
+    {
+      "label": "Check",
+      "command": "cargo check --workspace",
+      "icon": "eye"
+    },
+    {
+      "label": "Serve",
+      "command": "target/release/clawreform start",
+      "icon": "terminal"
+    }
+  ]
+}

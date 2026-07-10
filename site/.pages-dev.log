@@ -1,0 +1,71 @@
+
+ ⛅️ wrangler 4.73.0
+───────────────────
+✨ Compiled Worker successfully
+Your Worker has access to the following bindings:
+Binding                                                                   Resource                  Mode
+env.CF_PAGES ("1")                                                        Environment Variable      local
+env.CF_PAGES_BRANCH ("main")                                              Environment Variable      local
+env.CF_PAGES_COMMIT_SHA ("f1471099ca80cb25222baf2cc2a1a003bf081...")      Environment Variable      local
+env.CF_PAGES_URL ("https://f147109.clawreform.pages.dev")                 Environment Variable      local
+
+⎔ Starting local server...
+[wrangler:info] Ready on http://localhost:8788
+[wrangler:info] GET / 200 OK (8ms)
+[wrangler:info] GET /_next/static/css/b1a8892883fc22d0.css 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/webpack-2eb758dea75faf50.js 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/4bd1b696-c023c6e3521b1417.js 200 OK (3ms)
+[wrangler:info] GET /_next/static/chunks/493-1b4b276243b6e7dc.js 200 OK (46ms)
+[wrangler:info] GET /_next/static/chunks/main-app-87b7df010454952e.js 200 OK (45ms)
+[wrangler:info] GET /_next/static/chunks/619-ba102abea3e3d0e4.js 200 OK (45ms)
+[wrangler:info] GET /_next/static/chunks/app/not-found-2ebf4811e0389ad0.js 200 OK (45ms)
+[wrangler:info] GET /_next/static/chunks/c15bf2b0-f7282d455f9c4cd9.js 200 OK (46ms)
+[wrangler:info] GET /_next/static/chunks/674-1b99e256142c75eb.js 200 OK (7ms)
+[wrangler:info] GET /_next/static/chunks/app/page-1e76afa962631052.js 200 OK (11ms)
+[wrangler:info] GET /favicon.ico 404 Not Found (4ms)
+[wrangler:info] GET /platform.txt 200 OK (4ms)
+[wrangler:info] GET /download.txt 200 OK (6ms)
+[wrangler:info] GET /architecture.txt 200 OK (4ms)
+[wrangler:info] GET /docs.txt 200 OK (4ms)
+[wrangler:info] GET /pricing.txt 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/app/platform/page-d5901c13527c9f9f.js 200 OK (6ms)
+[wrangler:info] GET /contact.txt 200 OK (6ms)
+[wrangler:info] GET /_next/static/chunks/app/architecture/page-d5901c13527c9f9f.js 200 OK (5ms)
+[wrangler:info] GET /docs/getting-started.txt 200 OK (4ms)
+[wrangler:info] GET /_next/static/chunks/app/docs/page-d5901c13527c9f9f.js 200 OK (6ms)
+[wrangler:info] GET /_next/static/chunks/app/pricing/page-d5901c13527c9f9f.js 200 OK (6ms)
+[wrangler:info] GET /_next/static/chunks/app/download/page-d5901c13527c9f9f.js 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/app/contact/page-897216e6f39bf4e1.js 200 OK (5ms)
+[wrangler:info] GET /docs/concepts.txt 200 OK (12ms)
+[wrangler:info] GET /docs/api.txt 200 OK (13ms)
+[wrangler:info] GET /docs/configuration.txt 200 OK (15ms)
+[wrangler:info] GET / 200 OK (3ms)
+[wrangler:info] GET /_next/static/css/b1a8892883fc22d0.css 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/webpack-2eb758dea75faf50.js 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/4bd1b696-c023c6e3521b1417.js 200 OK (6ms)
+[wrangler:info] GET /_next/static/chunks/493-1b4b276243b6e7dc.js 200 OK (21ms)
+[wrangler:info] GET /_next/static/chunks/main-app-87b7df010454952e.js 200 OK (22ms)
+[wrangler:info] GET /_next/static/chunks/619-ba102abea3e3d0e4.js 200 OK (23ms)
+[wrangler:info] GET /_next/static/chunks/app/not-found-2ebf4811e0389ad0.js 200 OK (18ms)
+[wrangler:info] GET /_next/static/chunks/c15bf2b0-f7282d455f9c4cd9.js 200 OK (18ms)
+[wrangler:info] GET /_next/static/chunks/674-1b99e256142c75eb.js 200 OK (3ms)
+[wrangler:info] GET /_next/static/chunks/app/page-1e76afa962631052.js 200 OK (5ms)
+[wrangler:info] GET /platform.txt 200 OK (4ms)
+[wrangler:info] GET /architecture.txt 200 OK (4ms)
+[wrangler:info] GET /docs.txt 200 OK (10ms)
+[wrangler:info] GET /pricing.txt 200 OK (9ms)
+[wrangler:info] GET /download.txt 200 OK (9ms)
+[wrangler:info] GET /_next/static/chunks/app/platform/page-d5901c13527c9f9f.js 200 OK (4ms)
+[wrangler:info] GET /contact.txt 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/app/architecture/page-d5901c13527c9f9f.js 200 OK (4ms)
+[wrangler:info] GET /docs/getting-started.txt 200 OK (6ms)
+[wrangler:info] GET /_next/static/chunks/app/docs/page-d5901c13527c9f9f.js 200 OK (6ms)
+[wrangler:info] GET /_next/static/chunks/app/pricing/page-d5901c13527c9f9f.js 200 OK (7ms)
+[wrangler:info] GET /_next/static/chunks/app/download/page-d5901c13527c9f9f.js 200 OK (5ms)
+[wrangler:info] GET /_next/static/chunks/app/contact/page-897216e6f39bf4e1.js 200 OK (4ms)
+[wrangler:info] GET /contact.txt 304 Not Modified (3ms)
+[wrangler:info] GET / 200 OK (10ms)
+⎔ Reloading local server...
+⎔ Local server updated and ready
+⎔ Reloading local server...
+⎔ Local server updated and ready

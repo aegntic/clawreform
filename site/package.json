@@ -1,0 +1,34 @@
+{
+  "name": "clawreform-site",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "pages:dev": "npm run build && npx wrangler pages dev out --compatibility-date 2024-12-01",
+    "pages:deploy": "npm run build && npx wrangler pages deploy out --project-name clawreform",
+    "pages:deploy:skip-build": "npx wrangler pages deploy out --project-name clawreform"
+  },
+  "dependencies": {
+    "gsap": "^3.14.2",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260313.1",
+    "@eslint/eslintrc": "^3.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.1.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.73.0"
+  }
+}

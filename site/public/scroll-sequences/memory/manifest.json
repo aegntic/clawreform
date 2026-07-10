@@ -1,0 +1,9 @@
+{
+  "composition": "SiteMemorySequence",
+  "slug": "memory",
+  "frameCount": 120,
+  "width": 960,
+  "height": 540,
+  "video": "/scroll-sequences/memory/memory.mp4",
+  "pattern": "/scroll-sequences/memory/frame-%04d.jpg"
+}

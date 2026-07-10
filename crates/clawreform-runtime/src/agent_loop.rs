@@ -291,10 +291,11 @@ pub async fn run_agent_loop(
 
         // Recover tool calls output as text by models that don't use the tool_calls API field
         // (e.g. Groq/Llama, DeepSeek emit `<function=name>{json}</function>` in text)
-        if matches!(
-            response.stop_reason,
-            StopReason::EndTurn | StopReason::StopSequence
-        ) && response.tool_calls.is_empty()
+        if response.tool_calls.is_empty()
+            && matches!(
+                response.stop_reason,
+                StopReason::EndTurn | StopReason::StopSequence | StopReason::ToolUse
+            )
         {
             let recovered = recover_text_tool_calls(&response.text(), available_tools);
             if !recovered.is_empty() {
@@ -1182,10 +1183,11 @@ pub async fn run_agent_loop_streaming(
         total_usage.output_tokens += response.usage.output_tokens;
 
         // Recover tool calls output as text (streaming path)
-        if matches!(
-            response.stop_reason,
-            StopReason::EndTurn | StopReason::StopSequence
-        ) && response.tool_calls.is_empty()
+        if response.tool_calls.is_empty()
+            && matches!(
+                response.stop_reason,
+                StopReason::EndTurn | StopReason::StopSequence | StopReason::ToolUse
+            )
         {
             let recovered = recover_text_tool_calls(&response.text(), available_tools);
             if !recovered.is_empty() {
@@ -1758,6 +1760,110 @@ fn recover_text_tool_calls(text: &str, available_tools: &[ToolDefinition]) -> Ve
             name: tool_name.to_string(),
             input,
         });
+    }
+
+    // Pattern 3: [TOOL_CALL]\n{tool => "NAME", args => { --key "value" }}\n[/TOOL_CALL]
+    // (Qwen3.5 local model variant)
+    search_from = 0;
+    while let Some(start) = text[search_from..].find("[TOOL_CALL]") {
+        let abs_start = search_from + start;
+        let after_tag = abs_start + "[TOOL_CALL]".len();
+
+        let Some(close_offset) = text[after_tag..].find("[/TOOL_CALL]") else {
+            search_from = after_tag;
+            continue;
+        };
+        let inner = &text[after_tag..after_tag + close_offset];
+        search_from = after_tag + close_offset + "[/TOOL_CALL]".len();
+
+        // Extract tool name: {tool => "NAME"
+        let Some(tool_start) = inner.find("tool => \"") else {
+            continue;
+        };
+        let name_start = tool_start + "tool => \"".len();
+        let Some(name_end) = inner[name_start..].find('"') else {
+            continue;
+        };
+        let tool_name = &inner[name_start..name_start + name_end];
+
+        if !tool_names.contains(&tool_name) {
+            continue;
+        }
+
+        // Extract args block: args => { ... }
+        let Some(args_start) = inner.find("args => {") else {
+            continue;
+        };
+        let args_body_start = args_start + "args => ".len();
+        // Find matching closing brace
+        let mut brace_count = 0;
+        let mut args_end = None;
+        for (i, ch) in inner[args_body_start..].char_indices() {
+            if ch == '{' {
+                brace_count += 1;
+            } else if ch == '}' {
+                brace_count -= 1;
+                if brace_count == 0 {
+                    args_end = Some(i + 1);
+                    break;
+                }
+            }
+        }
+        let Some(args_len) = args_end else {
+            continue;
+        };
+        let args_str = &inner[args_body_start..args_body_start + args_len];
+
+        // Convert Qwen args format to JSON: --key "value" or --key value
+        let mut json_map = serde_json::Map::new();
+        // Find all --key "value" or --key value patterns
+        let mut pos = 0;
+        while let Some(key_start) = args_str[pos..].find("--") {
+            let abs_key = pos + key_start + 2;
+            // Find end of key (space or end)
+            let key_end = args_str[abs_key..].find(|c: char| c.is_whitespace()).unwrap_or(args_str[abs_key..].len());
+            let key = &args_str[abs_key..abs_key + key_end];
+            let val_start = abs_key + key_end;
+            // Skip whitespace
+            let val_start = val_start + args_str[val_start..].len() - args_str[val_start..].trim_start().len();
+            let val_rest = &args_str[val_start..];
+            // Check if value is quoted
+            let (value, consumed) = if val_rest.starts_with('"') {
+                // Quoted value
+                let Some(quote_end) = val_rest[1..].find('"') else {
+                    pos = val_start;
+                    continue;
+                };
+                (val_rest[1..quote_end + 1].to_string(), quote_end + 2)
+            } else {
+                // Unquoted value - read until next -- or end
+                let end = val_rest.find("--").unwrap_or(val_rest.len());
+                (val_rest[..end].trim().to_string(), end)
+            };
+            if !key.is_empty() && !value.is_empty() {
+                json_map.insert(key.to_string(), serde_json::Value::String(value));
+            }
+            pos = val_start + consumed;
+        }
+
+        if !json_map.is_empty() {
+            let input = serde_json::Value::Object(json_map);
+            info!(
+                tool = tool_name,
+                "Recovered Qwen3.5 text-based tool call → synthetic ToolUse"
+            );
+            // Avoid duplicates
+            if !calls
+                .iter()
+                .any(|c| c.name == tool_name && c.input == input)
+            {
+                calls.push(ToolCall {
+                    id: format!("recovered_{}", uuid::Uuid::new_v4()),
+                    name: tool_name.to_string(),
+                    input,
+                });
+            }
+        }
     }
 
     calls

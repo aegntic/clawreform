@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asset Review — aegntic.ai</title>
+<style>
+  :root {
+    --bg: #0a0a12;
+    --surface: #14141f;
+    --surface-hover: #1c1c2e;
+    --border: #2a2a3d;
+    --cyan: #00CFE5;
+    --cyan-dim: rgba(0,207,229,0.15);
+    --bronze: #CD7F32;
+    --bronze-dim: rgba(205,127,50,0.15);
+    --silver: #C0C0C0;
+    --silver-dim: rgba(192,192,192,0.1);
+    --red: #e74c5e;
+    --red-dim: rgba(231,76,94,0.15);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.15);
+    --text: #e8e8f0;
+    --text-dim: #8888a0;
+    --text-muted: #55556a;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,18,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+  }
+  .header-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+  }
+  .header-title h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .header-title h1 span { color: var(--cyan); }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--cyan-dim);
+    color: var(--cyan);
+  }
+
+  /* ── Stats bar ── */
+  .stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .stat {
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .stat-dot.pending { background: var(--text-muted); }
+  .stat-dot.approved { background: var(--green); }
+  .stat-dot.rejected { background: var(--red); }
+
+  /* ── Controls ── */
+  .controls {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px 24px 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box input:focus { border-color: var(--cyan); }
+  .search-box input::placeholder { color: var(--text-muted); }
+
+  .filter-tabs {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .filter-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-tab:hover { color: var(--text); background: var(--surface-hover); }
+  .filter-tab.active { color: var(--cyan); background: var(--cyan-dim); }
+
+  .cat-select {
+    padding: 9px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+  .cat-select:focus { border-color: var(--cyan); }
+
+  .bulk-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-hover); color: var(--text); }
+  .btn-approve { border-color: var(--green); color: var(--green); }
+  .btn-approve:hover { background: var(--green-dim); }
+  .btn-reject { border-color: var(--red); color: var(--red); }
+  .btn-reject:hover { background: var(--red-dim); }
+  .btn-cyan { border-color: var(--cyan); color: var(--cyan); }
+  .btn-cyan:hover { background: var(--cyan-dim); }
+  .btn-bronze { border-color: var(--bronze); color: var(--bronze); }
+  .btn-bronze:hover { background: var(--bronze-dim); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* ── Grid ── */
+  .grid {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px 24px 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover { border-color: #3a3a52; transform: translateY(-1px); }
+  .card.approved { border-color: rgba(52,211,153,0.35); }
+  .card.rejected { border-color: rgba(231,76,94,0.35); }
+
+  .card-thumb {
+    position: relative;
+    aspect-ratio: 16/10;
+    background: #0e0e1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 8px;
+  }
+  .card-thumb .video-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+  }
+  .card-thumb .video-placeholder svg { opacity: 0.4; }
+  .card-thumb .video-placeholder span { font-size: 12px; }
+
+  .card-status-strip {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .card-status-strip.pending { background: var(--silver-dim); color: var(--silver); }
+  .card-status-strip.approved { background: var(--green-dim); color: var(--green); }
+  .card-status-strip.rejected { background: var(--red-dim); color: var(--red); }
+
+  .card-type-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.5);
+    color: var(--cyan);
+  }
+
+  .card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .card-tag {
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--cyan-dim);
+    color: var(--cyan);
+    font-weight: 500;
+  }
+  .card-tag.video { background: var(--bronze-dim); color: var(--bronze); }
+  .card-info {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .card-usage {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .card-path {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    word-break: break-all;
+    opacity: 0.7;
+  }
+
+  .card-notes {
+    margin-top: auto;
+  }
+  .card-notes textarea {
+    width: 100%;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 48px;
+    max-height: 120px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .card-notes textarea:focus { border-color: var(--cyan); }
+  .card-notes textarea::placeholder { color: var(--text-muted); }
+
+  .card-actions {
+    display: flex;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .card-actions .btn { flex: 1; justify-content: center; }
+
+  /* ── Empty state ── */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+  .empty svg { margin-bottom: 16px; opacity: 0.3; }
+  .empty p { font-size: 15px; }
+  .empty .hint { font-size: 13px; margin-top: 8px; }
+
+  /* ── Drop zone ── */
+  .drop-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(0,207,229,0.06);
+    border: 3px dashed var(--cyan);
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--cyan);
+    font-weight: 600;
+    pointer-events: none;
+  }
+  .drop-overlay.visible { display: flex; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 13px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Lightbox ── */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0,0,0,0.9);
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    .controls { padding: 12px 16px 0; }
+    .header { padding: 12px 16px; }
+    .grid { padding: 12px 16px 32px; }
+    .bulk-actions { margin-left: 0; width: 100%; }
+    .header-inner { gap: 8px; }
+    .stats { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="drop-overlay" id="dropOverlay">Drop JSON manifest here</div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="">
+</div>
+<div class="toast" id="toast"></div>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-title">
+      <h1>Asset <span>Review</span></h1>
+      <span class="badge" id="totalBadge">0 assets</span>
+    </div>
+    <div class="stats">
+      <span class="stat"><span class="stat-dot pending"></span> <span id="pendingCount">0</span> pending</span>
+      <span class="stat"><span class="stat-dot approved"></span> <span id="approvedCount">0</span> approved</span>
+      <span class="stat"><span class="stat-dot rejected"></span> <span id="rejectedCount">0</span> rejected</span>
+    </div>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="Search assets by name, path, notes..." oninput="render()">
+  </div>
+
+  <div class="filter-tabs" id="filterTabs">
+    <button class="filter-tab active" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="pending">Pending</button>
+    <button class="filter-tab" data-filter="approved">Approved</button>
+    <button class="filter-tab" data-filter="rejected">Rejected</button>
+  </div>
+
+  <select class="cat-select" id="catFilter" onchange="render()">
+    <option value="all">All Categories</option>
+  </select>
+
+  <div class="bulk-actions">
+    <button class="btn btn-approve btn-sm" onclick="bulkAction('approved')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      Approve visible
+    </button>
+    <button class="btn btn-reject btn-sm" onclick="bulkAction('rejected')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      Reject visible
+    </button>
+    <button class="btn btn-cyan btn-sm" onclick="exportApproved()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+      Export approved
+    </button>
+    <button class="btn btn-bronze btn-sm" onclick="resetAll()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      Reset all
+    </button>
+    <button class="btn btn-sm" id="toggleExcluded" onclick="toggleExcluded()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Show non-aegntic
+    </button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- Embedded manifests for file:// protocol support -->
+<script id="manifest-images" type="application/json">[{"id":"ae-001","path":"/home/ae/Pictures/ae-logo.png","category":"ae-logo-primary","name":"ae-logo.png","format":"png","size_bytes":313492,"width":688,"height":377,"suggested_usage":"Primary aegntic.ai logo — canonical brand mark for headers, nav, docs","status":"active","notes":"313KB, horizontal layout. Copied to assets/branding/ae-logo.png"},{"id":"ae-002","path":"/home/ae/AE/00_Dropzone/ae-logos1-flux2@1024x1024.png","category":"ae-logo-concept","name":"ae-logos1-flux2","format":"png","size_bytes":1728202,"width":1024,"height":1024,"suggested_usage":"Logo concept variant — flux2 model generation","status":"concept","notes":"1.7MB, square 1024x1024. AI-generated concept."},{"id":"ae-003","path":"/home/ae/AE/00_Dropzone/ae-logos1-nb3p@1024x1024.png","category":"ae-logo-concept","name":"ae-logos1-nb3p","format":"png","size_bytes":20056341,"width":4096,"height":4096,"suggested_usage":"Logo concept variant — nb3p model generation, high-res","status":"concept","notes":"19.1MB, 4K square. AI-generated concept."},{"id":"ae-004","path":"/home/ae/AE/00_Dropzone/ae-logos2-nb3p@1024x1024.png","category":"ae-logo-concept","name":"ae-logos2-nb3p","format":"png","size_bytes":21531111,"width":4096,"height":4096,"suggested_usage":"Logo concept variant — nb3p model generation v2, high-res","status":"concept","notes":"20.5MB, 4K square. AI-generated concept."},{"id":"ae-005","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_aegnt27_1765002376575.png","category":"ae-logo-concept","name":"logo_aegnt27","format":"png","size_bytes":1297799,"width":1024,"height":1024,"suggested_usage":"CLDCDE icon concept — aegntic27 variant","status":"concept","notes":"1.3MB, square icon format."},{"id":"ae-006","path":"/home/ae/AE/00_Dropzone/aegntic_glass_editorial_slide_cover_16x9.png","category":"ae-editorial","name":"aegntic_glass_editorial_slide_cover_16x9","format":"png","size_bytes":768068,"width":1920,"height":1080,"suggested_usage":"Editorial slide cover — 16:9 presentation deck cover","status":"active","notes":"750KB, 1080p landscape. Glass editorial style."},{"id":"ae-007","path":"/home/ae/AE/00_Dropzone/aegntic_glass_editorial_slide_metrics_16x9.png","category":"ae-editorial","name":"aegntic_glass_editorial_slide_metrics_16x9","format":"png","size_bytes":616391,"width":1920,"height":1080,"suggested_usage":"Editorial metrics slide — data/metrics visualization slide","status":"active","notes":"602KB, 1080p landscape. Glass editorial style."},{"id":"ae-008","path":"/home/ae/AE/00_Dropzone/aegntic_glass_editorial_slide_system_map_16x9.png","category":"ae-editorial","name":"aegntic_glass_editorial_slide_system_map_16x9","format":"png","size_bytes":929775,"width":1920,"height":1080,"suggested_usage":"Editorial system map slide — architecture/system diagram slide","status":"active","notes":"908KB, 1080p landscape. Glass editorial style."},{"id":"ae-009","path":"/home/ae/AE/00_Dropzone/aegntic_glass_editorial_styleguide_a4.png","category":"ae-editorial","name":"aegntic_glass_editorial_styleguide_a4","format":"png","size_bytes":4091222,"width":2480,"height":3508,"suggested_usage":"Brand styleguide — A4 print-ready reference sheet","status":"active","notes":"3.9MB, A4 portrait (2480x3508). Comprehensive brand style guide."},{"id":"ae-010","path":"/home/ae/Pictures/aegntic-images-ae-inspo/ae-vogue-title.jpg","category":"ae-inspiration","name":"ae-vogue-title","format":"jpg","size_bytes":900918,"width":1408,"height":768,"suggested_usage":"Mood board — Vogue-style title treatment inspiration","status":"reference","notes":"880KB, landscape. Editorial/Vogue aesthetic reference."},{"id":"ae-011","path":"/home/ae/Pictures/aegntic-images-ae-inspo/aegnticdotai-heading-logo.png","category":"ae-inspiration","name":"aegnticdotai-heading-logo","format":"png","size_bytes":814039,"width":1536,"height":1024,"suggested_usage":"Mood board — heading + logo composition reference","status":"reference","notes":"795KB, 3:2 landscape. Shows logo placement with heading."},{"id":"ae-012","path":"/home/ae/Pictures/aegntic-images-ae-inspo/aegnticdotai-onepage.png","category":"ae-inspiration","name":"aegnticdotai-onepage","format":"png","size_bytes":4514740,"width":1953,"height":12395,"suggested_usage":"Mood board — full one-page site design reference (very tall)","status":"reference","notes":"4.3MB, extremely tall (12395px). Full-page site mockup."},{"id":"ae-013","path":"/home/ae/Pictures/aegntic-images-ae-inspo/vogue-ae.jpg","category":"ae-inspiration","name":"vogue-ae","format":"jpg","size_bytes":2833266,"width":3072,"height":5504,"suggested_usage":"Mood board — Vogue-style AE editorial composition","status":"reference","notes":"2.7MB, tall portrait (3072x5504). Fashion editorial style."},{"id":"ae-014","path":"/home/ae/Pictures/aegnticai.png","category":"ae-screenshot","name":"aegnticai","format":"png","size_bytes":1262290,"width":1408,"height":736,"suggested_usage":"Site screenshot — aegntic.ai homepage capture","status":"reference","notes":"1.2MB, landscape screenshot."},{"id":"ae-015","path":"/home/ae/Pictures/aegnticai.jpg","category":"ae-screenshot","name":"aegnticai","format":"jpg","size_bytes":164819,"width":1938,"height":1008,"suggested_usage":"Site screenshot — aegntic.ai homepage (compressed)","status":"reference","notes":"161KB, landscape. Smaller compressed version."},{"id":"ae-016","path":"/home/ae/Pictures/aegnticai (4k).jpg","category":"ae-screenshot","name":"aegnticai-4k","format":"jpg","size_bytes":1213156,"width":3840,"height":1997,"suggested_usage":"Site screenshot — aegntic.ai homepage in 4K","status":"reference","notes":"1.2MB, 4K landscape. Highest quality screenshot."},{"id":"sv-001","path":"/home/ae/openclaw/aegnticdotai/public/assets/visuals/hero-typography.png","category":"site-visual","name":"hero-typography","format":"png","size_bytes":617741,"width":1024,"height":682,"suggested_usage":"Hero background — main typography-focused hero visual","status":"active","notes":"603KB, 3:2 landscape. Primary hero image for aegntic.ai."},{"id":"sv-002","path":"/home/ae/openclaw/aegnticdotai/public/assets/visuals/hero-sculpture.png","category":"site-visual","name":"hero-sculpture","format":"png","size_bytes":43633,"width":640,"height":640,"suggested_usage":"Hero variant — sculpture-themed hero visual","status":"active","notes":"43KB, square 640x640. Optimized web asset."},{"id":"sv-003","path":"/home/ae/openclaw/aegnticdotai/public/assets/visuals/glass-waveform.png","category":"site-visual","name":"glass-waveform","format":"png","size_bytes":21004,"width":640,"height":640,"suggested_usage":"Feature visual — glass waveform accent graphic","status":"active","notes":"21KB, square 640x640. Lightweight web asset."},{"id":"sv-004","path":"/home/ae/openclaw/aegnticdotai/public/assets/visuals/research-crystal.png","category":"site-visual","name":"research-crystal","format":"png","size_bytes":40704,"width":640,"height":640,"suggested_usage":"Feature visual — research/crystal accent graphic","status":"active","notes":"40KB, square 640x640. Optimized web asset."},{"id":"sv-005","path":"/home/ae/openclaw/aegnticdotai/public/assets/visuals/about-mesh.png","category":"site-visual","name":"about-mesh","format":"png","size_bytes":48589,"width":640,"height":640,"suggested_usage":"About section — mesh network visual","status":"active","notes":"47KB, square 640x640. Optimized web asset."},{"id":"cr-001","path":"/home/ae/clawreform/assets/branding/claw-logo-source-approved.png","category":"clawreform-brand","name":"claw-logo-source-approved","format":"png","size_bytes":2269738,"width":1536,"height":1024,"suggested_usage":"clawreform approved logo source — print/presentation master","status":"approved","notes":"2.2MB, 3:2 landscape. Approved source asset."},{"id":"cr-002","path":"/home/ae/clawreform/assets/branding/clawreform-logo-source-v2.png","category":"clawreform-brand","name":"clawreform-logo-source-v2","format":"png","size_bytes":510720,"width":640,"height":640,"suggested_usage":"clawreform logo source v2 — square format","status":"approved","notes":"499KB, square 640x640. Version 2 source."},{"id":"cr-003","path":"/home/ae/clawreform/assets/branding/clawreform-logo-v2.png","category":"clawreform-brand","name":"clawreform-logo-v2","format":"png","size_bytes":3096751,"width":2048,"height":2048,"suggested_usage":"clawreform logo v2 — high-res square for any use","status":"approved","notes":"3.0MB, 2K square. Primary clawreform brand mark."},{"id":"cr-004","path":"/home/ae/clawreform/assets/branding/clawreform-mark-v2.png","category":"clawreform-brand","name":"clawreform-mark-v2","format":"png","size_bytes":1101875,"width":1024,"height":1024,"suggested_usage":"clawreform icon mark v2 — favicon, app icon, social avatar","status":"approved","notes":"1.1MB, square 1024x1024. Symbol mark only."},{"id":"cr-005","path":"/home/ae/clawreform/assets/branding/logo-lockup-master-transparent.png","category":"clawreform-brand","name":"logo-lockup-master-transparent","format":"png","size_bytes":630674,"width":1024,"height":1024,"suggested_usage":"clawreform logo lockup — horizontal logo+wordmark, transparent","status":"approved","notes":"616KB, square 1024x1024. Logo lockup with transparent BG."},{"id":"cr-006","path":"/home/ae/clawreform/assets/branding/logo-master-transparent.png","category":"clawreform-brand","name":"logo-master-transparent","format":"png","size_bytes":630674,"width":1024,"height":1024,"suggested_usage":"clawreform master logo — transparent background version","status":"approved","notes":"616KB, square 1024x1024. Same size as lockup — may be duplicate."},{"id":"cr-007","path":"/home/ae/Pictures/clawreform-icon-logo-2k.png","category":"clawreform-icon","name":"clawreform-icon-logo-2k","format":"png","size_bytes":1772635,"width":1024,"height":1024,"suggested_usage":"clawreform icon — 1K resolution, app icon / social","status":"active","notes":"1.7MB, square 1024x1024. Despite name, actual res is 1024."},{"id":"cr-008","path":"/home/ae/Pictures/clawreform-icon-logo.png","category":"clawreform-icon","name":"clawreform-icon-logo","format":"png","size_bytes":87310,"width":250,"height":250,"suggested_usage":"clawreform icon — small thumbnail size","status":"active","notes":"85KB, 250x250. Small version for inline use."},{"id":"cr-009","path":"/home/ae/Pictures/clawreform-logo-backgrounded.png","category":"clawreform-icon","name":"clawreform-logo-backgrounded","format":"png","size_bytes":5376676,"width":2048,"height":2048,"suggested_usage":"clawreform logo — 2K with background fill","status":"active","notes":"5.1MB, 2K square. Has solid background, not transparent."},{"id":"cr-010","path":"/home/ae/Pictures/clawreform-logo.jpeg","category":"clawreform-icon","name":"clawreform-logo","format":"jpg","size_bytes":699931,"width":2048,"height":2048,"suggested_usage":"clawreform logo — JPEG format 2K (no transparency)","status":"active","notes":"684KB, 2K square. JPEG for contexts needing non-transparent."},{"id":"cr-011","path":"/home/ae/Pictures/clawreform-logo2.jpeg","category":"clawreform-icon","name":"clawreform-logo2","format":"jpg","size_bytes":402256,"width":2048,"height":2048,"suggested_usage":"clawreform logo v2 — JPEG format 2K","status":"active","notes":"393KB, 2K square. Smaller JPEG variant."},{"id":"cr-012","path":"/home/ae/Pictures/clawreform-long-logo.png","category":"clawreform-long","name":"clawreform-long-logo","format":"png","size_bytes":1653591,"width":1536,"height":1024,"suggested_usage":"clawreform long logo — horizontal wordmark for headers/nav","status":"active","notes":"1.6MB, 3:2 landscape. Primary horizontal logo."},{"id":"cr-013","path":"/home/ae/Pictures/clawreform-long-logo-nobg.png","category":"clawreform-long","name":"clawreform-long-logo-nobg","format":"png","size_bytes":378693,"width":1248,"height":832,"suggested_usage":"clawreform long logo — transparent background","status":"active","notes":"370KB, 3:2 landscape. Transparent BG version of long logo."},{"id":"cr-014","path":"/home/ae/Pictures/clawreform-long-logo-sluts.png","category":"clawreform-long","name":"clawreform-long-logo-sluts","format":"png","size_bytes":311251,"width":1248,"height":832,"suggested_usage":"clawreform long logo — variant (slots/sluts naming unclear)","status":"active","notes":"304KB, 3:2 landscape. Same dimensions as nobg — likely similar."},{"id":"cr-015","path":"/home/ae/Pictures/clawreform5.png","category":"clawreform-icon","name":"clawreform5","format":"png","size_bytes":7265368,"width":2112,"height":2016,"suggested_usage":"clawreform concept — near-square high-res concept","status":"reference","notes":"6.9MB, near-square. Likely an early concept or alternate design."},{"id":"prod-001","path":"/home/ae/Pictures/autoclaw-icon.jpg","category":"ae-product","name":"autoclaw-icon","format":"jpg","size_bytes":213629,"width":499,"height":500,"suggested_usage":"AutoClaw product icon","status":"active","notes":"209KB, near-square 499x500. Product icon for AutoClaw."},{"id":"prod-002","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_d3mo_1765002436051.png","category":"ae-product","name":"logo_d3mo","format":"png","size_bytes":1226236,"width":1024,"height":1024,"suggested_usage":"D3Mo product icon — CLDCDE ecosystem","status":"active","notes":"1.2MB, square 1024x1024."},{"id":"prod-003","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_fpef_1765002334864.png","category":"ae-product","name":"logo_fpef","format":"png","size_bytes":1239603,"width":1024,"height":1024,"suggested_usage":"FPEF product icon — CLDCDE ecosystem","status":"active","notes":"1.2MB, square 1024x1024."},{"id":"prod-004","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_obs_1765002454644.png","category":"ae-product","name":"logo_obs","format":"png","size_bytes":1111335,"width":1024,"height":1024,"suggested_usage":"OBS product icon — CLDCDE ecosystem","status":"active","notes":"1.1MB, square 1024x1024."},{"id":"prod-005","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_prologue_1765002393629.png","category":"ae-product","name":"logo_prologue","format":"png","size_bytes":1150871,"width":1024,"height":1024,"suggested_usage":"Prologue product icon — CLDCDE ecosystem","status":"active","notes":"1.1MB, square 1024x1024."},{"id":"prod-006","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_stoa_suite.png","category":"ae-product","name":"logo_stoa_suite","format":"png","size_bytes":1314150,"width":1024,"height":1024,"suggested_usage":"Stoa Suite product icon — CLDCDE ecosystem","status":"active","notes":"1.3MB, square 1024x1024."},{"id":"prod-007","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_ultraplan_1765002300581.png","category":"ae-product","name":"logo_ultraplan","format":"png","size_bytes":1067285,"width":1024,"height":1024,"suggested_usage":"Ultraplan product icon — CLDCDE ecosystem","status":"active","notes":"1.0MB, square 1024x1024."},{"id":"prod-008","path":"/home/ae/AE/00_Dropzone/cldcde-icons/logo_viral27_1765002355285.png","category":"ae-product","name":"logo_viral27","format":"png","size_bytes":1289075,"width":1024,"height":1024,"suggested_usage":"Viral27 product icon — CLDCDE ecosystem","status":"active","notes":"1.3MB, square 1024x1024."}]</script>
+<script id="manifest-videos" type="application/json">[{"id":"vid-001","path":"/home/ae/AE/00_Dropzone/SPLASH_girls/sota-gallery-hero-clip1.mp4","category":"hero","name":"SOTA Gallery Hero Clip 1","format":"mp4","duration_seconds":8.0,"resolution":"1280x720","size_bytes":113650482,"suggested_usage":"Landing hero background, SOTA gallery","status":"production-ready"},{"id":"vid-002","path":"/home/ae/AE/00_Dropzone/SPLASH_girls/sota-gallery-hero-clip2.mp4","category":"hero","name":"SOTA Gallery Hero Clip 2","format":"mp4","duration_seconds":8.0,"resolution":"1280x720","size_bytes":104654217,"suggested_usage":"Landing hero background (alt), SOTA gallery","status":"production-ready"},{"id":"vid-003","path":"/home/ae/AE/00_Dropzone/SPLASH_girls/sota-gallery-hero-clip2-second-half.mp4","category":"hero","name":"SOTA Gallery Hero Clip 2 Second Half","format":"mp4","duration_seconds":4.0,"resolution":"1280x720","size_bytes":92775189,"suggested_usage":"Shorter hero variant / transition","status":"production-ready"},{"id":"vid-004","path":"/home/ae/Videos/splash_girls_intro.mp4","category":"hero","name":"Splash Girls Intro","format":"mp4","duration_seconds":8.0,"resolution":"1280x720","size_bytes":19941513,"suggested_usage":"Site intro / page load animation","status":"production-ready"},{"id":"vid-005","path":"/home/ae/Videos/splash_girls_outro1.mp4","category":"hero","name":"Splash Girls Outro 1","format":"mp4","duration_seconds":8.0,"resolution":"1280x720","size_bytes":87086753,"suggested_usage":"Section outro / page transition","status":"production-ready"},{"id":"vid-006","path":"/home/ae/AE/00_Dropzone/cldcde_hero-clip.mp4","category":"hero","name":"CLDCDE Hero Clip","format":"mp4","duration_seconds":10.0,"resolution":"1168x784","size_bytes":27249167,"suggested_usage":"CLDCDE brand hero section","status":"needs-resize"},{"id":"vid-007","path":"/home/ae/Videos/clawreform-logo-animate.mp4","category":"logo","name":"ClawReform Logo Animate","format":"mp4","duration_seconds":10.0,"resolution":"960x960","size_bytes":5470147,"suggested_usage":"Preloader / brand intro (square)","status":"production-ready"},{"id":"vid-008","path":"/home/ae/Videos/clawreform-logo-animate2.mp4","format":"mp4","category":"logo","name":"ClawReform Logo Animate 2","duration_seconds":12.3,"resolution":"1920x1080","size_bytes":10906253,"suggested_usage":"Full-width logo animation","status":"production-ready"},{"id":"vid-009","path":"/home/ae/AE/01_Laboratory/ClawReform/clawreform-animation-logo.mp4","category":"logo","name":"ClawReform Animation Logo","format":"mp4","duration_seconds":12.3,"resolution":"960x960","size_bytes":2348338,"suggested_usage":"Logo animation (square, compact)","status":"production-ready"},{"id":"vid-010","path":"/home/ae/AE/00_Dropzone/cldcde-icons/cldcde-preloader.mp4","category":"logo","name":"CLDCDE Preloader","format":"mp4","duration_seconds":8.0,"resolution":"1920x1080","size_bytes":2264445,"suggested_usage":"Page preloader / loading screen","status":"production-ready"},{"id":"vid-011","path":"/home/ae/AE/00_Dropzone/cldcde-icons/cldcde-preloader-smooth.mp4","category":"logo","name":"CLDCDE Preloader Smooth","format":"mp4","duration_seconds":7.5,"resolution":"1920x1080","size_bytes":4981530,"suggested_usage":"Smoother preloader variant","status":"production-ready"},{"id":"vid-012","path":"/home/ae/AE/00_Dropzone/cldcde-icons/20260225_stitched_seamless.mp4","category":"logo","name":"CLDCDE Stitched Seamless Loop","format":"mp4","duration_seconds":15.8,"resolution":"1168x784","size_bytes":26272645,"suggested_usage":"Seamless loop preloader","status":"needs-resize"},{"id":"vid-013","path":"/home/ae/AE/05_Clients/apacailogo3.mp4","category":"logo","name":"APAC Logo 3 (Forward)","format":"mp4","duration_seconds":8.0,"resolution":"1280x720","size_bytes":73548539,"suggested_usage":"APAC logo animation (forward)","status":"reference-only"},{"id":"vid-014","path":"/home/ae/AE/05_Clients/apacailogo3_loop.mp4","category":"logo","name":"APAC Logo 3 Loop","format":"mp4","duration_seconds":16.0,"resolution":"1280x720","size_bytes":69519898,"suggested_usage":"APAC logo loop (2x duration)","status":"reference-only"},{"id":"vid-015","path":"/home/ae/AE/05_Clients/apacailogo3_reversed.mp4","category":"logo","name":"APAC Logo 3 (Reversed)","format":"mp4","duration_seconds":8.0,"resolution":"1280x720","size_bytes":66132607,"suggested_usage":"APAC logo animation (reversed)","status":"reference-only"},{"id":"vid-016","path":"/home/ae/AE/05_Clients/apacailogo6.mp4","category":"logo","name":"APAC Logo 6","format":"mp4","duration_seconds":6.0,"resolution":"752x416","size_bytes":36852077,"suggested_usage":"APAC logo variant v6","status":"needs-resize"},{"id":"vid-017","path":"/home/ae/clawreform-remotion.mp4","category":"scroll-demo","name":"Remotion Scroll Sequence Demo","format":"mp4","duration_seconds":180.1,"resolution":"1920x1080","size_bytes":8905715,"suggested_usage":"Full Remotion scroll-sequence demo (3 min)","status":"production-ready"},{"id":"vid-018","path":"/home/ae/clawreform/remotion-demo/src/scroll-sequence-data.ts","category":"scroll-demo","name":"Scroll Sequence Narrative Data","format":"ts","duration_seconds":null,"resolution":null,"size_bytes":1666,"suggested_usage":"Narrative data source: 5 fabric steps + 4 memory steps","status":"production-ready"},{"id":"vid-019","path":"/home/ae/Videos/clawreform-final-demo.mp4","category":"product-demo","name":"ClawReform Final Demo","format":"mp4","duration_seconds":58.0,"resolution":"1920x1080","size_bytes":1049833,"suggested_usage":"Product demo video (1 min)","status":"production-ready"},{"id":"vid-020","path":"/home/ae/Videos/ae/Flow_delpmaspu_.mp4","category":"product-demo","name":"Flow Animation Clip","format":"mp4","duration_seconds":8.0,"resolution":"1920x1080","size_bytes":16119769,"suggested_usage":"Flow animation clip","status":"production-ready"},{"id":"vid-021","path":"/home/ae/AE/01_Laboratory/ClawReform/Kooha-2026-02-23-01-27-56.mp4","category":"product-demo","name":"Kooha Screen Recording 2026-02-23","format":"mp4","duration_seconds":161.5,"resolution":"1084x772","size_bytes":40080521,"suggested_usage":"Screen recording: product walkthrough (2.7 min)","status":"needs-resize"},{"id":"vid-022","path":"/home/ae/AE/01_Laboratory/ClawReform/Kooha-2026-02-24-10-37-17.mp4","category":"product-demo","name":"Kooha Screen Recording 2026-02-24","format":"mp4","duration_seconds":238.5,"resolution":"3440x1440","size_bytes":154799682,"suggested_usage":"Screen recording: extended demo (4 min, ultrawide)","status":"needs-crop"},{"id":"vid-023","path":"/home/ae/AE/05_Clients/apacai-loadinganimation.mp4","category":"apac-reference","name":"APAC Loading Animation","format":"mp4","duration_seconds":6.0,"resolution":"1504x832","size_bytes":125796299,"suggested_usage":"Reference: APAC client loading animation","status":"reference-only"},{"id":"vid-024","path":"/home/ae/AE/05_Clients/apacai-loadinganimation2.mp4","category":"apac-reference","name":"APAC Loading Animation 2","format":"mp4","duration_seconds":6.0,"resolution":"1504x832","size_bytes":112344718,"suggested_usage":"Reference: APAC client loading animation variant","status":"reference-only"},{"id":"vid-025","path":"/home/ae/AE/05_Clients/apacai-loadinganimation3.mp4","category":"apac-reference","name":"APAC Loading Animation 3","format":"mp4","duration_seconds":6.0,"resolution":"1504x832","size_bytes":112951870,"suggested_usage":"Reference: APAC client loading animation variant","status":"reference-only"},{"id":"vid-026","path":"/home/ae/AE/05_Clients/apacai-main-animation-HERO-short-p2.mp4","category":"apac-reference","name":"APAC Main Animation HERO Short P2","format":"mp4","duration_seconds":5.1,"resolution":"1920x1080","size_bytes":155237905,"suggested_usage":"Reference: APAC hero short clip","status":"reference-only"},{"id":"vid-027","path":"/home/ae/AE/05_Clients/apacai-main-animation-p1.mp4","category":"apac-reference","name":"APAC Main Animation Part 1","format":"mp4","duration_seconds":6.0,"resolution":"1376x928","size_bytes":66556058,"suggested_usage":"Reference: APAC main animation part 1","status":"reference-only"},{"id":"vid-028","path":"/home/ae/AE/05_Clients/apacai-main-animation-p2.mp4","category":"apac-reference","name":"APAC Main Animation Part 2","format":"mp4","duration_seconds":5.1,"resolution":"1920x1080","size_bytes":134963932,"suggested_usage":"Reference: APAC main animation part 2","status":"reference-only"},{"id":"vid-029","path":"/home/ae/AE/05_Clients/apacai-main-animation-p3.mp4","category":"apac-reference","name":"APAC Main Animation Part 3","format":"mp4","duration_seconds":5.1,"resolution":"1920x1080","size_bytes":141772278,"suggested_usage":"Reference: APAC main animation part 3","status":"reference-only"},{"id":"vid-030","path":"/home/ae/AE/05_Clients/apacai-main-animation-combined.mp4","category":"apac-reference","name":"APAC Main Animation Combined","format":"mp4","duration_seconds":11.1,"resolution":"1920x1080","size_bytes":109638376,"suggested_usage":"Reference: APAC combined animation","status":"reference-only"},{"id":"vid-031","path":"/home/ae/AE/05_Clients/apacai-plasma-animation-clip17-grk.mp4","category":"apac-reference","name":"APAC Plasma Animation Clip 17","format":"mp4","duration_seconds":6.0,"resolution":"1504x832","size_bytes":124783424,"suggested_usage":"Reference: APAC plasma animation","status":"reference-only"},{"id":"vid-032","path":"/home/ae/AE/05_Clients/FINAL-CANVA-INTRO.mp4","category":"apac-reference","name":"FINAL Canva Intro","format":"mp4","duration_seconds":6.0,"resolution":"1504x832","size_bytes":112951870,"suggested_usage":"Reference: Canva-style intro","status":"reference-only"},{"id":"vid-033","path":"/home/ae/AE/05_Clients/AAA-e-sig-animation-stitched.mp4","category":"apac-reference","name":"AAA E-Sig Animation Stitched","format":"mp4","duration_seconds":12.1,"resolution":"1376x928","size_bytes":97621910,"suggested_usage":"Reference: E-signature animation","status":"reference-only"},{"id":"vid-034","path":"/home/ae/AE/05_Clients/final-form-intro-animation/apacai-main-animation-complete_1080p.mp4","category":"apac-reference","name":"APAC Complete Animation 1080p","format":"mp4","duration_seconds":15.1,"resolution":"1920x1068","size_bytes":34186468,"suggested_usage":"Reference: Complete APAC intro (small file)","status":"reference-only"},{"id":"vid-035","path":"/home/ae/AE/05_Clients/final-form-intro-animation/apacai-main-animation-complete_1080p_seamless_noaudio.mp4","category":"apac-reference","name":"APAC Complete Seamless No-Audio","format":"mp4","duration_seconds":15.2,"resolution":"1920x1068","size_bytes":142360719,"suggested_usage":"Reference: Seamless loop, no audio","status":"reference-only"},{"id":"vid-036","path":"/home/ae/AE/05_Clients/final-form-intro-animation/p1_p2_crossfade.mp4","category":"apac-reference","name":"APAC P1+P2 Crossfade","format":"mp4","duration_seconds":8.6,"resolution":"1920x1068","size_bytes":140884033,"suggested_usage":"Reference: Crossfade transition","status":"reference-only"},{"id":"vid-037","path":"/home/ae/Downloads/seedance-1.0-lite_Begin_with_a_hyper-realistic_slow_zoom_out_from_a_single_unbroken_sequence_depic-0.mp4","category":"seedance-kling","name":"Seedance Lite: Hyper-Realistic Zoom Out","format":"mp4","duration_seconds":10.0,"resolution":"864x480","size_bytes":52450695,"suggested_usage":"Cinematic zoom-out intro","status":"needs-upscale"},{"id":"vid-038","path":"/home/ae/Downloads/seedance-1.0-pro_A_high-budget_cinematic_tracking_shot_following_a_polished_silver-blue_metallic_-0.mp4","category":"seedance-kling","name":"Seedance Pro: Cinematic Tracking Shot","format":"mp4","duration_seconds":10.0,"resolution":"864x480","size_bytes":61378362,"suggested_usage":"Tracking shot hero","status":"needs-upscale"},{"id":"vid-039","path":"/home/ae/Downloads/seedance-1.0-pro_A_high-end_product_cinematography_shot_of_the_metallic_infinity_logo._The_camera-0.mp4","category":"seedance-kling","name":"Seedance Pro: Product Cinematography","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":57960409,"suggested_usage":"Product close-up","status":"needs-upscale"},{"id":"vid-040","path":"/home/ae/Downloads/seedance-1.0-pro_A_technical_diagnostic_animation._The_glowing_neon_blue_edges_of_the_logo_pulse_-0.mp4","category":"seedance-kling","name":"Seedance Pro: Technical Diagnostic","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":54263349,"suggested_usage":"Neon edge diagnostic","status":"needs-upscale"},{"id":"vid-041","path":"/home/ae/Downloads/seedance-1.0-pro_Extreme_close-up_on_the_liquid-metal_texture_of_the_logo._The_silver_surface_app-0.mp4","category":"seedance-kling","name":"Seedance Pro: Liquid Metal Texture","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":54688770,"suggested_usage":"Liquid-metal texture detail","status":"needs-upscale"},{"id":"vid-042","path":"/home/ae/Downloads/seedance-1.0-pro_Focus_solely_on_the_internal_volume_of_the_glass_and_metal_structure._While_the_-0.mp4","category":"seedance-kling","name":"Seedance Pro: Internal Volume","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":55212964,"suggested_usage":"Internal structure detail","status":"needs-upscale"},{"id":"vid-043","path":"/home/ae/Downloads/seedance-1.0-pro_The_infinity_logo_floats_in_a_deep_black_void._It_undergoes_an_extremely_subtle_-0.mp4","category":"seedance-kling","name":"Seedance Pro: Void Float Idle","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":59149333,"suggested_usage":"Void float idle animation","status":"needs-upscale"},{"id":"vid-044","path":"/home/ae/Downloads/seedance-1.0-pro_The_infinity_logo_is_suspended_in_a_zero-gravity_void._It_executes_a_very_subtle-0.mp4","category":"seedance-kling","name":"Seedance Pro: Zero-Gravity Idle","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":58193907,"suggested_usage":"Zero-gravity idle animation","status":"needs-upscale"},{"id":"vid-045","path":"/home/ae/Downloads/seedance-1.0-pro_The_lighting_environment_shifts_around_the_static_object._Invisible_light_source-0.mp4","category":"seedance-kling","name":"Seedance Pro: Lighting Shift","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":53602864,"suggested_usage":"Lighting shift cycle","status":"needs-upscale"},{"id":"vid-046","path":"/home/ae/Downloads/seedance-1.0-pro_bi-directional_movement_within_the_shape_slow_to_medium_speed-0.mp4","category":"seedance-kling","name":"Seedance Pro: Bidirectional Flow","format":"mp4","duration_seconds":4.0,"resolution":"864x480","size_bytes":57589264,"suggested_usage":"Bidirectional flow animation","status":"needs-upscale"},{"id":"vid-047","path":"/home/ae/Downloads/kling-video-o-1_10-second_perfect_seamless_loop_animation._Futuristic_APAC_AI_logo_glossy_irides-0.mp4","category":"seedance-kling","name":"Kling 10s Seamless Loop (1080p)","format":"mp4","duration_seconds":10.0,"resolution":"1920x1080","size_bytes":188017290,"suggested_usage":"Seamless loop hero — production-ready at 1080p","status":"production-ready"},{"id":"vid-048","path":"/home/ae/Downloads/kling-video-o-1_A_single_unbroken_sequence_of_the_silver-blue_infinity_logo_undergoing_a_seamles-0.mp4","category":"seedance-kling","name":"Kling Continuous Transform (1080p)","format":"mp4","duration_seconds":5.0,"resolution":"1920x1080","size_bytes":157576871,"suggested_usage":"Continuous transform — production-ready at 1080p","status":"production-ready"},{"id":"vid-049","path":"/home/ae/Downloads/Scene_a_cinematic_1080p_202601071829.mp4","category":"seedance-kling","name":"Cinematic Scene (1080p)","format":"mp4","duration_seconds":8.0,"resolution":"1920x1088","size_bytes":125247259,"suggested_usage":"Cinematic scene background","status":"production-ready"},{"id":"vid-050","path":"/home/ae/Downloads/Start_with_the_1080p_202601041428.mp4","category":"seedance-kling","name":"Start With The (1080p)","format":"mp4","duration_seconds":8.0,"resolution":"1920x1088","size_bytes":200262656,"suggested_usage":"Cinematic intro clip","status":"production-ready"},{"id":"vid-051","path":"/home/ae/Downloads/apacai-loadinganimation3_rotated-Picsart-BackgroundRemover.webm","category":"seedance-kling","name":"APAC Loading Rotated (Background Removed)","format":"webm","duration_seconds":null,"resolution":null,"size_bytes":3503483,"suggested_usage":"Needs mp4 conversion — background-removed variant","status":"needs-conversion"}]</script>
+
+<script>
+const STORAGE_KEY = 'aegntic-asset-review-decisions';
+const MANIFEST_IMAGES = 'ae-brand-manifest.json';
+const MANIFEST_VIDEOS = 'ae-video-manifest.json';
+
+let assets = [];
+let decisions = {};
+
+// ── Persistence ──
+function loadDecisions() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    decisions = raw ? JSON.parse(raw) : {};
+  } catch { decisions = {}; }
+}
+function saveDecisions() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(decisions));
+}
+
+// ── Data loading ──
+async function loadManifests() {
+  // Try fetch first (works on http://), fall back to embedded JSON (works on file://)
+  let imageAssets = [], videoAssets = [];
+  try {
+    const results = await Promise.allSettled([
+      fetch(MANIFEST_IMAGES).then(r => r.json()),
+      fetch(MANIFEST_VIDEOS).then(r => r.json())
+    ]);
+    imageAssets = results[0].status === 'fulfilled' ? results[0].value : null;
+    videoAssets = results[1].status === 'fulfilled' ? results[1].value : null;
+  } catch {}
+
+  // Fallback to embedded <script type="application/json"> blocks
+  if (!imageAssets) {
+    try { imageAssets = JSON.parse(document.getElementById('manifest-images').textContent); } catch { imageAssets = []; }
+  }
+  if (!videoAssets) {
+    try { videoAssets = JSON.parse(document.getElementById('manifest-videos').textContent); } catch { videoAssets = []; }
+  }
+
+  assets = [
+    ...imageAssets.map(a => ({ ...a, _type: 'image' })),
+    ...videoAssets.map(a => ({ ...a, _type: 'video' }))
+  ];
+}
+
+// ── Thumbnail resolution ──
+// Pre-computed thumb filename lookup (maps asset.id → actual .jpg filename in thumbs/)
+const THUMB_MAP = {};
+(function buildThumbMap() {
+  // Thumbnails on disk: listed by name used in the generate step
+  // Asset names may have extensions (.png, .jpg) that are stripped for the thumb filename
+  // Build the map from the actual thumbs directory listing
+  const thumbFiles = [
+    "about-mesh","ae-logo","ae-logos1-flux2@1024x1024","ae-logos1-nb3p@1024x1024",
+    "ae-logos2-nb3p@1024x1024","ae-vogue-title","aegntic_glass_editorial_slide_cover_16x9",
+    "aegntic_glass_editorial_slide_metrics_16x9","aegntic_glass_editorial_slide_system_map_16x9",
+    "aegntic_glass_editorial_styleguide_a4","aegnticai (4k)","aegnticai-jpg","aegnticai",
+    "aegnticdotai-heading-logo","aegnticdotai-onepage","autoclaw-icon","claw-logo-source-approved",
+    "clawreform-icon-logo-2k","clawreform-icon-logo","clawreform-logo-backgrounded",
+    "clawreform-logo-source-v2","clawreform-logo-v2","clawreform-logo","clawreform-logo2",
+    "clawreform-long-logo-nobg","clawreform-long-logo-sluts","clawreform-long-logo",
+    "clawreform-mark-v2","clawreform5","glass-waveform","hero-sculpture","hero-typography",
+    "logo-lockup-master-transparent","logo-master-transparent","logo_aegnt27_1765002376575",
+    "logo_d3mo_1765002436051","logo_fpef_1765002334864","logo_obs_1765002454644",
+    "logo_prologue_1765002393629","logo_stoa_suite","logo_ultraplan_1765002300581",
+    "logo_viral27_1765002355285","research-crystal","vogue-ae"
+  ];
+  thumbFiles.forEach(f => THUMB_MAP[f] = f + '.jpg');
+})();
+
+function thumbPath(asset) {
+  if (asset._type === 'video') return null;
+  const name = asset.name;
+  // Special collision: ae-015 "aegnticai" (jpg) vs ae-014 "aegnticai" (png)
+  if (asset.id === 'ae-015') return 'thumbs/aegnticai-jpg.jpg';
+  // Strip extension from name to match thumb filename
+  const base = name.replace(/\.\w+$/, '');
+  // Try exact base match, then try full name as-is
+  if (THUMB_MAP[base]) return 'thumbs/' + THUMB_MAP[base];
+  if (THUMB_MAP[name]) return 'thumbs/' + THUMB_MAP[name];
+  return null;
+}
+
+function thumbFallback(asset) {
+  return `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="340" height="212" fill="#0e0e1a">
+      <rect width="340" height="212"/>
+      <text x="170" y="106" text-anchor="middle" fill="#555" font-family="sans-serif" font-size="13">${asset.format?.toUpperCase() || 'IMG'}</text>
+      <text x="170" y="126" text-anchor="middle" fill="#444" font-family="sans-serif" font-size="11">${asset.width || '?'} x ${asset.height || '?'}</text>
+    </svg>`
+  )}`;
+}
+
+// ── Formatting ──
+function fmtSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+function fmtDuration(sec) {
+  if (!sec) return '—';
+  if (sec < 60) return sec.toFixed(1) + 's';
+  const m = Math.floor(sec / 60);
+  const s = (sec % 60).toFixed(0);
+  return m + ':' + s.padStart(2, '0');
+}
+
+// ── Filtering ──
+function getFiltered() {
+  const search = document.getElementById('search').value.toLowerCase().trim();
+  const status = document.querySelector('.filter-tab.active')?.dataset.filter || 'all';
+  const cat = document.getElementById('catFilter').value;
+
+  return assets.filter(a => {
+    // Hide non-aegntic categories unless toggled on
+    if (!showExcluded && EXCLUDED_CATEGORIES.has(a.category)) return false;
+
+    const d = decisions[a.id] || {};
+    const st = d.status || mapOriginalStatus(a.status);
+
+    if (status !== 'all' && st !== status) return false;
+    if (cat !== 'all' && a.category !== cat) return false;
+    if (search) {
+      const hay = [a.name, a.path, a.id, a.category, a.suggested_usage || '', d.notes || ''].join(' ').toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+// Categories that belong to other projects, not aegntic.ai
+const EXCLUDED_CATEGORIES = new Set([
+  'clawreform-brand', 'clawreform-icon', 'clawreform-long', 'apac-reference'
+]);
+let showExcluded = false;
+
+function mapOriginalStatus(s) {
+  if (!s) return 'pending';
+  if (s === 'approved') return 'approved';
+  if (s === 'rejected') return 'rejected';
+  if (s === 'production-ready' || s === 'active') return 'approved';
+  if (s === 'reference' || s === 'reference-only') return 'rejected';
+  // active, concept, needs-resize, needs-upscale, needs-crop, needs-conversion
+  return 'pending';
+}
+
+// ── Rendering ──
+function render() {
+  const filtered = getFiltered();
+  const grid = document.getElementById('grid');
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <p>No assets match your filters</p>
+      <p class="hint">Try adjusting search, status, or category filters</p>
+    </div>`;
+    updateStats();
+    return;
+  }
+
+  grid.innerHTML = filtered.map(a => {
+    const d = decisions[a.id] || {};
+    const status = d.status || mapOriginalStatus(a.status);
+    const notes = d.notes || '';
+    const thumb = thumbPath(a);
+    const isVideo = a._type === 'video';
+    const dims = a.width ? `${a.width}x${a.height}` : (a.resolution || '—');
+
+    return `<div class="card ${status}" data-id="${a.id}">
+      <div class="card-thumb">
+        ${isVideo ? `<div class="video-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>${a.format?.toUpperCase() || 'VIDEO'}</span>
+        </div>` : `<img src="${thumb}" alt="${a.name}" loading="lazy" onerror="this.src='${thumbFallback(a)}'" onclick="openLightbox('${thumb}')" style="cursor:zoom-in">`}
+        <span class="card-status-strip ${status}">${status}</span>
+        <span class="card-type-badge ${isVideo ? 'video' : ''}">${isVideo ? (a.format || 'video').toUpperCase() : (a.format || 'img').toUpperCase()}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${escHtml(a.name)}</div>
+        <div class="card-meta">
+          <span class="card-tag">${escHtml(a.category)}</span>
+        </div>
+        <div class="card-info">
+          <span>${fmtSize(a.size_bytes)}</span>
+          <span>${dims}</span>
+          ${isVideo && a.duration_seconds ? `<span>${fmtDuration(a.duration_seconds)}</span>` : ''}
+        </div>
+        <div class="card-usage">${escHtml(a.suggested_usage || '')}</div>
+        <div class="card-path">${escHtml(a.path)}</div>
+        <div class="card-notes">
+          <textarea placeholder="Add notes..." oninput="updateNote('${a.id}', this.value)">${escHtml(notes)}</textarea>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-approve btn-sm" onclick="setStatus('${a.id}','approved')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+            Approve
+          </button>
+          <button class="btn btn-reject btn-sm" onclick="setStatus('${a.id}','rejected')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            Reject
+          </button>
+          <button class="btn btn-sm" onclick="setStatus('${a.id}','pending')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  updateStats();
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+// ── Stats ──
+function updateStats() {
+  let pending = 0, approved = 0, rejected = 0;
+  assets.forEach(a => {
+    const st = (decisions[a.id]?.status) || mapOriginalStatus(a.status);
+    if (st === 'approved') approved++;
+    else if (st === 'rejected') rejected++;
+    else pending++;
+  });
+  document.getElementById('pendingCount').textContent = pending;
+  document.getElementById('approvedCount').textContent = approved;
+  document.getElementById('rejectedCount').textContent = rejected;
+  document.getElementById('totalBadge').textContent = assets.length + ' assets';
+}
+
+// ── Category population ──
+function populateCategories() {
+  const cats = [...new Set(
+    assets.filter(a => showExcluded || !EXCLUDED_CATEGORIES.has(a.category))
+         .map(a => a.category)
+  )].sort();
+  const sel = document.getElementById('catFilter');
+  sel.innerHTML = '<option value="all">All Categories</option>' +
+    cats.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+}
+
+// ── Actions ──
+function setStatus(id, status) {
+  if (!decisions[id]) decisions[id] = {};
+  decisions[id].status = status;
+  saveDecisions();
+  render();
+}
+
+function updateNote(id, text) {
+  if (!decisions[id]) decisions[id] = {};
+  decisions[id].notes = text;
+  saveDecisions();
+}
+
+function bulkAction(status) {
+  const filtered = getFiltered();
+  let count = 0;
+  filtered.forEach(a => {
+    if (!decisions[a.id]) decisions[a.id] = {};
+    decisions[a.id].status = status;
+    count++;
+  });
+  saveDecisions();
+  render();
+  showToast(`${count} assets ${status}`);
+}
+
+function resetAll() {
+  if (!confirm('Reset all review decisions? This cannot be undone.')) return;
+  decisions = {};
+  saveDecisions();
+  render();
+  showToast('All decisions reset');
+}
+
+function toggleExcluded() {
+  showExcluded = !showExcluded;
+  const btn = document.getElementById('toggleExcluded');
+  btn.textContent = showExcluded ? 'Hide non-aegntic' : ' Show non-aegntic';
+  if (showExcluded) btn.style.borderColor = 'var(--text-muted)';
+  else btn.style.borderColor = '';
+  populateCategories();
+  render();
+}
+
+// ── Export ──
+function exportApproved() {
+  const approved = assets.filter(a => {
+    const st = (decisions[a.id]?.status) || mapOriginalStatus(a.status);
+    return st === 'approved';
+  });
+  if (!approved.length) {
+    showToast('No approved assets to export');
+    return;
+  }
+
+  const exportData = approved.map(a => {
+    const d = decisions[a.id] || {};
+    const out = { ...a };
+    out.review_status = 'approved';
+    out.review_notes = d.notes || '';
+    delete out._type;
+    return out;
+  });
+
+  const json = JSON.stringify(exportData, null, 2);
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(json).then(() => {
+    showToast(`${approved.length} approved assets copied + downloading JSON`);
+  }).catch(() => {
+    showToast(`Downloading ${approved.length} approved assets`);
+  });
+
+  // Download
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'ae-approved-assets.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Lightbox ──
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightboxImg').src = src;
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+});
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Filter tabs ──
+document.getElementById('filterTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.filter-tab');
+  if (!tab) return;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  render();
+});
+
+// ── Drag and drop ──
+let dragCounter = 0;
+document.addEventListener('dragenter', e => { e.preventDefault(); dragCounter++; document.getElementById('dropOverlay').classList.add('visible'); });
+document.addEventListener('dragleave', e => { e.preventDefault(); dragCounter--; if (dragCounter <= 0) { dragCounter = 0; document.getElementById('dropOverlay').classList.remove('visible'); } });
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', async e => {
+  e.preventDefault();
+  dragCounter = 0;
+  document.getElementById('dropOverlay').classList.remove('visible');
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.name.endsWith('.json')) {
+    showToast('Please drop a JSON manifest file');
+    return;
+  }
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error('Expected array');
+    const newAssets = data.map(a => ({ ...a, _type: a.format === 'mp4' || a.format === 'webm' || a.format === 'mov' || a.duration_seconds ? 'video' : 'image' }));
+    const before = assets.length;
+    // Dedupe by id
+    const existingIds = new Set(assets.map(a => a.id));
+    newAssets.forEach(a => { if (!existingIds.has(a.id)) assets.push(a); });
+    const added = assets.length - before;
+    populateCategories();
+    render();
+    showToast(`Loaded ${file.name}: ${added} new assets`);
+  } catch (err) {
+    showToast('Failed to parse JSON: ' + err.message);
+  }
+});
+
+// ── Init ──
+async function init() {
+  loadDecisions();
+  await loadManifests();
+  populateCategories();
+  render();
+}
+init();
+</script>
+</body>
+</html>

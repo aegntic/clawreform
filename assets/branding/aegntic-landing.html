@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>aegntic.ai</title>
+<meta name="description" content="Independent research foundation. Open-source tools for synthetic intelligence.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0b;
+  --fg:#ede8df;
+  --fg-dim:#8a8578;
+  --fg-muted:#4a4640;
+  --rule:rgba(255,255,255,.07);
+  --sans:'Inter',system-ui,-apple-system,sans-serif;
+  --serif:'Playfair Display',Georgia,serif;
+  --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;background:var(--bg)}
+body{font-family:var(--sans);background:var(--bg);color:var(--fg);line-height:1.6;overflow-x:hidden}
+::selection{background:var(--fg);color:var(--bg)}
+a{color:inherit;text-decoration:none}
+img{display:block}
+
+/* Spine */
+.spine{position:fixed;top:0;left:32px;width:1px;height:100vh;background:var(--rule);z-index:10;pointer-events:none}
+
+/* Masthead */
+.masthead{display:flex;justify-content:space-between;align-items:flex-start;padding:28px 24px 0 64px;max-width:1200px;margin:0 auto}
+.masthead-logo{width:32px;height:auto;opacity:.7}
+.masthead-nav{display:flex;gap:32px;align-items:center}
+.masthead-nav a{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted);transition:color .2s}
+.masthead-nav a:hover{color:var(--fg)}
+
+/* Page container */
+.page{max-width:1200px;margin:0 auto;padding:0 24px 0 64px}
+
+/* ─── Hero ─── */
+.hero{padding:24vh 0 16vh;position:relative;min-height:80vh;display:flex;flex-direction:column;justify-content:flex-end}
+.hero .overline{font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:24px}
+.hero h1{font-family:var(--serif);font-weight:900;font-size:clamp(2.8rem,7.5vw,6.2rem);line-height:.93;letter-spacing:-.035em;color:var(--fg);max-width:850px}
+.hero h1 em{font-style:italic;font-weight:400;color:var(--fg-dim)}
+.hero .statement{margin-top:36px;font-size:1rem;font-weight:300;color:var(--fg-dim);max-width:420px;line-height:1.75}
+.hero .watermark{position:absolute;right:-8px;top:18vh;font-family:var(--serif);font-size:clamp(10rem,22vw,20rem);font-weight:900;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.04);line-height:.85;pointer-events:none;user-select:none;letter-spacing:-.06em}
+
+/* ─── Rules ─── */
+.rule{border:none;height:1px;background:var(--rule);margin:0}
+.rule--diamond{position:relative}
+.rule--diamond::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:5px;height:5px;background:var(--fg-muted)}
+
+/* ─── Section labels ─── */
+.sec-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:40px;display:flex;align-items:center;gap:12px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--rule)}
+
+/* ─── Projects ─── */
+.projects{padding:12vh 0 6vh}
+.project{display:grid;grid-template-columns:120px 1fr;gap:0;padding:44px 0;border-bottom:1px solid var(--rule);align-items:start}
+.project:first-child{padding-top:0}
+.project:last-child{border-bottom:none;padding-bottom:0}
+.project-idx{font-family:var(--serif);font-size:2.8rem;font-weight:700;color:var(--fg-muted);line-height:1;opacity:.25;padding-top:6px}
+.project-body{padding-top:2px}
+.project-body .cat{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-muted);margin-bottom:14px;display:block}
+.project-body h3{font-family:var(--serif);font-size:clamp(1.4rem,2.8vw,1.9rem);font-weight:700;margin-bottom:10px;letter-spacing:-.015em}
+.project-body p{font-size:.9rem;color:var(--fg-dim);max-width:400px;line-height:1.7;margin-bottom:14px}
+.project-body .ext{font-family:var(--mono);font-size:.65rem;color:var(--fg-muted);letter-spacing:.03em;display:inline-flex;align-items:center;gap:6px;transition:color .2s}
+.project-body .ext:hover{color:var(--fg)}
+.project-body .ext i{font-style:normal;transition:transform .2s}
+.project-body .ext:hover i{transform:translateX(3px)}
+
+/* ─── Tile grid ─── */
+.tile-grid{padding:6vh 0 8vh}
+.tile-grid .sec-label{margin-bottom:32px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule)}
+.tile{background:var(--bg);padding:28px 24px;display:flex;flex-direction:column;gap:6px;transition:background .2s}
+.tile:hover{background:rgba(255,255,255,.02)}
+.tile .t-name{font-size:.92rem;font-weight:500;color:var(--fg);line-height:1.3}
+.tile .t-desc{font-size:.78rem;color:var(--fg-muted);line-height:1.55}
+.tile .t-cat{font-family:var(--mono);font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted);opacity:.5;margin-top:4px}
+.tile .t-link{font-family:var(--mono);font-size:.58rem;color:var(--fg-muted);letter-spacing:.03em;margin-top:auto;padding-top:12px;transition:color .2s;display:inline-flex;align-items:center;gap:4px}
+.tile .t-link:hover{color:var(--fg)}
+.tile .t-link i{font-style:normal;transition:transform .2s}
+.tile .t-link:hover i{transform:translateX(3px)}
+
+/* ─── Resources ─── */
+.resources{padding:4vh 0 10vh}
+.resources .sec-label{margin-bottom:24px}
+.res-list{display:flex;flex-direction:column;gap:0}
+.res-item{display:flex;justify-content:space-between;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--rule)}
+.res-item:last-child{border-bottom:none}
+.res-item .r-name{font-size:.92rem;font-weight:500;color:var(--fg-dim)}
+.res-item .r-note{font-family:var(--mono);font-size:.55rem;color:var(--fg-muted);letter-spacing:.04em}
+
+/* ─── Pull quote ─── */
+.pull-quote{padding:14vh 0 14vh;position:relative}
+.pull-quote blockquote{font-family:var(--serif);font-size:clamp(1.4rem,3vw,2.2rem);font-weight:400;font-style:italic;line-height:1.5;letter-spacing:-.01em;color:var(--fg-dim);max-width:680px;position:relative}
+.pull-quote blockquote::before{content:'';position:absolute;left:-24px;top:8px;bottom:8px;width:2px;background:var(--fg-muted);opacity:.2}
+
+/* ─── Research ─── */
+.research{padding:4vh 0 12vh}
+.research h2{font-family:var(--serif);font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:700;letter-spacing:-.025em;margin-bottom:44px;max-width:650px}
+.research .prose{max-width:580px}
+.research .prose p{font-size:.92rem;color:var(--fg-dim);line-height:1.85;margin-bottom:28px}
+.research .prose p:last-child{margin-bottom:0}
+.research .prose strong{color:var(--fg);font-weight:500}
+
+/* ─── Principles ─── asymmetric: 2 wide + 1 narrow */
+.principles{padding:8vh 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0}
+.principle{padding:36px 0;border-top:1px solid var(--rule)}
+.principle:nth-child(3){grid-column:3}
+.principle .num{font-family:var(--serif);font-size:2rem;font-weight:700;color:var(--fg-muted);opacity:.2;margin-bottom:14px;line-height:1}
+.principle h3{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--fg);margin-bottom:10px}
+.principle p{font-size:.82rem;color:var(--fg-dim);line-height:1.65;max-width:280px}
+.principle--wide{grid-column:1/3}
+.principle--wide p{max-width:480px}
+
+/* ─── Footer ─── */
+.footer{padding:6vh 0 10vh;border-top:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-left{display:flex;align-items:center;gap:10px}
+.footer-left img{width:20px;height:auto;opacity:.5}
+.footer-left span{font-size:.6rem;color:var(--fg-muted);font-family:var(--mono);letter-spacing:.08em}
+.footer-right{font-size:.6rem;color:var(--fg-muted);font-family:var(--mono);letter-spacing:.04em}
+.footer-right a{color:var(--fg-dim);transition:color .2s}
+.footer-right a:hover{color:var(--fg)}
+
+/* ─── Responsive ─── */
+@media(max-width:900px){
+  .spine{display:none}
+  .masthead{padding:20px 20px 0}
+  .page{padding:0 20px}
+  .hero{padding:18vh 0 12vh;min-height:auto}
+  .hero .watermark{display:none}
+  .project{grid-template-columns:1fr;gap:4px;padding:32px 0}
+  .project-idx{font-size:1.8rem}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .res-item{flex-direction:column;gap:4px}
+  .pull-quote{padding:8vh 0}
+  .pull-quote blockquote::before{display:none}
+  .principles{grid-template-columns:1fr}
+  .principle{padding:28px 0}
+  .principle--wide{grid-column:auto}
+  .principle--wide p{max-width:none}
+  .footer{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:480px){
+  .masthead-nav{gap:20px}
+  .hero h1{font-size:2.4rem}
+  .tiles{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="spine" aria-hidden="true"></div>
+
+<header class="masthead" role="banner">
+  <img src="ae-logo.png" alt="aegntic.ai" class="masthead-logo" width="32" height="18">
+  <nav class="masthead-nav" role="navigation" aria-label="Primary">
+    <a href="#work">Work</a>
+    <a href="#research">Research</a>
+    <a href="https://github.com/aegntic" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+</header>
+
+<div class="page">
+
+  <section class="hero" aria-label="Introduction">
+    <p class="overline">Augment Evolution &middot; Growing Naturally Through Intelligent Creativity</p>
+    <h1>We build the<br>architecture that<br><em>thinks for itself.</em></h1>
+    <p class="statement">Open-source tools, protocols, and operating systems for synthetic intelligence. Built in the open, shipped on our own terms.</p>
+    <div class="watermark" aria-hidden="true">26</div>
+  </section>
+
+  <hr class="rule rule--diamond">
+
+  <!-- Projects — featured -->
+  <section class="projects" id="work" aria-label="Projects">
+    <p class="sec-label">01 / Work</p>
+
+    <article class="project">
+      <div class="project-idx" aria-hidden="true">01</div>
+      <div class="project-body">
+        <span class="cat">Agent Operating System</span>
+        <h3>clawREFORM</h3>
+        <p>Fourteen Rust crates. Sixty bundled skills. A self-modification kernel that rewrites its own code safely -- snapshots, validation, automatic rollback. The agent OS that ships production-ready.</p>
+        <a href="https://github.com/aegntic/clawreform" class="ext" target="_blank" rel="noopener">github.com/aegntic/clawreform <i>&rarr;</i></a>
+      </div>
+    </article>
+
+    <article class="project">
+      <div class="project-idx" aria-hidden="true">02</div>
+      <div class="project-body">
+        <span class="cat">Community Platform</span>
+        <h3>CLDCDE</h3>
+        <p>The community hub for Claude Code -- plugins, skills, extensions, MCP servers, and experimental tooling. Open contributions, growing daily.</p>
+        <a href="https://github.com/aegntic/cldcde" class="ext" target="_blank" rel="noopener">github.com/aegntic/cldcde <i>&rarr;</i></a>
+      </div>
+    </article>
+
+    <article class="project">
+      <div class="project-idx" aria-hidden="true">03</div>
+      <div class="project-body">
+        <span class="cat">Agent Payments</span>
+        <h3>AgentMint</h3>
+        <p>One-click A2A payment infrastructure. Let AI agents transact with each other -- micropayments, settlements, and invoicing built for autonomous workflows.</p>
+        <a href="https://github.com/aegntic/agentmint" class="ext" target="_blank" rel="noopener">github.com/aegntic/agentmint <i>&rarr;</i></a>
+      </div>
+    </article>
+  </section>
+
+  <!-- Tile grid — all projects -->
+  <section class="tile-grid" aria-label="All projects">
+    <p class="sec-label">Extensions &middot; Tools &middot; Platforms</p>
+    <div class="tiles">
+
+      <div class="tile">
+        <div class="t-name">ClawPrompt</div>
+        <div class="t-desc">AI-assisted prompt engineering in your browser</div>
+        <div class="t-cat">Chrome Extension</div>
+        <a href="#" class="t-link">Chrome Web Store <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">DevScribe</div>
+        <div class="t-desc">Capture and generate docs from any web interface</div>
+        <div class="t-cat">Chrome Extension</div>
+        <a href="#" class="t-link">Chrome Web Store <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">Auto-Claude</div>
+        <div class="t-desc">Autonomous multi-session AI coding -- plan, build, validate</div>
+        <div class="t-cat">CLI Framework</div>
+        <a href="https://github.com/aegntic/Auto-Claude" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">NotebookLM Pro</div>
+        <div class="t-desc">Advanced conversational research with Gemini 2.5 Pro/Flash</div>
+        <div class="t-cat">Agent Zero Extension</div>
+        <a href="https://github.com/aegntic/notebooklm-pro" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">Google Labs Extension</div>
+        <div class="t-desc">Stitch, Whisk, Flow, MusicFX, ImageFX, VideoFX, TextFX</div>
+        <div class="t-cat">Agent Zero Extension</div>
+        <a href="https://github.com/aegntic/google-labs-extension" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">Prompt Prompter</div>
+        <div class="t-desc">Intelligent prompt debugger with Datadog observability</div>
+        <div class="t-cat">Developer Tool</div>
+        <a href="https://github.com/aegntic/prompt-prompter-dd" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">Reality Check</div>
+        <div class="t-desc">Interactive assessment tool for evaluation frameworks</div>
+        <div class="t-cat">Assessment</div>
+        <a href="https://github.com/aegntic/reality-check" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">SEO.engineering</div>
+        <div class="t-desc">Deployment infrastructure and automation tooling</div>
+        <div class="t-cat">Infrastructure</div>
+        <a href="https://github.com/aegntic/seo-engineering" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">LEANN</div>
+        <div class="t-desc">RAG on everything -- 97% storage savings, fully private</div>
+        <div class="t-cat">ML Platform</div>
+        <a href="https://github.com/aegntic/LEANN" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">TurboQuant Lab</div>
+        <div class="t-desc">Quantitative analysis and research tooling</div>
+        <div class="t-cat">Research</div>
+        <a href="https://github.com/aegntic/turboquant-lab" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">PubNub Skills</div>
+        <div class="t-desc">AI agent skills for multiplayer, chat, and live scoring</div>
+        <div class="t-cat">Agent Skills</div>
+        <a href="https://github.com/aegntic/pubnub-skills" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+      <div class="tile">
+        <div class="t-name">AEGNT-UNLTD</div>
+        <div class="t-desc">Sovereign strategist -- self-evolving cognitive hypervisor</div>
+        <div class="t-cat">Cognitive Agent</div>
+        <a href="https://github.com/aegntic/aegnt-unltd" class="t-link" target="_blank" rel="noopener">GitHub <i>&rarr;</i></a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Open source resources -->
+  <section class="resources" aria-label="Open source resources">
+    <p class="sec-label">Open Source Resources</p>
+    <div class="res-list">
+      <div class="res-item">
+        <span class="r-name">WorldMonitor</span>
+        <span class="r-note">Real-time global intelligence dashboard -- news, geopolitics, infrastructure</span>
+      </div>
+      <div class="res-item">
+        <span class="r-name">MiroFish</span>
+        <span class="r-note">Universal swarm intelligence engine for prediction</span>
+      </div>
+      <div class="res-item">
+        <span class="r-name">CLD Canvas</span>
+        <span class="r-note">Give Claude Code an external monitor</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pull quote -- editorial rhythm break -->
+  <section class="pull-quote" aria-label="Philosophy">
+    <blockquote>
+      We build things that evolve.
+    </blockquote>
+  </section>
+
+  <hr class="rule">
+
+  <!-- Research -->
+  <section class="research" id="research" aria-label="Research areas">
+    <p class="sec-label">02 / Research</p>
+    <h2>Three problems that<br>define our work</h2>
+    <div class="prose">
+      <p>
+        <strong>Multi-agent systems.</strong> Agents that collaborate, negotiate, and self-organise.
+        We study emergent coordination, task decomposition, and collective decision-making in
+        heterogeneous populations -- the conditions under which groups of autonomous programs
+        produce outcomes no single agent could reach alone.
+      </p>
+      <p>
+        <strong>Self-modifying systems.</strong> Safe autonomous code evolution with formal
+        guarantees. How can an agent improve its own architecture while maintaining safety
+        invariants, reproducibility, and the ability to roll back? This is not theoretical:
+        clawREFORM ships a working kernel that does exactly this.
+      </p>
+      <p>
+        <strong>Agent-to-agent protocols.</strong> Open standards for inter-agent communication.
+        Transport, discovery, and negotiation layers that let agents built by different teams
+        -- in different languages, on different networks -- work together without a central
+        orchestrator.
+      </p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- Principles -- asymmetric layout -->
+  <section class="principles" aria-label="Principles">
+    <div class="principle principle--wide">
+      <div class="num" aria-hidden="true">I</div>
+      <h3>Open by default</h3>
+      <p>Every project we release is free and open-source. No walled gardens, no API paywalls, no black-box models. The most important infrastructure for synthetic intelligence must be built in the open, where anyone can inspect, extend, and trust it.</p>
+    </div>
+    <div class="principle">
+      <div class="num" aria-hidden="true">II</div>
+      <h3>Built to last</h3>
+      <p>Rust-native, zero-dependency where possible, tested relentlessly. We optimise for the maintainer who inherits this code in five years, not the demo next week.</p>
+    </div>
+    <div class="principle principle--wide">
+      <div class="num" aria-hidden="true">III</div>
+      <h3>Ship, then evolve</h3>
+      <p>Working systems over whitepapers. Proven code over speculative architectures. We believe the best research is the kind you can git clone and run today, not the kind that lives only in a PDF.</p>
+    </div>
+  </section>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer-left">
+      <img src="ae-logo.png" alt="" width="20" height="11" aria-hidden="true">
+      <span>aegntic.ai &middot; 2026</span>
+    </div>
+    <div class="footer-right">
+      <a href="https://github.com/aegntic" target="_blank" rel="noopener">GitHub</a> &middot;
+      <a href="https://x.com/aegntic" target="_blank" rel="noopener">X</a> &middot;
+      MIT / Apache-2.0
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>

@@ -14,11 +14,12 @@ members = [
     "crates/clawreform-desktop",
     "crates/clawreform-hands",
     "crates/clawreform-extensions",
+    "crates/clawreform-teams",
     "xtask",
 ]
 
 [workspace.package]
-version = "0.3.0"
+version = "0.35.1"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/aegntic/clawreform"

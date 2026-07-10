@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "clawPrompt — Swarm Command Prompts",
+  "short_name": "clawPrompt",
+  "description": "Official OpenClaw + clawREFORM browser companion. Swarm command prompts for AI agents. One-click inject. Zero data collection.",
+  "version": "1.0.4",
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon-16.png",
+      "48": "icon-48.png",
+      "128": "icon-128.png"
+    }
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://chat.openai.com/*",
+    "https://claude.ai/*",
+    "https://grok.x.ai/*",
+    "https://chatgpt.com/*",
+    "https://gemini.google.com/*",
+    "https://openrouter.ai/*",
+    "https://clawreform.com/*",
+    "https://*.clawreform.com/*",
+    "https://open-claw.org/*",
+    "https://*.open-claw.org/*",
+    "http://localhost:*/*"
+  ],
+  "externally_connectable": {
+    "matches": [
+      "https://clawreform.com/*",
+      "https://*.clawreform.com/*",
+      "https://open-claw.org/*",
+      "https://*.open-claw.org/*",
+      "http://localhost:*/*"
+    ]
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
