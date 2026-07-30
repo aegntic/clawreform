@@ -209,6 +209,18 @@ function handsPage() {
       return '';
     },
 
+    getRequirementCheckLabel(req) {
+      if (!req) return '';
+      if (req.min_version) return req.check_value + ' >= ' + req.min_version;
+      return req.check_value || '';
+    },
+
+    getRequirementMetLabel(req) {
+      if (!req) return 'Detected on your system';
+      if (req.min_version) return 'Detected on your system and meets >= ' + req.min_version;
+      return 'Detected on your system';
+    },
+
     async recheckDeps() {
       if (!this.setupWizard) return;
       this.setupChecking = true;
