@@ -53,9 +53,6 @@ function normalizeArgs(argv) {
 }
 
 function clawreformHome() {
-  if (process.env.CLAWREFORM_HOME && process.env.CLAWREFORM_HOME.trim()) {
-    return process.env.CLAWREFORM_HOME.trim();
-  }
   return path.join(os.homedir(), ".clawreform");
 }
 

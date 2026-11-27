@@ -177,6 +177,16 @@ function forwardToClawReform(text, phone, pushName) {
     });
 
     const url = new URL(`${CLAWREFORM_URL}/api/agents/${encodeURIComponent(DEFAULT_AGENT)}/message`);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      reject(new Error(`Unsupported CLAWREFORM_URL protocol: ${url.protocol}`));
+      return;
+    }
+    const isLoopback = ['127.0.0.1', 'localhost', '::1', '[::1]'].includes(url.hostname);
+    if (API_KEY && url.protocol !== 'https:' && !isLoopback) {
+      reject(new Error('Refusing to send CLAWREFORM_API_KEY over plaintext HTTP to a non-loopback host; use https://'));
+      return;
+    }
+
     const transport = url.protocol === 'https:' ? https : http;
     const headers = {
       'Content-Type': 'application/json',
@@ -199,6 +209,18 @@ function forwardToClawReform(text, phone, pushName) {
         let body = '';
         res.on('data', (chunk) => (body += chunk));
         res.on('end', () => {
+          const status = res.statusCode || 0;
+          if (status < 200 || status >= 300) {
+            let detail = body.trim();
+            try {
+              const errData = JSON.parse(body);
+              detail = errData.error || errData.message || detail;
+            } catch {
+              // keep raw text
+            }
+            reject(new Error(`clawREFORM API returned HTTP ${status}${detail ? `: ${detail}` : ''}`));
+            return;
+          }
           try {
             const data = JSON.parse(body);
             // The /api/agents/{id}/message endpoint returns { response: "..." }

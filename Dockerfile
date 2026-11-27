@@ -15,6 +15,8 @@ COPY --from=builder /build/target/release/clawreform /usr/local/bin/
 COPY --from=builder /build/agents /opt/clawreform/agents
 EXPOSE 4332
 VOLUME /data
-ENV CLAWREFORM_HOME=/data
+# clawreform stores state under $HOME/.clawreform; set HOME=/data so it persists in VOLUME /data.
+# To reach the published port from the host, set `api_listen = "0.0.0.0:4332"` (and `api_key`) in /data/.clawreform/config.toml.
+ENV HOME=/data
 ENTRYPOINT ["clawreform"]
 CMD ["start"]

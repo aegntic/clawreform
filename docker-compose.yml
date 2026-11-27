@@ -11,18 +11,19 @@ services:
     volumes:
       - clawreform-data:/data
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
-      - XAI_API_KEY=${XAI_API_KEY:-}
-      - ZHIPU_API_KEY=${ZHIPU_API_KEY:-}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
-      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
-      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
-      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN:-}
+      # Passthrough host env vars only when set (avoids empty strings shadowing /data/.clawreform/.env)
+      - ANTHROPIC_API_KEY
+      - OPENAI_API_KEY
+      - GROQ_API_KEY
+      - OPENROUTER_API_KEY
+      - GEMINI_API_KEY
+      - DEEPSEEK_API_KEY
+      - XAI_API_KEY
+      - ZHIPU_API_KEY
+      - TELEGRAM_BOT_TOKEN
+      - DISCORD_BOT_TOKEN
+      - SLACK_BOT_TOKEN
+      - SLACK_APP_TOKEN
     restart: unless-stopped
 
 volumes:
