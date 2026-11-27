@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface WebVitals {
@@ -89,7 +91,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
     try {
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number };
+        const lastEntry = entries[entries.length - 1] as globalThis.PerformanceEntry & { renderTime?: number; loadTime?: number };
         const value = lastEntry.renderTime || lastEntry.loadTime || 0;
         handleMetric('lcp', value);
       });
@@ -102,7 +104,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
     try {
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const firstEntry = entries[0] as PerformanceEntry & { processingStart?: number; startTime?: number };
+        const firstEntry = entries[0] as globalThis.PerformanceEntry & { processingStart?: number; startTime?: number };
         const value = (firstEntry.processingStart || 0) - (firstEntry.startTime || 0);
         handleMetric('fid', value);
       });
@@ -116,7 +118,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const layoutShiftEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+          const layoutShiftEntry = entry as globalThis.PerformanceEntry & { hadRecentInput?: boolean; value?: number };
           if (!layoutShiftEntry.hadRecentInput) {
             clsValue += layoutShiftEntry.value || 0;
           }

@@ -16,7 +16,7 @@ export default function Footer() {
 
         <div className="flex items-center gap-6">
           <a
-            href="https://github.com/nicobailon/clawreform"
+            href="https://github.com/aegntic/clawreform"
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-xs text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors duration-200"

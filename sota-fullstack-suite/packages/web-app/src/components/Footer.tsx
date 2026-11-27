@@ -14,9 +14,9 @@ const footerLinks = {
     { label: 'aegntic.ai', href: 'https://aegntic.ai', external: true },
   ],
   legal: [
-    { label: 'MIT License', href: 'https://github.com/aegntic/clawreform/blob/main/LICENSE', external: true },
+    { label: 'MIT License', href: 'https://github.com/aegntic/clawreform/blob/main/LICENSE-MIT', external: true },
   ],
-};
+} as const;
 
 export function Footer() {
   return (
@@ -63,13 +63,14 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link.label}>
-                  <Link
+                  <a
                     href={link.href}
-                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-surface-500 hover:text-surface-300 text-sm transition-colors"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -81,13 +82,14 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <Link
+                  <a
                     href={link.href}
-                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-surface-500 hover:text-surface-300 text-sm transition-colors"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
@@ -99,13 +101,14 @@ export function Footer() {
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
-                  <Link
+                  <a
                     href={link.href}
-                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-surface-500 hover:text-surface-300 text-sm transition-colors"
                   >
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>

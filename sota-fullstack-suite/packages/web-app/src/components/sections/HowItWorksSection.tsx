@@ -101,7 +101,7 @@ export function HowItWorksSection() {
       ref={(node) => {
         // Merge both refs
         (ref as React.MutableRefObject<HTMLElement | null>).current = node;
-        sectionRef.current = node;
+        (sectionRef as React.MutableRefObject<HTMLElement | null>).current = node;
       }}
       style={animationStyles}
       className="py-20 sm:py-32 bg-surface-900/50"

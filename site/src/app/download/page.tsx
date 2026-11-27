@@ -58,7 +58,7 @@ export default function DownloadPage() {
               <div className="debossed p-4 mb-3">
                 <pre className="text-sm font-mono text-[var(--amber-core)] leading-loose overflow-x-auto">
                   <span className="text-[var(--text-tertiary)]">$ </span>curl http://127.0.0.1:4332/api/health{"\n"}
-                  <span className="text-[var(--text-secondary)]">{`{"status":"ok","version":"0.3.0"}`}</span>
+                  <span className="text-[var(--text-secondary)]">{`{"status":"ok","version":"0.35.1"}`}</span>
                 </pre>
               </div>
               <p className="text-sm text-[var(--text-tertiary)]">
