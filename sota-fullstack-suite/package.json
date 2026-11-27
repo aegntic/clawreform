@@ -17,7 +17,7 @@
     "test": "npm run test --workspaces",
     "test:e2e": "playwright test",
     "lint": "eslint packages --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p packages/web-app/tsconfig.json",
     "analyze": "npm run analyze --workspace=@sota/web-app",
     "perf": "lighthouse http://localhost:3000 --output=html --output-path=./perf-report.html",
     "deploy": "npm run deploy --workspace=@sota/web-app",
