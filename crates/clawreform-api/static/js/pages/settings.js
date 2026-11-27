@@ -425,9 +425,9 @@ function settingsPage() {
       try {
         var result = await ClawReformAPI.put('/api/providers/' + encodeURIComponent(provider.id) + '/url', { base_url: url });
         if (result.reachable) {
-          ClawReformToast.success(provider.display_name + ' URL saved &mdash; reachable (' + (result.latency_ms || '?') + 'ms)');
+          ClawReformToast.success(provider.display_name + ' URL saved — reachable (' + (result.latency_ms || '?') + 'ms)');
         } else {
-          ClawReformToast.warning(provider.display_name + ' URL saved but not reachable');
+          ClawReformToast.warn(provider.display_name + ' URL saved but not reachable');
         }
         await this.loadProviders();
       } catch(e) {

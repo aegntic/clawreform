@@ -1039,3 +1039,118 @@ async fn test_company_issue_rejects_unknown_goal() {
     let body: serde_json::Value = resp.json().await.unwrap();
     assert!(body["error"].as_str().unwrap().contains("goal_id"));
 }
+
+#[tokio::test]
+async fn test_extension_sync_cors_and_auth_static_assets() {
+    skip_if_no_local_tcp!();
+
+    let tmp = tempfile::tempdir().expect("Failed to create temp dir");
+    let config = KernelConfig {
+        home_dir: tmp.path().to_path_buf(),
+        data_dir: tmp.path().join("data"),
+        api_key: "test-secret-api-key".to_string(),
+        default_model: DefaultModelConfig {
+            provider: "ollama".to_string(),
+            model: "test-model".to_string(),
+            api_key_env: "OLLAMA_API_KEY".to_string(),
+            base_url: None,
+        },
+        ..KernelConfig::default()
+    };
+
+    let kernel = Arc::new(ClawReformKernel::boot_with_config(config).expect("Kernel should boot"));
+    kernel.set_self_handle();
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (router, state) = clawreform_api::server::build_router(kernel.clone(), addr).await;
+
+    let server_handle = tokio::spawn(async move {
+        let _ = axum::serve(
+            listener,
+            router.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+        )
+        .await;
+    });
+
+    let base_url = format!("http://{addr}");
+    let client = reqwest::Client::new();
+
+    // Dashboard static assets must load cleanly even when api_key is configured
+    for path in [
+        "/",
+        "/logo.png",
+        "/favicon.ico",
+        "/branding/shell-rail-strip-clean.png",
+    ] {
+        let resp = client
+            .get(format!("{base_url}{path}"))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(
+            resp.status(),
+            200,
+            "Static dashboard asset {path} should be accessible when auth is enabled"
+        );
+    }
+
+    // Browser extension sync works over loopback and echoes chrome-extension:// CORS header
+    let ext_origin = "chrome-extension://abcdefghijklmnop";
+    let sync_resp = client
+        .post(format!("{base_url}/api/extension/sync"))
+        .header("Origin", ext_origin)
+        .json(&serde_json::json!({
+            "version": "1.0.4",
+            "current_tab": "https://chatgpt.com/",
+            "injected_prompt": "Health check prompt"
+        }))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(sync_resp.status(), 200);
+    assert_eq!(
+        sync_resp
+            .headers()
+            .get("access-control-allow-origin")
+            .and_then(|v| v.to_str().ok()),
+        Some(ext_origin)
+    );
+    let sync_body: serde_json::Value = sync_resp.json().await.unwrap();
+    assert_eq!(sync_body["healthy"], true);
+    assert!(sync_body["cli_version"].as_str().is_some());
+
+    let prompts_resp = client
+        .get(format!("{base_url}/api/extension/prompts"))
+        .header("Origin", ext_origin)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(prompts_resp.status(), 200);
+    let prompts_body: serde_json::Value = prompts_resp.json().await.unwrap();
+    assert!(prompts_body["prompts"].is_array());
+
+    // Protected endpoints still require Bearer auth
+    let unauth_resp = client
+        .post(format!("{base_url}/api/workflows"))
+        .json(&serde_json::json!({}))
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(unauth_resp.status(), 401);
+
+    // OpenClaw status endpoint responds cleanly with Bearer auth
+    let oc_resp = client
+        .get(format!("{base_url}/api/openclaw/status"))
+        .header("Authorization", "Bearer test-secret-api-key")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(oc_resp.status(), 200);
+    let oc_body: serde_json::Value = oc_resp.json().await.unwrap();
+    assert!(oc_body["services"].is_object());
+    assert_eq!(oc_body["services"].as_object().unwrap().len(), 5);
+
+    state.kernel.shutdown();
+    server_handle.abort();
+}
