@@ -12,17 +12,11 @@ pub enum TeamError {
 
     /// A task failed.
     #[error("Task '{task_id}' failed: {reason}")]
-    TaskFailed {
-        task_id: TaskId,
-        reason: String,
-    },
+    TaskFailed { task_id: TaskId, reason: String },
 
     /// An agent encountered an error.
     #[error("Agent '{agent_id}' error: {reason}")]
-    AgentError {
-        agent_id: AgentId,
-        reason: String,
-    },
+    AgentError { agent_id: AgentId, reason: String },
 
     /// Context bus error.
     #[error("Context bus error: {0}")]
@@ -38,10 +32,7 @@ pub enum TeamError {
 
     /// Template error.
     #[error("Template '{template_id}' error: {reason}")]
-    Template {
-        template_id: String,
-        reason: String,
-    },
+    Template { template_id: String, reason: String },
 
     /// File scope violation.
     #[error("File scope violation: {0}")]
@@ -49,10 +40,7 @@ pub enum TeamError {
 
     /// Timeout exceeded.
     #[error("Timeout after {timeout_ms}ms: {reason}")]
-    Timeout {
-        timeout_ms: u64,
-        reason: String,
-    },
+    Timeout { timeout_ms: u64, reason: String },
 
     /// The orchestrator is not running.
     #[error("Orchestrator is not running")]

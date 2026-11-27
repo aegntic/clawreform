@@ -6,7 +6,6 @@ license.workspace = true
 description = "clawREFORM by aegntic.ai Protocol (OFP) — agent-to-agent networking"
 
 [dependencies]
-clawreform-types = { path = "../clawreform-types" }
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

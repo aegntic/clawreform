@@ -35,6 +35,7 @@ pub struct TeamLead {
 
 impl TeamLead {
     /// Create a new team lead.
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         name: &str,
         domain: &str,
@@ -187,10 +188,7 @@ impl TeamLead {
             "context".to_string(),
             serde_json::to_string_pretty(&context).unwrap_or_default(),
         );
-        template_vars.insert(
-            "workers".to_string(),
-            worker_descs.join("\n"),
-        );
+        template_vars.insert("workers".to_string(), worker_descs.join("\n"));
 
         let prompt = self
             .templates
@@ -269,9 +267,7 @@ impl TeamLead {
         );
         template_vars.insert("output".to_string(), worker_output.to_string());
 
-        let prompt = self
-            .templates
-            .render("team-lead-review", &template_vars)?;
+        let prompt = self.templates.render("team-lead-review", &template_vars)?;
 
         let review = self.executor.execute(prompt, HashMap::new()).await?;
 
@@ -428,7 +424,12 @@ mod tests {
 
     fn make_test_executor() -> SharedExecutor {
         SharedExecutor::new(Box::new(|prompt, _| {
-            Box::pin(async move { Ok(format!("LEAD: {}", prompt.chars().take(50).collect::<String>())) })
+            Box::pin(async move {
+                Ok(format!(
+                    "LEAD: {}",
+                    prompt.chars().take(50).collect::<String>()
+                ))
+            })
         }))
     }
 
@@ -464,17 +465,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let fs = ScopedFileSystem::with_base(dir.path().to_path_buf());
 
-        let lead = TeamLead::new(
-            "Lead",
-            "test",
-            vec![],
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-            2,
-        );
+        let lead = TeamLead::new("Lead", "test", vec![], None, executor, bus, msg_bus, fs, 2);
 
         assert_eq!(lead.worker_count().await, 0);
 
@@ -485,7 +476,13 @@ mod tests {
         let fs2 = ScopedFileSystem::with_base(dir2.path().to_path_buf());
 
         let w1 = crate::worker::Worker::new(
-            "W1", vec!["x".into()], None, executor2, bus2, msg_bus2, fs2,
+            "W1",
+            vec!["x".into()],
+            None,
+            executor2,
+            bus2,
+            msg_bus2,
+            fs2,
         );
         lead.add_worker(w1).await;
 
@@ -500,17 +497,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let fs = ScopedFileSystem::with_base(dir.path().to_path_buf());
 
-        let lead = TeamLead::new(
-            "Lead",
-            "test",
-            vec![],
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-            3,
-        );
+        let lead = TeamLead::new("Lead", "test", vec![], None, executor, bus, msg_bus, fs, 3);
 
         let task = TeamTask::new("Build a feature");
         let result = lead.process_task(&task).await.unwrap();
@@ -524,7 +511,8 @@ mod tests {
                 Ok(r#"quality_score: 8
 approved: true
 feedback: Good work
-revision_needed: false"#.to_string())
+revision_needed: false"#
+                    .to_string())
             })
         }));
 

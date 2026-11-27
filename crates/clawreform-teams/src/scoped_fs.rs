@@ -58,9 +58,9 @@ impl ScopedFileSystem {
                 .map_err(|e| TeamError::FileScope(format!("Cannot resolve path '{path}': {e}")))?
         } else if let Some(parent) = requested.parent() {
             let canonical_parent = if parent.exists() {
-                parent
-                    .canonicalize()
-                    .map_err(|e| TeamError::FileScope(format!("Cannot resolve path '{path}': {e}")))?
+                parent.canonicalize().map_err(|e| {
+                    TeamError::FileScope(format!("Cannot resolve path '{path}': {e}"))
+                })?
             } else {
                 parent.to_path_buf()
             };
@@ -76,9 +76,10 @@ impl ScopedFileSystem {
         // Check base directory constraint
         if !self.scope.base_dir.as_os_str().is_empty() {
             let base = if self.scope.base_dir.exists() {
-                self.scope.base_dir.canonicalize().map_err(|e| {
-                    TeamError::FileScope(format!("Base directory error: {e}"))
-                })?
+                self.scope
+                    .base_dir
+                    .canonicalize()
+                    .map_err(|e| TeamError::FileScope(format!("Base directory error: {e}")))?
             } else {
                 self.scope.base_dir.clone()
             };

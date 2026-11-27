@@ -181,15 +181,21 @@ Your task is to decompose the following goal into sub-tasks that can be assigned
    - Expected output
    - Dependencies (if any)
 
-Respond in JSON format with an array of task objects."#.to_string(),
-            variables: vec!["name".to_string(), "goal".to_string(), "team_leads".to_string()],
+Respond in JSON format with an array of task objects."#
+                .to_string(),
+            variables: vec![
+                "name".to_string(),
+                "goal".to_string(),
+                "team_leads".to_string(),
+            ],
             description: "Decompose a high-level goal into sub-tasks for team leads".to_string(),
             role: Some(TeamRole::Orchestrator),
         },
         PromptTemplate {
             id: "orchestrator-synthesize".to_string(),
             name: "Result Synthesis".to_string(),
-            template: r#"You are {{name}}, the Orchestrator. Your team leads have completed their tasks.
+            template:
+                r#"You are {{name}}, the Orchestrator. Your team leads have completed their tasks.
 
 ## Original Goal
 {{goal}}
@@ -203,8 +209,13 @@ Respond in JSON format with an array of task objects."#.to_string(),
 3. Identify any gaps or inconsistencies
 4. Provide a final assessment of goal completion
 
-Respond with a structured summary."#.to_string(),
-            variables: vec!["name".to_string(), "goal".to_string(), "results".to_string()],
+Respond with a structured summary."#
+                    .to_string(),
+            variables: vec![
+                "name".to_string(),
+                "goal".to_string(),
+                "results".to_string(),
+            ],
             description: "Synthesize team lead results into a final summary".to_string(),
             role: Some(TeamRole::Orchestrator),
         },
@@ -228,8 +239,15 @@ Respond with a structured summary."#.to_string(),
 3. Assign each sub-task to the most appropriate worker
 4. Provide clear instructions for each worker
 
-Respond in JSON format."#.to_string(),
-            variables: vec!["name".to_string(), "domain".to_string(), "task".to_string(), "context".to_string(), "workers".to_string()],
+Respond in JSON format."#
+                .to_string(),
+            variables: vec![
+                "name".to_string(),
+                "domain".to_string(),
+                "task".to_string(),
+                "context".to_string(),
+                "workers".to_string(),
+            ],
             description: "Delegate a task from the orchestrator to workers".to_string(),
             role: Some(TeamRole::TeamLead),
         },
@@ -256,8 +274,14 @@ Respond with:
 - quality_score: 1-10
 - approved: boolean
 - feedback: string
-- revision_needed: boolean"#.to_string(),
-            variables: vec!["name".to_string(), "domain".to_string(), "task".to_string(), "output".to_string()],
+- revision_needed: boolean"#
+                .to_string(),
+            variables: vec![
+                "name".to_string(),
+                "domain".to_string(),
+                "task".to_string(),
+                "output".to_string(),
+            ],
             description: "Review worker output for quality".to_string(),
             role: Some(TeamRole::TeamLead),
         },
@@ -278,8 +302,13 @@ Respond with:
 3. Provide your output in a clear, structured format
 4. If you encounter issues, describe them clearly
 
-Focus on producing high-quality work that your team lead will review."#.to_string(),
-            variables: vec!["name".to_string(), "task".to_string(), "context".to_string()],
+Focus on producing high-quality work that your team lead will review."#
+                .to_string(),
+            variables: vec![
+                "name".to_string(),
+                "task".to_string(),
+                "context".to_string(),
+            ],
             description: "Execute a specific task as a worker".to_string(),
             role: Some(TeamRole::Worker),
         },
@@ -310,11 +339,8 @@ mod tests {
         vars.insert("name".to_string(), "Alice".to_string());
         vars.insert("role".to_string(), "Orchestrator".to_string());
 
-        let result = TemplateRegistry::render_string(
-            "Hello {{name}}, you are {{role}}.",
-            &vars,
-        )
-        .unwrap();
+        let result =
+            TemplateRegistry::render_string("Hello {{name}}, you are {{role}}.", &vars).unwrap();
         assert_eq!(result, "Hello Alice, you are Orchestrator.");
     }
 
@@ -339,7 +365,10 @@ mod tests {
         let mut vars = std::collections::HashMap::new();
         vars.insert("name".to_string(), "Boss".to_string());
         vars.insert("goal".to_string(), "Build something".to_string());
-        vars.insert("team_leads".to_string(), "Code Lead, Design Lead".to_string());
+        vars.insert(
+            "team_leads".to_string(),
+            "Code Lead, Design Lead".to_string(),
+        );
 
         let result = registry.render("orchestrator-decompose", &vars).unwrap();
         assert!(result.contains("Boss"));

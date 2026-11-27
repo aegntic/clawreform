@@ -9,8 +9,8 @@ use crate::message_bus::MessageBus;
 use crate::scoped_fs::ScopedFileSystem;
 use crate::template::TemplateRegistry;
 use crate::types::{
-    DelegationMessage, MentalModel, SharedExecutor, TeamAgentHealth,
-    TeamAgentIdentity, TeamAgentStatus, TeamRole, TeamTask, TaskResult,
+    DelegationMessage, MentalModel, SharedExecutor, TaskResult, TeamAgentHealth, TeamAgentIdentity,
+    TeamAgentStatus, TeamRole, TeamTask,
 };
 use crate::AgentId;
 use std::collections::HashMap;
@@ -201,7 +201,12 @@ mod tests {
 
     fn make_test_executor() -> SharedExecutor {
         SharedExecutor::new(Box::new(|prompt, _| {
-            Box::pin(async move { Ok(format!("EXECUTED: {}", prompt.chars().take(50).collect::<String>())) })
+            Box::pin(async move {
+                Ok(format!(
+                    "EXECUTED: {}",
+                    prompt.chars().take(50).collect::<String>()
+                ))
+            })
         }))
     }
 
@@ -235,15 +240,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let fs = ScopedFileSystem::with_base(dir.path().to_path_buf());
 
-        let worker = Worker::new(
-            "W1",
-            vec!["code".into()],
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-        );
+        let worker = Worker::new("W1", vec!["code".into()], None, executor, bus, msg_bus, fs);
 
         let task = TeamTask::new("Write a function");
         let result = worker.execute_task(&task).await.unwrap();
@@ -260,15 +257,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let fs = ScopedFileSystem::with_base(dir.path().to_path_buf());
 
-        let worker = Worker::new(
-            "W2",
-            vec![],
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-        );
+        let worker = Worker::new("W2", vec![], None, executor, bus, msg_bus, fs);
 
         let health = worker.health().await;
         assert_eq!(health.status, TeamAgentStatus::Idle);
