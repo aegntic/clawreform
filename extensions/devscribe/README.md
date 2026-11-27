@@ -140,7 +140,7 @@ Click **Import Notes** and select a previously exported `.json` file. Imported n
 
 | Problem | Solution |
 |---------|----------|
-| FAB does not appear | Ensure you are on `http://127.0.0.1:4332`; DevScribe only runs on that origin |
+| FAB does not appear | Ensure you are on `http://127.0.0.1:4332` or `http://localhost:4332`; DevScribe only runs on those origins |
 | Panel is blank | Open DevTools (F12) and check the console for errors; reload the page |
 | Console/Network tabs empty | Verify **Capture Console** and **Capture Network** are enabled in Settings |
 | GitHub issue creation fails | Check that the token has `repo` scope and the repo format is `owner/repo` |

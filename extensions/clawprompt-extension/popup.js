@@ -373,17 +373,16 @@ async function injectPrompt(text, title) {
 
     if (result?.injected) {
       showToast(title.substring(0, 25) + ' injected');
+      // Log injection to local clawREFORM daemon (non-blocking)
+      chrome.runtime.sendMessage({
+        action: 'logPrompt',
+        text,
+        title,
+        tabUrl: tab.url
+      }).catch(() => {});
     } else {
       showToast('Copied to clipboard');
     }
-
-    // Log injection to local clawREFORM daemon (non-blocking)
-    chrome.runtime.sendMessage({
-      action: 'logPrompt',
-      text,
-      title,
-      tabUrl: tab.url
-    }).catch(() => {});
 
     // Close popup after delay
     setTimeout(() => window.close(), 800);
