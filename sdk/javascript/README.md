@@ -14,7 +14,7 @@ npm install @clawreform/sdk
 const { ClawReform } = require("@clawreform/sdk");
 
 // Connect to your ClawReform server
-const client = new ClawReform("http://localhost:4200");
+const client = new ClawReform("http://127.0.0.1:4332");
 
 // Check health
 const health = await client.health();
@@ -39,10 +39,10 @@ for await (const event of client.agents.stream(agent.id, "Tell me a joke")) {
 ### Constructor
 
 ```javascript
-const client = new ClawReform(baseUrl, opts?);
+const client = new ClawReform(baseUrl?, opts?);
 ```
 
-- `baseUrl` - ClawReform server URL (default: `http://localhost:4200`)
+- `baseUrl` - ClawReform server URL (default: `http://127.0.0.1:4332`)
 - `opts.headers` - Custom headers for all requests
 
 ### Resources

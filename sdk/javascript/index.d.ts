@@ -37,7 +37,7 @@ export class ClawReform {
   triggers: TriggerResource;
   schedules: ScheduleResource;
 
-  constructor(baseUrl: string, opts?: { headers?: Record<string, string> });
+  constructor(baseUrl?: string, opts?: { headers?: Record<string, string> });
 
   health(): Promise<unknown>;
   healthDetail(): Promise<unknown>;

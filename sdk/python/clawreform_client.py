@@ -5,7 +5,7 @@ Usage:
 
     from clawreform_client import ClawReform
 
-    client = ClawReform("http://localhost:3000")
+    client = ClawReform("http://127.0.0.1:4332")
 
     # Create an agent
     agent = client.agents.create(template="assistant")
@@ -46,7 +46,11 @@ class _Resource:
 class ClawReform:
     """clawREFORM by aegntic.ai REST API client. Zero dependencies — uses only stdlib urllib."""
 
-    def __init__(self, base_url: str, headers: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        base_url: str = "http://127.0.0.1:4332",
+        headers: Optional[Dict[str, str]] = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self._headers = {"Content-Type": "application/json"}
         if headers:

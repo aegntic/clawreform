@@ -1,12 +1,11 @@
-# NOTE: The GHCR image (ghcr.io/rightnow-ai/clawreform) is not yet public.
-# For now, build from source using `docker compose up --build`.
-# See: https://github.com/RightNow-AI/clawreform/issues/12
+# NOTE: Build from source using `docker compose up --build`, or pull from GHCR once published.
+# Repository: https://github.com/aegntic/clawreform
 
 version: "3.8"
 services:
   clawreform:
     build: .
-    # image: ghcr.io/rightnow-ai/clawreform:latest  # Uncomment when GHCR is public
+    # image: ghcr.io/aegntic/clawreform:latest  # Uncomment when GHCR is public
     ports:
       - "4332:4332"
     volumes:
@@ -15,6 +14,11 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - XAI_API_KEY=${XAI_API_KEY:-}
+      - ZHIPU_API_KEY=${ZHIPU_API_KEY:-}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}

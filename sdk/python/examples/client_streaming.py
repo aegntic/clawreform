@@ -12,7 +12,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from clawreform_client import ClawReform
 
-client = ClawReform("http://localhost:3000")
+client = ClawReform("http://127.0.0.1:4332")
 
 # Create an agent
 agent = client.agents.create(template="assistant")

@@ -2,14 +2,23 @@
 'use strict';
 
 const http = require('node:http');
+const https = require('node:https');
 const { randomUUID } = require('node:crypto');
 
 // ---------------------------------------------------------------------------
 // Config from environment
 // ---------------------------------------------------------------------------
 const PORT = parseInt(process.env.WHATSAPP_GATEWAY_PORT || '3009', 10);
-const OPENFANG_URL = (process.env.OPENFANG_URL || 'http://127.0.0.1:4332').replace(/\/+$/, '');
-const DEFAULT_AGENT = process.env.OPENFANG_DEFAULT_AGENT || 'assistant';
+const CLAWREFORM_URL = (
+  process.env.CLAWREFORM_URL ||
+  process.env.OPENFANG_URL ||
+  'http://127.0.0.1:4332'
+).replace(/\/+$/, '');
+const DEFAULT_AGENT =
+  process.env.CLAWREFORM_DEFAULT_AGENT ||
+  process.env.OPENFANG_DEFAULT_AGENT ||
+  'assistant';
+const API_KEY = process.env.CLAWREFORM_API_KEY || '';
 
 // ---------------------------------------------------------------------------
 // State
@@ -50,7 +59,7 @@ async function startConnection() {
     auth: state,
     logger,
     printQRInTerminal: true,
-    browser: ['OpenFang', 'Desktop', '1.0.0'],
+    browser: ['clawREFORM', 'Desktop', '1.0.0'],
   });
 
   // Save credentials whenever they update
@@ -115,7 +124,7 @@ async function startConnection() {
     }
   });
 
-  // Incoming messages → forward to OpenFang
+  // Incoming messages → forward to clawREFORM
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
 
@@ -138,9 +147,9 @@ async function startConnection() {
 
       console.log(`[gateway] Incoming from ${pushName} (${phone}): ${text.substring(0, 80)}`);
 
-      // Forward to OpenFang agent
+      // Forward to clawREFORM agent
       try {
-        const response = await forwardToOpenFang(text, phone, pushName);
+        const response = await forwardToClawReform(text, phone, pushName);
         if (response && sock) {
           // Send agent response back to WhatsApp
           await sock.sendMessage(sender, { text: response });
@@ -154,9 +163,9 @@ async function startConnection() {
 }
 
 // ---------------------------------------------------------------------------
-// Forward incoming message to OpenFang API, return agent response
+// Forward incoming message to clawREFORM API, return agent response
 // ---------------------------------------------------------------------------
-function forwardToOpenFang(text, phone, pushName) {
+function forwardToClawReform(text, phone, pushName) {
   return new Promise((resolve, reject) => {
     const payload = JSON.stringify({
       message: text,
@@ -167,18 +176,23 @@ function forwardToOpenFang(text, phone, pushName) {
       },
     });
 
-    const url = new URL(`${OPENFANG_URL}/api/agents/${encodeURIComponent(DEFAULT_AGENT)}/message`);
+    const url = new URL(`${CLAWREFORM_URL}/api/agents/${encodeURIComponent(DEFAULT_AGENT)}/message`);
+    const transport = url.protocol === 'https:' ? https : http;
+    const headers = {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    };
+    if (API_KEY) {
+      headers.Authorization = `Bearer ${API_KEY}`;
+    }
 
-    const req = http.request(
+    const req = transport.request(
       {
         hostname: url.hostname,
-        port: url.port || 4332,
+        port: url.port || (url.protocol === 'https:' ? 443 : 4332),
         path: url.pathname,
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(payload),
-        },
+        headers,
         timeout: 120_000, // LLM calls can be slow
       },
       (res) => {
@@ -199,7 +213,7 @@ function forwardToOpenFang(text, phone, pushName) {
     req.on('error', reject);
     req.on('timeout', () => {
       req.destroy();
-      reject(new Error('OpenFang API timeout'));
+      reject(new Error('clawREFORM API timeout'));
     });
     req.write(payload);
     req.end();
@@ -207,7 +221,7 @@ function forwardToOpenFang(text, phone, pushName) {
 }
 
 // ---------------------------------------------------------------------------
-// Send a message via Baileys (called by OpenFang for outgoing)
+// Send a message via Baileys (called by clawREFORM for outgoing)
 // ---------------------------------------------------------------------------
 async function sendMessage(to, text) {
   if (!sock || connStatus !== 'connected') {
@@ -334,7 +348,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`[gateway] WhatsApp Web gateway listening on http://127.0.0.1:${PORT}`);
-  console.log(`[gateway] OpenFang URL: ${OPENFANG_URL}`);
+  console.log(`[gateway] clawREFORM URL: ${CLAWREFORM_URL}`);
   console.log(`[gateway] Default agent: ${DEFAULT_AGENT}`);
   console.log('[gateway] Waiting for POST /login/start to begin QR flow...');
 });
