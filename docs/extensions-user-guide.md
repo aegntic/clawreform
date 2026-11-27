@@ -8,8 +8,8 @@ clawREFORM ships with two browser extensions that extend its capabilities:
 
 | Extension | Purpose | Where it runs |
 |-----------|---------|---------------|
-| **ClawPrompt** | AI prompt template manager — create, organize, and insert templates into any text field | All websites |
-| **DevScribe** | Development companion — notes, screenshots, console/network capture, Alpine.js inspection, GitHub issues | clawREFORM dashboard only (`http://127.0.0.1:4332`) |
+| **ClawPrompt** | AI prompt template manager — create, organize, and insert templates into any text field (plus optional CLI daemon sync in `extensions/clawprompt-extension` via `/api/extension/sync`) | All websites |
+| **DevScribe** | Development companion — notes, screenshots, console/network capture, Alpine.js inspection, GitHub issues | clawREFORM dashboard (`http://127.0.0.1:4332` or `http://localhost:4332`) |
 
 Together they form a workflow: use DevScribe to capture observations from the dashboard, then use ClawPrompt to quickly insert structured prompts when working with AI assistants.
 
@@ -18,7 +18,7 @@ Together they form a workflow: use DevScribe to capture observations from the da
 ### Prerequisites
 
 - Chrome or a Chromium-based browser (Edge, Brave, Arc)
-- clawREFORM dashboard running at `http://127.0.0.1:4332` (required for DevScribe)
+- clawREFORM dashboard running at `http://127.0.0.1:4332` or `http://localhost:4332` (required for DevScribe and ClawPrompt CLI sync)
 
 ### Installation
 
@@ -27,10 +27,10 @@ Both extensions are installed as unpacked extensions:
 1. Open `chrome://extensions/`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked**
-4. Select `extensions/clawprompt` for ClawPrompt
+4. Select `extensions/clawprompt` (or `extensions/clawprompt-extension` for Swarm Command Prompts with local CLI sync) for ClawPrompt
 5. Click **Load unpacked** again
 6. Select `extensions/devscribe` for DevScribe
-7. Navigate to `http://127.0.0.1:4332` to verify DevScribe's gold FAB appears
+7. Navigate to `http://127.0.0.1:4332` (or `http://localhost:4332`) to verify DevScribe's gold FAB appears
 
 ---
 

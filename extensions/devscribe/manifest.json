@@ -4,10 +4,14 @@
   "version": "0.1.0",
   "description": "Development companion for clawREFORM — capture, annotate, and export from the dashboard",
   "permissions": ["storage", "activeTab", "scripting", "tabs"],
-  "host_permissions": ["http://127.0.0.1:4332/*"],
+  "host_permissions": [
+    "http://127.0.0.1:4332/*",
+    "http://localhost:4332/*",
+    "https://api.github.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["http://127.0.0.1:4332/*"],
+      "matches": ["http://127.0.0.1:4332/*", "http://localhost:4332/*"],
       "js": ["content.js"],
       "css": ["content.css"]
     }

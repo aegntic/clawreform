@@ -23,6 +23,9 @@ const ALLOWED_ORIGINS = [
 
 function isOriginAllowed(origin) {
   if (!origin) return false;
+  if (/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) {
+    return true;
+  }
   return ALLOWED_ORIGINS.some(allowed =>
     origin === allowed ||
     origin.endsWith('.' + allowed.replace('https://', '').replace('www.', ''))
@@ -260,6 +263,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then(result => sendResponse(result))
       .catch(error => sendResponse({ status: "error", error: error.message }));
     return true;
+  }
+
+  if (message.action === "logPrompt" && message.text) {
+    logPromptToCLI(message.text, message.title || "popup", message.tabUrl || "")
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (message.action === "getCLIStatus") {
+    if (message.refresh) {
+      syncWithCLI()
+        .then(() => sendResponse({ status: cliStatus }))
+        .catch(() => sendResponse({ status: cliStatus }));
+      return true;
+    }
+    sendResponse({ status: cliStatus });
+    return false;
   }
 
   if (message.action === "getVersion") {
