@@ -57,7 +57,7 @@ chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 
 # Database
-rusqlite = { version = "0.31", features = ["bundled", "serde_json"] }
+rusqlite = { version = "0.43", features = ["bundled", "serde_json"] }
 
 # CLI
 clap = { version = "4", features = ["derive"] }
@@ -83,7 +83,7 @@ tokio-tungstenite = { version = "0.24", default-features = false, features = ["c
 url = "2"
 
 # WASM sandbox
-wasmtime = "41"
+wasmtime = "51"
 
 # HTTP server (for API daemon)
 axum = { version = "0.8", features = ["ws"] }
