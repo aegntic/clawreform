@@ -17,7 +17,7 @@
     "test": "npm run test --workspaces",
     "test:e2e": "playwright test",
     "lint": "eslint packages --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p packages/web-app/tsconfig.json",
     "analyze": "npm run analyze --workspace=@sota/web-app",
     "perf": "lighthouse http://localhost:3000 --output=html --output-path=./perf-report.html",
     "deploy": "npm run deploy --workspace=@sota/web-app",
@@ -31,6 +31,10 @@
     "eslint": "^8.55.0",
     "prettier": "^3.1.0",
     "typescript": "^5.3.2"
+  },
+  "overrides": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "engines": {
     "node": ">=20.0.0"

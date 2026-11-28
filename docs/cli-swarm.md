@@ -1,6 +1,6 @@
 # CLI Swarm Setup
 
-This repo now includes a repo-local swarm harness under [`scripts/cli-swarm/launch.py`](/home/ae/clawreform/scripts/cli-swarm/launch.py) and [`scripts/cli-swarm/proof-demo.sh`](/home/ae/clawreform/scripts/cli-swarm/proof-demo.sh).
+This repo now includes a repo-local swarm harness under [`scripts/cli-swarm/launch.py`](../scripts/cli-swarm/launch.py) and [`scripts/cli-swarm/proof-demo.sh`](../scripts/cli-swarm/proof-demo.sh).
 
 When running the Python entrypoints with `uv` on a locked-down sandbox, set a writable cache dir first:
 
@@ -114,14 +114,14 @@ scripts/cli-swarm/proof-demo.sh http://127.0.0.1:4332/#agents
 
 This does three things:
 
-1. runs the existing [`scripts/dashboard-proof.sh`](/home/ae/clawreform/scripts/dashboard-proof.sh)
+1. runs the existing [`scripts/dashboard-proof.sh`](../scripts/dashboard-proof.sh)
 2. renders the existing Remotion demo with `bun run render` if `remotion-demo/node_modules` already exists
 3. adds a basic TTS voiceover when `espeak` and `ffmpeg` are installed
 
 Artifacts land under:
 
-- [`output/playwright/`](/home/ae/clawreform/output/playwright/)
-- [`output/demo/`](/home/ae/clawreform/output/demo/)
+- `output/playwright/`
+- `output/demo/`
 
 ## Verification loop
 

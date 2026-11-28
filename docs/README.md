@@ -17,8 +17,8 @@ Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai 
 
 | Guide | Description |
 |-------|-------------|
-| [Architecture](architecture.md) | 12-crate structure, kernel boot, agent lifecycle, memory substrate |
-| [Organ System](organ-system.md) | Core organ files, memory ladder, dispatch/ledger doctrine |
+| [Architecture](architecture.md) | 15-crate structure, kernel boot, agent lifecycle, memory substrate, team orchestration |
+| [AgentDNA System](agentdna-system.md) | Core AgentDNA organ files, memory ladder, dispatch/ledger doctrine |
 | [Agent Templates](agent-templates.md) | 30 pre-built agents across 4 performance tiers |
 | [Workflows](workflows.md) | Multi-agent pipelines with branching, fan-out, loops, and triggers |
 | [Security](security.md) | 16 defense-in-depth security systems |
@@ -36,15 +36,15 @@ Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai 
 | Guide | Description |
 |-------|-------------|
 | [Channel Adapters](channel-adapters.md) | 40 messaging channels -- setup, configuration, custom adapters |
-| [LLM Providers](providers.md) | 20 providers, 51 models, 23 aliases -- setup and model routing |
-| [Skills](skill-development.md) | 60 bundled skills, custom skill development, FangHub marketplace |
+| [LLM Providers](providers.md) | 20+ providers, 140+ models, 23 aliases -- setup and model routing |
+| [Skills](skill-development.md) | 60+ bundled skills, custom skill development, FangHub marketplace |
 | [MCP & A2A](mcp-a2a.md) | Model Context Protocol and Agent-to-Agent protocol integration |
 
 ## Reference
 
 | Guide | Description |
 |-------|-------------|
-| [API Reference](api-reference.md) | All 76 REST/WS/SSE endpoints with request/response examples |
+| [API Reference](api-reference.md) | REST/WS/SSE endpoints with request/response examples |
 | [Desktop App](desktop.md) | Tauri 2.0 native app -- build, features, architecture |
 | [Design Reference Shortlist](design/reference-shortlist.md) | Locked external visual references for the frontend reset |
 | [UI Baseline Pack](design/ui-baseline-pack.md) | Source-of-truth shell, material, spacing, and control rules |
@@ -54,7 +54,7 @@ Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai 
 
 | Guide | Description |
 |-------|-------------|
-| [Production Checklist](production-checklist.md) | Every step before tagging v0.1.0 -- signing keys, secrets, verification |
+| [Production Checklist](production-checklist.md) | Every step before tagging a release -- signing keys, secrets, verification |
 
 ## Additional Resources
 
@@ -89,17 +89,17 @@ This verifies the live dashboard version badge, reasoning panel rendering, focus
 
 | Metric | Count |
 |--------|-------|
-| Crates | 14 |
+| Crates | 15 (14 runtime/library/app crates + xtask) |
 | Agent templates | 30 |
 | Messaging channels | 40 |
-| Bundled skills | 60 |
-| Built-in tools | 38 |
-| LLM providers | 20 |
-| Models in catalog | 51 |
+| Bundled skills | 60+ |
+| Built-in tools | 38+ |
+| LLM providers | 28 |
+| Models in catalog | 141+ |
 | Model aliases | 23 |
-| API endpoints | 76 |
+| API endpoints | 100+ |
 | Security systems | 16 |
-| Tests | 967 |
+| Tests | 1,850+ |
 
 ### Important Paths
 

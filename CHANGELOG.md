@@ -5,6 +5,24 @@ All notable changes to clawREFORM by aegntic.ai will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.1] - 2026-11-27
+
+### Added
+
+- **`clawreform-teams` crate**: 3-tier multi-agent team orchestration (`Orchestrator` -> `TeamLead` -> `Worker`) with `ContextBus`, `MessageBus`, `ScopedFileSystem`, `TemplateRegistry`, and `TeamManager`.
+- **Browser extension sync API**: Added `POST /api/extension/sync` and `GET /api/extension/prompts` with `chrome-extension://` / `moz-extension://` CORS support.
+- **ClawPrompt & DevScribe browser extensions**: Shipped companion Chrome extensions and dedicated landing pages (`/clwprmpt`, `/devscribe`).
+- **Next.js marketing & docs site (`site/`)**: Static Cloudflare Pages site with interactive architecture/lifecycle views and `/api/waitlist` D1 function.
+
+### Fixed
+
+- Resolved Rust workspace Clippy (`-D warnings`), `rustfmt`, unused dependency, and cross-platform `ScopedFileSystem` macOS/Windows path canonicalization issues.
+- Fixed Qwen3.5 `[TOOL_CALL]` text recovery parser trailing-brace capture and quote edge cases.
+- Fixed API auth middleware for dashboard static assets (`/logo.png`, `/favicon.ico`, `/branding/*`) and loopback-only extension sync; added `OPENCLAW_*_URL` env overrides and concurrent health probes.
+- Fixed `settings.js` `ClawReformToast.warning` crash and Playwright `dashboard-proof.sh` inline console parsing.
+- Aligned JS/Python SDKs, `whatsapp-gateway`, `clawreform-npm`, `Dockerfile`, `docker-compose.yml`, and `scripts/install.{sh,ps1}` on port `4332`, `CLAWREFORM_*` env vars, and `aegntic/clawreform`.
+- Fixed `sota-fullstack-suite` workspace dependency (`@fastify/helmet@^11.1.1`), added missing hero video/poster assets, fixed broken web/doc links, and removed committed `secrets.env`, temp logs, and unmapped gitlinks.
+
 ## [0.3.0] - 2026-03-07
 
 ### Changed

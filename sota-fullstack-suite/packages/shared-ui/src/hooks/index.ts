@@ -1,3 +1,5 @@
+'use client';
+
 export { useScrollAnimation } from './useScrollAnimation';
 export { useIntersectionObserver } from './useIntersectionObserver';
 export { useMediaQuery } from './useMediaQuery';
