@@ -99,7 +99,7 @@ export PATH="$(npm bin -g):$PATH"
 ### Docker container won't start
 
 **Common causes**:
-- No API key provided: `docker run -e GROQ_API_KEY=... ghcr.io/RightNow-AI/clawreform`
+- No API key provided: `docker run -e GROQ_API_KEY=... ghcr.io/aegntic/clawreform`
 - Port already in use: change the port mapping `-p 3001:4332`
 - Permission denied on volume mount: check directory permissions
 
@@ -130,6 +130,15 @@ export OPENAI_API_KEY="sk-..."
 ```
 
 Add to your shell profile to persist across sessions.
+
+If you use a local provider, no key is needed. Point `[default_model]` at it instead:
+
+```toml
+[default_model]
+provider = "ollama"
+model = "llama3.2"
+api_key_env = "OLLAMA_API_KEY"
+```
 
 ### Config validation errors
 
@@ -478,7 +487,7 @@ Yes. Each agent can use a different provider via its manifest `[model]` section.
 cd clawreform && git pull && cargo install --path crates/clawreform-cli
 
 # Docker
-docker pull ghcr.io/RightNow-AI/clawreform:latest
+docker pull ghcr.io/aegntic/clawreform:latest
 ```
 
 ### Can agents talk to each other?
