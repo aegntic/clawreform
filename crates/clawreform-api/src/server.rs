@@ -94,13 +94,21 @@ pub async fn build_router(
         // SECURITY: CorsLayer::permissive() is dangerous — any website could
         // make cross-origin requests. Restrict to known origins instead.
         let port = listen_addr.port();
-        let localhost_origins: Vec<axum::http::HeaderValue> = vec![
+        let mut localhost_origins: Vec<axum::http::HeaderValue> = vec![
             format!("http://{listen_addr}").parse().unwrap(),
             format!("http://localhost:{port}").parse().unwrap(),
             format!("http://127.0.0.1:{port}").parse().unwrap(),
             "http://localhost:8080".parse().unwrap(),
             "http://127.0.0.1:8080".parse().unwrap(),
         ];
+        if port != DEFAULT_API_PORT {
+            if let Ok(v) = format!("http://localhost:{DEFAULT_API_PORT}").parse() {
+                localhost_origins.push(v);
+            }
+            if let Ok(v) = format!("http://127.0.0.1:{DEFAULT_API_PORT}").parse() {
+                localhost_origins.push(v);
+            }
+        }
         use tower_http::cors::AllowOrigin;
         let origins_for_predicate = localhost_origins.clone();
         CorsLayer::new()

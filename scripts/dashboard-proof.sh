@@ -186,19 +186,21 @@ fi
 SCREENSHOT_DST="${OUTPUT_DIR}/dashboard-proof.png"
 capture_screenshot "${SCREENSHOT_DST}"
 
+CONSOLE_OUT="$(run_pwcli console)"
 CONSOLE_REL="$(
-  run_pwcli console \
+  printf '%s\n' "${CONSOLE_OUT}" \
     | extract_markdown_target
 )"
 
-if [[ -z "${CONSOLE_REL}" ]]; then
+CONSOLE_DST="${OUTPUT_DIR}/dashboard-proof-console.log"
+if [[ -n "${CONSOLE_REL}" && -f "${ROOT_DIR}/${CONSOLE_REL}" ]]; then
+  cp "${ROOT_DIR}/${CONSOLE_REL}" "${CONSOLE_DST}"
+elif [[ -n "${CONSOLE_OUT}" ]]; then
+  printf '%s\n' "${CONSOLE_OUT}" > "${CONSOLE_DST}"
+else
   echo "Failed to capture console log" >&2
   exit 1
 fi
-
-CONSOLE_SRC="${ROOT_DIR}/${CONSOLE_REL}"
-CONSOLE_DST="${OUTPUT_DIR}/dashboard-proof-console.log"
-cp "${CONSOLE_SRC}" "${CONSOLE_DST}"
 
 if ! grep -q 'Errors: 0' "${CONSOLE_DST}" || ! grep -q 'Warnings: 0' "${CONSOLE_DST}"; then
   echo "Console proof failed; see ${CONSOLE_DST}" >&2

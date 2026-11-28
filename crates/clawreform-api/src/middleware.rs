@@ -53,6 +53,9 @@ fn is_loopback_request<B>(request: &Request<B>) -> bool {
 
 fn is_public_dashboard_path(path: &str) -> bool {
     path == "/"
+        || path == "/logo.png"
+        || path == "/favicon.ico"
+        || path.starts_with("/branding/")
         || path == "/api/health"
         || path == "/api/health/detail"
         || path == "/api/status"
@@ -77,6 +80,18 @@ fn is_public_dashboard_path(path: &str) -> bool {
         || path == "/api/integrations/available"
         || path == "/api/integrations/health"
         || path.starts_with("/api/cron/")
+}
+
+fn is_local_extension_request<B>(request: &Request<B>) -> bool {
+    if !is_loopback_request(request) {
+        return false;
+    }
+
+    let path = request.uri().path();
+    let method = request.method();
+
+    (method == Method::POST && path == "/api/extension/sync")
+        || (method == Method::GET && path == "/api/extension/prompts")
 }
 
 fn is_local_obsidian_bootstrap_request<B>(request: &Request<B>) -> bool {
@@ -133,10 +148,13 @@ pub async fn auth(
     }
 
     // Public endpoints that don't require auth (dashboard needs these).
-    // Obsidian bootstrap also gets a silent loopback-only bypass so the local
-    // dashboard can seed and sync memory files without forcing an auth prompt.
+    // Obsidian bootstrap and browser extension sync also get loopback-only
+    // bypasses so local integrations work without exposing remote access.
     let path = request.uri().path();
-    if is_public_dashboard_path(path) || is_local_obsidian_bootstrap_request(&request) {
+    if is_public_dashboard_path(path)
+        || is_local_obsidian_bootstrap_request(&request)
+        || is_local_extension_request(&request)
+    {
         return next.run(request).await;
     }
 
@@ -279,6 +297,43 @@ mod tests {
             Method::POST,
             "/api/agents/test-agent/message",
             IpAddr::V4(Ipv4Addr::LOCALHOST),
+        )));
+    }
+
+    #[test]
+    fn test_public_dashboard_assets_are_public() {
+        assert!(is_public_dashboard_path("/"));
+        assert!(is_public_dashboard_path("/logo.png"));
+        assert!(is_public_dashboard_path("/favicon.ico"));
+        assert!(is_public_dashboard_path(
+            "/branding/shell-rail-strip-clean.png"
+        ));
+    }
+
+    #[test]
+    fn test_local_extension_routes_require_loopback() {
+        let loopback = IpAddr::V4(Ipv4Addr::LOCALHOST);
+        let remote = IpAddr::V4(Ipv4Addr::new(10, 0, 0, 9));
+
+        assert!(is_local_extension_request(&request_with_addr(
+            Method::POST,
+            "/api/extension/sync",
+            loopback,
+        )));
+        assert!(is_local_extension_request(&request_with_addr(
+            Method::GET,
+            "/api/extension/prompts",
+            loopback,
+        )));
+        assert!(!is_local_extension_request(&request_with_addr(
+            Method::POST,
+            "/api/extension/sync",
+            remote,
+        )));
+        assert!(!is_local_extension_request(&request_with_addr(
+            Method::GET,
+            "/api/extension/prompts",
+            remote,
         )));
     }
 }
