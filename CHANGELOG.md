@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SECURITY.md` uses GitHub private vulnerability reporting. The old address was on a domain with no DNS record. The supported line is 0.35.x.
 - The install smoke test in CI fails when the repository or `get.clawreform.com` serves an installer of a different product.
 - The macOS jobs of the release workflow build without code signing when the certificate is not configured. The desktop app version is 0.35.1.
+- Removed the OpenFang branding from the text that users read. OpenFang is the earlier project of the author.
 
 ## [0.3.0] - 2026-03-07
 
