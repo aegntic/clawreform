@@ -14,7 +14,7 @@
 <p align="center">
   <a href="https://github.com/aegntic/clawreform"><img src="https://img.shields.io/badge/GitHub-aegntic%2Fclawreform-181717?style=flat-square&logo=github" alt="GitHub" /></a>
   <img src="https://img.shields.io/badge/Rust-1.75+-CE4A00?style=flat-square&logo=rust&logoColor=white" alt="Rust 1.75+" />
-  <img src="https://img.shields.io/badge/version-0.3.0-C9A227?style=flat-square" alt="v0.3.0" />
+  <img src="https://img.shields.io/badge/version-0.35.1-C9A227?style=flat-square" alt="v0.35.1" />
   <img src="https://img.shields.io/badge/license-MIT_%7C_Apache--2.0-4B8BBE?style=flat-square" alt="MIT / Apache-2.0" />
   <img src="https://img.shields.io/badge/tests-1744%2B_passing-2EA44F?style=flat-square" alt="1744+ tests" />
   <img src="https://img.shields.io/badge/runtime_deps-ZERO-C9A227?style=flat-square" alt="Zero runtime deps" />
@@ -171,7 +171,7 @@ When multiple agents share a COLLECTIVE.md AgentDNA file, every observation they
               ▼              ▼              ▼
           PROJECT.md    OVERVIEW.md     CORE.md
           (threshold     (threshold     (threshold
-           ≥ 0.40)        ≥ 0.65)        ≥ 0.85)
+           ≥ 0.45)        ≥ 0.70)        ≥ 0.90)
 ```
 
 **Why this matters:** No other agent framework has a consensus mechanism for collective knowledge. This is the difference between a hive of agents and a swarm with shared intelligence.
@@ -228,7 +228,7 @@ Every architectural claim above is backed by shipped code. This map links each c
 | **II — Memory Ladder** (4 tiers, promotion + decay) | [`kernel.rs`](crates/clawreform-kernel/src/kernel.rs) — `build_project_auto_snapshot` / `build_overview_auto_snapshot` / `update_managed_section` maintain CORE → OVERVIEW → PROJECT; confidence scoring in `build_collective_ledger`; decay in [`consolidation.rs`](crates/clawreform-memory/src/consolidation.rs) | [`test_collective_conscience_promotes_claims_across_layers`](crates/clawreform-kernel/src/kernel.rs#L5856) · [`test_consolidation_decays_old_memories`](crates/clawreform-memory/src/consolidation.rs#L75) | [Architecture](docs/architecture.md) |
 | **III — Collective Conscience** (cross-agent evidence pool) | [`kernel.rs`](crates/clawreform-kernel/src/kernel.rs) — `CollectiveLedger` + `build_collective_ledger` + `persist_collective_ledger` write `COLLECTIVE.md` and `memory/collective/ledger.json` | [`test_collective_conscience_promotes_claims_across_layers`](crates/clawreform-kernel/src/kernel.rs#L5856) | [Architecture](docs/architecture.md) |
 | **IV — Self-Rewrite Engine** (modifies own Rust source) | [`self_modify/`](crates/clawreform-kernel/src/self_modify/mod.rs) — [`analyzer.rs`](crates/clawreform-kernel/src/self_modify/analyzer.rs) · [`backup.rs`](crates/clawreform-kernel/src/self_modify/backup.rs) (snapshot/restore) · [`modifier.rs`](crates/clawreform-kernel/src/self_modify/modifier.rs) · [`validate.rs`](crates/clawreform-kernel/src/self_modify/validate.rs) (build → test → clippy); HTTP surface in [`self_modify_routes.rs`](crates/clawreform-api/src/self_modify_routes.rs) | — (no dedicated tests yet) | [Architecture](docs/architecture.md) |
-| **13-crate workspace architecture** | [`Cargo.toml`](Cargo.toml) workspace members + [`crates/`](crates) | [`integration_test.rs`](crates/clawreform-kernel/tests/integration_test.rs) · [`multi_agent_test.rs`](crates/clawreform-kernel/tests/multi_agent_test.rs) | [Architecture](docs/architecture.md) |
+| **14-crate workspace architecture** | [`Cargo.toml`](Cargo.toml) workspace members + [`crates/`](crates) | [`integration_test.rs`](crates/clawreform-kernel/tests/integration_test.rs) · [`multi_agent_test.rs`](crates/clawreform-kernel/tests/multi_agent_test.rs) | [Architecture](docs/architecture.md) |
 | **Ed25519 manifests + Merkle audit trail** | Signed-manifest verification in [`kernel.rs`](crates/clawreform-kernel/src/kernel.rs); tamper-evident SHA-256 hash chain in [`clawreform-runtime/src/audit.rs`](crates/clawreform-runtime/src/audit.rs) | `mod tests` in `audit.rs` | [Security](docs/security.md) |
 | **HMAC wire auth · RBAC · loop guard** | [`clawreform-wire/src/peer.rs`](crates/clawreform-wire/src/peer.rs) · [`kernel/src/auth.rs`](crates/clawreform-kernel/src/auth.rs) (Viewer/User/Admin/Owner) · [`clawreform-runtime/src/loop_guard.rs`](crates/clawreform-runtime/src/loop_guard.rs) (SHA-256 loop guard + circuit breaker) | [`test_unauthenticated_agent_message_rejected`](crates/clawreform-wire/src/peer.rs#L879); `mod tests` in `auth.rs`, `loop_guard.rs` | [Security](docs/security.md) |
 | **WASM sandbox · GCRA · SSRF · vault · path guards** | [`sandbox.rs`](crates/clawreform-runtime/src/sandbox.rs) (wasmtime) · [`rate_limiter.rs`](crates/clawreform-api/src/rate_limiter.rs) · [`web_fetch.rs`](crates/clawreform-runtime/src/web_fetch.rs) `check_ssrf` · [`vault.rs`](crates/clawreform-extensions/src/vault.rs) (AES-256-GCM + Argon2 + zeroize) · [`workspace_sandbox.rs`](crates/clawreform-runtime/src/workspace_sandbox.rs) | [`wasm_agent_integration_test.rs`](crates/clawreform-kernel/tests/wasm_agent_integration_test.rs); `mod tests` in each listed file | [Security](docs/security.md) |
@@ -383,7 +383,7 @@ flowchart LR
     MEM --> C4["COLLECTIVE.md\n+ ledger.json"]
 ```
 
-### 13-Crate Dependency Graph
+### 14-Crate Dependency Graph
 
 ```mermaid
 flowchart TD
@@ -399,7 +399,11 @@ flowchart TD
     D --> K["clawreform-memory"]
     E --> K
     K --> L["clawreform-types"]
+    K --> M["clawreform-teams"]
+    M --> L
 ```
+
+> `clawreform-teams` (the 14th workspace member) depends on `clawreform-memory`, `clawreform-runtime` and `clawreform-types`; its memory and types edges are shown above, its runtime edge is omitted for brevity like the other indirect links.
 
 ### Memory Promotion Flow
 
@@ -409,9 +413,9 @@ flowchart TD
     B --> C["Score:\nevidence × recurrence × cross-source"]
     C --> D["COLLECTIVE.md\n+ ledger.json"]
     C --> E{"Promotion threshold?"}
-    E -- "≥ 0.40" --> F["PROJECT.md"]
-    E -- "≥ 0.65" --> G["OVERVIEW.md"]
-    E -- "≥ 0.85" --> H["CORE.md"]
+    E -- "≥ 0.45" --> F["PROJECT.md"]
+    E -- "≥ 0.70" --> G["OVERVIEW.md"]
+    E -- "≥ 0.90" --> H["CORE.md"]
     F --> G
     G --> H
 ```
@@ -587,7 +591,7 @@ clawreform/
 |---|---|
 | [Getting Started](docs/getting-started.md) | Install, init, first agent in 5 minutes |
 | [AgentDNA™ System](docs/agentdna-system.md) | Designing agents with file stacks |
-| [Architecture](docs/architecture.md) | 13-crate deep dive |
+| [Architecture](docs/architecture.md) | 14-crate deep dive |
 | [Providers](docs/providers.md) | All 27 LLM providers + smart routing |
 | [Security](docs/security.md) | Full security model reference |
 | [API Reference](docs/api-reference.md) | 100+ REST/WS/SSE endpoints |
