@@ -20,8 +20,7 @@
   <g>
     <rect x="226" y="88" width="200" height="88" rx="8" fill="#1C2027" stroke="#9AA4B2" stroke-width="1.5"/>
     <text x="326" y="116" text-anchor="middle" font-size="14" fill="#E6E9EF">CORE.md</text>
-    <text x="326" y="137" text-anchor="middle" font-size="12" fill="#9AA4B2">Durable truths.</text>
-    <text x="326" y="156" text-anchor="middle" font-size="12" fill="#9AA4B2">A human reviews changes.</text>
+    <text text-anchor="middle" font-size="12" fill="#9AA4B2"><tspan x="326" y="137">Durable truths.</tspan><tspan x="326" y="156">A human reviews changes.</tspan></text>
   </g>
   <g>
     <rect x="211" y="204" width="230" height="76" rx="8" fill="#1C2027" stroke="#2A303A"/>
@@ -45,10 +44,7 @@
   </g>
 
   <!-- Note beside CORE.md -->
-  <g font-size="12" fill="#9AA4B2" text-anchor="end">
-    <text x="212" y="127">The system marks candidates.</text>
-    <text x="212" y="146">It does not write this file.</text>
-  </g>
+  <text font-size="12" fill="#9AA4B2" text-anchor="end"><tspan x="212" y="127">The system marks candidates.</tspan><tspan x="212" y="146">It does not write this file.</tspan></text>
 
   <!-- Confidence formula -->
   <rect x="544" y="88" width="392" height="268" rx="8" fill="#1C2027" fill-opacity="0.55" stroke="#2A303A"/>
@@ -70,6 +66,5 @@
   <circle cx="568" cy="494.5" r="5" fill="#7CCB8C"/>
   <text x="584" y="499" font-size="12" fill="#E6E9EF">OVERVIEW: confidence 0.70 or more, in both sources</text>
   <circle cx="568" cy="541" r="5" fill="#F0A23C"/>
-  <text x="584" y="536" font-size="12" fill="#E6E9EF">CORE candidate: confidence 0.90 or more,</text>
-  <text x="584" y="555" font-size="12" fill="#E6E9EF">4 evidence, 2 dispatch, 2 summary</text>
+  <text font-size="12" fill="#E6E9EF"><tspan x="584" y="536">CORE candidate: confidence 0.90 or more,</tspan><tspan x="584" y="555">4 evidence, 2 dispatch, 2 summary</tspan></text>
 </svg>

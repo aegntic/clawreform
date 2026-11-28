@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
   <title>AgentDNA stores the identity of an agent as files.</title>
-  <desc>The kernel reads agent.toml, generates identity files in the Behaviour, Doctrine and Memory views groups, and reads those files back as the agent context.</desc>
+  <desc>An arrow leads from the agent manifest (agent.toml) to the kernel, which generates identity files in the Behaviour, Doctrine and Memory views groups, and the files are read back as the agent context.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
       <path d="M0,0 L10,4 L0,8 Z" fill="#F0A23C"/>
@@ -8,113 +8,113 @@
   </defs>
 
   <rect x="0" y="0" width="960" height="540" fill="#14171C"/>
-  <text x="30" y="44" font-size="22" font-weight="bold" fill="#E6E9EF">AgentDNA: identity stored as files</text>
+  <text x="24" y="46" font-size="22" font-weight="bold" fill="#E6E9EF">AgentDNA: identity stored as files</text>
 
   <!-- File groups -->
   <g fill="#1C2027" fill-opacity="0.55" stroke="#2A303A">
-    <rect x="270" y="60" width="456" height="114" rx="8"/>
-    <rect x="270" y="204" width="456" height="114" rx="8"/>
-    <rect x="270" y="342" width="456" height="114" rx="8"/>
+    <rect x="264" y="60" width="468" height="114" rx="8"/>
+    <rect x="264" y="204" width="468" height="114" rx="8"/>
+    <rect x="264" y="342" width="468" height="114" rx="8"/>
   </g>
   <g font-size="14" font-weight="bold" fill="#E6E9EF">
-    <text x="282" y="80">Behaviour</text>
-    <text x="282" y="224">Doctrine</text>
-    <text x="282" y="362">Memory views</text>
+    <text x="276" y="80">Behaviour</text>
+    <text x="276" y="224">Doctrine</text>
+    <text x="276" y="362">Memory views</text>
   </g>
 
   <!-- Behaviour files -->
   <g>
-    <rect x="282" y="90" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="350" y="112" text-anchor="middle" font-size="14" fill="#E6E9EF">IDENTITY.md</text>
+    <rect x="276" y="90" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="346" y="112" text-anchor="middle" font-size="14" fill="#E6E9EF">IDENTITY.md</text>
   </g>
   <g>
-    <rect x="430" y="90" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <rect x="428" y="90" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
     <text x="498" y="112" text-anchor="middle" font-size="14" fill="#E6E9EF">SOUL.md</text>
   </g>
   <g>
-    <rect x="578" y="90" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="646" y="112" text-anchor="middle" font-size="14" fill="#E6E9EF">BOOTSTRAP.md</text>
+    <rect x="580" y="90" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="650" y="112" text-anchor="middle" font-size="14" fill="#E6E9EF">BOOTSTRAP.md</text>
   </g>
   <g>
-    <rect x="282" y="132" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="350" y="154" text-anchor="middle" font-size="14" fill="#E6E9EF">USER.md</text>
+    <rect x="276" y="132" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="346" y="154" text-anchor="middle" font-size="14" fill="#E6E9EF">USER.md</text>
   </g>
   <g>
-    <rect x="430" y="132" width="136" height="34" rx="8" fill="#1C2027" stroke="#9AA4B2" stroke-dasharray="5 4"/>
+    <rect x="428" y="132" width="140" height="34" rx="8" fill="#1C2027" stroke="#9AA4B2" stroke-dasharray="5 4"/>
     <text x="498" y="154" text-anchor="middle" font-size="14" fill="#E6E9EF">HEARTBEAT.md</text>
   </g>
 
   <!-- Doctrine files -->
   <g>
-    <rect x="282" y="234" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="350" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">HANDS.md</text>
+    <rect x="276" y="234" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="346" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">HANDS.md</text>
   </g>
   <g>
-    <rect x="430" y="234" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <rect x="428" y="234" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
     <text x="498" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">SKILLS.md</text>
   </g>
   <g>
-    <rect x="578" y="234" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="646" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">TOOLS.md</text>
+    <rect x="580" y="234" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="650" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">TOOLS.md</text>
   </g>
   <g>
-    <rect x="282" y="276" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="350" y="298" text-anchor="middle" font-size="14" fill="#E6E9EF">AGENTS.md</text>
+    <rect x="276" y="276" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="346" y="298" text-anchor="middle" font-size="14" fill="#E6E9EF">AGENTS.md</text>
   </g>
   <g>
-    <rect x="430" y="276" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <rect x="428" y="276" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
     <text x="498" y="298" text-anchor="middle" font-size="14" fill="#E6E9EF">MEMORY.md</text>
   </g>
 
   <!-- Memory view files -->
   <g>
-    <rect x="282" y="372" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="350" y="394" text-anchor="middle" font-size="14" fill="#E6E9EF">CORE.md</text>
+    <rect x="276" y="372" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="346" y="394" text-anchor="middle" font-size="14" fill="#E6E9EF">CORE.md</text>
   </g>
   <g>
-    <rect x="430" y="372" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <rect x="428" y="372" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
     <text x="498" y="394" text-anchor="middle" font-size="14" fill="#E6E9EF">OVERVIEW.md</text>
   </g>
   <g>
-    <rect x="578" y="372" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="646" y="394" text-anchor="middle" font-size="14" fill="#E6E9EF">PROJECT.md</text>
+    <rect x="580" y="372" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="650" y="394" text-anchor="middle" font-size="14" fill="#E6E9EF">PROJECT.md</text>
   </g>
   <g>
-    <rect x="282" y="414" width="136" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="350" y="436" text-anchor="middle" font-size="14" fill="#E6E9EF">COLLECTIVE.md</text>
+    <rect x="276" y="414" width="140" height="34" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="346" y="436" text-anchor="middle" font-size="14" fill="#E6E9EF">COLLECTIVE.md</text>
   </g>
 
   <!-- Manifest, kernel, context -->
   <g>
-    <rect x="30" y="139" width="172" height="52" rx="8" fill="#F0A23C" fill-opacity="0.1" stroke="#F0A23C" stroke-width="1.5"/>
-    <text x="116" y="160" text-anchor="middle" font-size="14" fill="#E6E9EF">Agent manifest</text>
-    <text x="116" y="179" text-anchor="middle" font-size="12" fill="#9AA4B2">agent.toml</text>
+    <rect x="24" y="139" width="172" height="52" rx="8" fill="#F0A23C" fill-opacity="0.1" stroke="#F0A23C" stroke-width="1.5"/>
+    <text x="110" y="160" text-anchor="middle" font-size="14" fill="#E6E9EF">Agent manifest</text>
+    <text x="110" y="179" text-anchor="middle" font-size="12" fill="#9AA4B2">agent.toml</text>
   </g>
   <g>
-    <rect x="30" y="235" width="172" height="52" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="116" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">Kernel</text>
-    <text x="116" y="275" text-anchor="middle" font-size="12" fill="#9AA4B2">generate_identity_files</text>
+    <rect x="24" y="235" width="172" height="52" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="110" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">Kernel</text>
+    <text x="110" y="275" text-anchor="middle" font-size="12" fill="#9AA4B2">generate_identity_files</text>
   </g>
   <g>
-    <rect x="794" y="235" width="136" height="52" rx="8" fill="#1C2027" stroke="#2A303A"/>
-    <text x="862" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">Agent context</text>
-    <text x="862" y="275" text-anchor="middle" font-size="12" fill="#9AA4B2">read_identity_file</text>
+    <rect x="800" y="235" width="136" height="52" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="868" y="256" text-anchor="middle" font-size="14" fill="#E6E9EF">Agent context</text>
+    <text x="868" y="275" text-anchor="middle" font-size="12" fill="#9AA4B2">read_identity_file</text>
   </g>
 
   <!-- Flow -->
-  <path d="M236,117 V399 M726,117 H760 M726,399 H760 M760,117 V399" fill="none" stroke="#F0A23C" stroke-width="2"/>
+  <path d="M230,117 V399 M732,117 H766 M732,399 H766 M766,117 V399" fill="none" stroke="#F0A23C" stroke-width="2"/>
   <g fill="none" stroke="#F0A23C" stroke-width="2" marker-end="url(#arrow)">
-    <path d="M116,191 V235"/>
-    <path d="M236,117 H270"/>
-    <path d="M202,261 H270"/>
-    <path d="M236,399 H270"/>
-    <path d="M726,261 H794"/>
+    <path d="M110,191 V235"/>
+    <path d="M230,117 H264"/>
+    <path d="M196,261 H264"/>
+    <path d="M230,399 H264"/>
+    <path d="M732,261 H800"/>
   </g>
 
-  <text x="282" y="191" font-size="12" fill="#9AA4B2">HEARTBEAT.md is generated only for autonomous agents</text>
+  <text x="276" y="191" font-size="12" fill="#9AA4B2">HEARTBEAT.md is generated only for autonomous agents</text>
 
   <g font-size="12" fill="#9AA4B2">
-    <text x="30" y="480">The kernel loads the files in a fixed order on each turn.</text>
-    <text x="30" y="500">Edit a file and the agent changes on its next turn. Git can track each change.</text>
+    <text x="24" y="480">The kernel loads the files in a fixed order on each turn.</text>
+    <text x="24" y="500">Edit a file and the agent changes on its next turn. Git can track each change.</text>
   </g>
 </svg>
