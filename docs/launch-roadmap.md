@@ -169,17 +169,19 @@ These close the gaps that would make users pick OpenClaw over clawREFORM by aegn
 
 ### 2.4 Install Script Deployment
 
-**Problem:** `clawreform.sh` domain isn't set up. Users can't do `curl -sSf https://clawreform.sh | sh`.
+**Problem:** The install scripts need a short, stable URL. The `clawreform.sh` domain has no DNS record.
 
-**What to do:**
-1. Set up GitHub Pages or Cloudflare Worker for clawreform.sh
-2. Serve `scripts/install.sh` at root
-3. Serve `scripts/install.ps1` at `/install.ps1`
-4. Test on fresh Linux, macOS, and Windows machines
+**What was done:**
+1. A Cloudflare Worker serves the scripts at `get.clawreform.com`. Its source is in `infra/clawreform-install-endpoint`.
+2. `/` serves `scripts/install.sh`
+3. `/install.ps1` serves `scripts/install.ps1`
+
+**Still to do:**
+4. Test the installer on fresh Linux, macOS, and Windows machines.
 
 **Done when:**
-- `curl -sSf https://clawreform.sh | sh` installs the latest release
-- `irm https://clawreform.sh/install.ps1 | iex` works on Windows PowerShell
+- `curl -fsSL https://get.clawreform.com | sh` installs the latest release
+- `irm https://get.clawreform.com/install.ps1 | iex` works on Windows PowerShell
 
 ---
 
