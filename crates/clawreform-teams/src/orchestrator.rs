@@ -58,7 +58,11 @@ impl Orchestrator {
             id,
             name: name.to_string(),
             role: TeamRole::Orchestrator,
-            expertise: vec!["coordination".into(), "decomposition".into(), "synthesis".into()],
+            expertise: vec![
+                "coordination".into(),
+                "decomposition".into(),
+                "synthesis".into(),
+            ],
             parent_id: None,
             model,
         };
@@ -123,9 +127,11 @@ impl Orchestrator {
         let start = std::time::Instant::now();
 
         // Acquire semaphore permit (concurrency limit)
-        let _permit = self.goal_semaphore.acquire().await.map_err(|_| {
-            TeamError::NotRunning
-        })?;
+        let _permit = self
+            .goal_semaphore
+            .acquire()
+            .await
+            .map_err(|_| TeamError::NotRunning)?;
 
         // Update status
         {
@@ -241,11 +247,8 @@ impl Orchestrator {
                     let mut task = TeamTask::new(goal);
                     task.assignee_id = Some(lead.id());
                     task.assignee_role = Some(TeamRole::TeamLead);
-                    task.description = format!(
-                        "Handle the '{}' aspect of: {}",
-                        lead.domain(),
-                        goal
-                    );
+                    task.description =
+                        format!("Handle the '{}' aspect of: {}", lead.domain(), goal);
                     task
                 })
                 .collect());
@@ -258,10 +261,7 @@ impl Orchestrator {
     ///
     /// Note: This is a synchronous helper. The caller must ensure
     /// the team_leads lock is not held when calling.
-    fn parse_decomposed_tasks_sync(
-        leads: &[TeamLead],
-        response: &str,
-    ) -> Vec<TeamTask> {
+    fn parse_decomposed_tasks_sync(leads: &[TeamLead], response: &str) -> Vec<TeamTask> {
         // Try to parse as JSON array first
         if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(response) {
             if let Some(arr) = parsed.as_array() {
@@ -274,10 +274,7 @@ impl Orchestrator {
                             .and_then(|d| d.as_str())
                             .unwrap_or("")
                             .to_string();
-                        let lead_name = item
-                            .get("assignee")
-                            .and_then(|a| a.as_str())
-                            .unwrap_or("");
+                        let lead_name = item.get("assignee").and_then(|a| a.as_str()).unwrap_or("");
 
                         let assignee = leads
                             .iter()
@@ -320,7 +317,7 @@ impl Orchestrator {
 
         let lead = lead.ok_or_else(|| TeamError::Delegation {
             from_id: self.identity.id,
-            to_id: task.assignee_id.unwrap_or_else(AgentId::new),
+            to_id: task.assignee_id.unwrap_or_default(),
             reason: "No available team lead".into(),
         })?;
 
@@ -334,11 +331,7 @@ impl Orchestrator {
     }
 
     /// Synthesize results from all team leads.
-    async fn synthesize_results(
-        &self,
-        goal: &str,
-        results: &[TaskResult],
-    ) -> TeamResult<String> {
+    async fn synthesize_results(&self, goal: &str, results: &[TaskResult]) -> TeamResult<String> {
         let results_text: Vec<String> = results
             .iter()
             .map(|r| {
@@ -376,7 +369,10 @@ impl Orchestrator {
             agents.push(lead.health().await);
         }
 
-        let total_tasks = agents.iter().map(|a| a.tasks_completed + a.tasks_failed).sum();
+        let total_tasks = agents
+            .iter()
+            .map(|a| a.tasks_completed + a.tasks_failed)
+            .sum();
         let completed = agents.iter().map(|a| a.tasks_completed).sum();
         let failed = agents.iter().map(|a| a.tasks_failed).sum();
         let pending = agents.iter().map(|a| a.tasks_in_progress).sum();
@@ -462,15 +458,7 @@ mod tests {
             3,
         )];
 
-        let orch = Orchestrator::new(
-            "Orch",
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-            leads,
-        );
+        let orch = Orchestrator::new("Orch", None, executor, bus, msg_bus, fs, leads);
 
         assert_eq!(orch.identity().role, TeamRole::Orchestrator);
         assert_eq!(orch.team_lead_count().await, 1);
@@ -492,18 +480,10 @@ mod tests {
             3,
         );
 
-        let orch = Orchestrator::new(
-            "Orch",
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-            vec![lead],
-        );
+        let orch = Orchestrator::new("Orch", None, executor, bus, msg_bus, fs, vec![lead]);
 
         let result = orch.process_goal("Build a REST API").await.unwrap();
-        assert!(result.results.len() >= 1);
+        assert!(!result.results.is_empty());
         assert!(result.summary.contains("Summary"));
     }
 
@@ -511,15 +491,7 @@ mod tests {
     async fn test_team_health() {
         let (executor, bus, msg_bus, fs) = make_test_team();
 
-        let orch = Orchestrator::new(
-            "Orch",
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-            vec![],
-        );
+        let orch = Orchestrator::new("Orch", None, executor, bus, msg_bus, fs, vec![]);
 
         let health = orch.team_health().await;
         assert_eq!(health.agents.len(), 1); // just the orchestrator
@@ -542,15 +514,7 @@ mod tests {
             3,
         );
 
-        let orch = Orchestrator::new(
-            "Orch",
-            None,
-            executor,
-            bus,
-            msg_bus,
-            fs,
-            vec![lead],
-        );
+        let orch = Orchestrator::new("Orch", None, executor, bus, msg_bus, fs, vec![lead]);
 
         let response = r#"[
             {"goal": "Build API", "description": "Create endpoints", "assignee": "CodeLead"},

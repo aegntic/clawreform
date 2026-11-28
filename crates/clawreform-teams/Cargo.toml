@@ -8,7 +8,6 @@ description = "Agent Team Orchestration for clawREFORM by aegntic.ai — 3-tier 
 [dependencies]
 clawreform-types = { path = "../clawreform-types" }
 clawreform-memory = { path = "../clawreform-memory" }
-clawreform-runtime = { path = "../clawreform-runtime" }
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
