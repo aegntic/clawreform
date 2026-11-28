@@ -4,18 +4,22 @@
 
 | Version | Supported          |
 |---------|--------------------|
-| 0.1.x   | :white_check_mark: |
+| 0.35.x  | :white_check_mark: |
+| < 0.35  | :x:                |
+
+Use the latest release before you report a vulnerability, if you can.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in clawREFORM by aegntic.ai, please report it responsibly.
+If you discover a security vulnerability in clawREFORM by aegntic.ai, report it in private.
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
 ### How to Report
 
-1. Email: **security@clawreform.ai**
-2. Include:
+1. Open a private report: **[github.com/aegntic/clawreform/security/advisories/new](https://github.com/aegntic/clawreform/security/advisories/new)**
+2. Sign in to GitHub. Only you and the maintainers can see the report.
+3. Include:
    - Description of the vulnerability
    - Steps to reproduce
    - Affected versions
