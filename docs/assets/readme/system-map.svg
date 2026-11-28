@@ -112,5 +112,5 @@
     <path d="M143,262 V284 H209 V446"/>
   </g>
 
-  <text x="24" y="528" font-size="12" fill="#9AA4B2">The arrow shows the main call path. The crates also connect in other ways.</text>
+  <text x="24" y="528" font-size="12" fill="#9AA4B2">The arrows show the main call path. The crates also connect in other ways.</text>
 </svg>

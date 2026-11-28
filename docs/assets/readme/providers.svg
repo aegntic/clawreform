@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
-  <title>clawreform-runtime gets its models from local tools or from hosted providers.</title>
+  <title>Model providers connect to clawreform-runtime along a local lane or a hosted lane.</title>
   <desc>A teal lane for local models that need no API key and an amber lane for hosted providers that need an API key both end at the clawreform-runtime crate.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
