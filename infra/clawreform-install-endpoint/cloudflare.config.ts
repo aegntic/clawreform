@@ -1,12 +1,6 @@
 import { bindings, defineConfig } from "cf/config";
 import * as entrypoint from "./src/index.ts" with { type: "cf-worker" };
-
-/**
- * The commit that holds the install scripts that get.clawreform.com serves.
- * Use a full commit hash. To serve a new version of the scripts, change this
- * hash and run `cf deploy`.
- */
-const INSTALL_COMMIT = "19ab4da752b351b626b61630066fb54397ec4f96";
+import { INSTALL_COMMIT } from "./src/pin.ts";
 
 export default defineConfig({
 	worker: {

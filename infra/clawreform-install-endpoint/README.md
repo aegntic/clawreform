@@ -2,10 +2,10 @@
 
 A Cloudflare Worker that serves the clawREFORM install scripts:
 
-| Path | Serves |
-|---|---|
-| `/`, `/install`, `/install.sh` | `scripts/install.sh` |
-| `/install.ps1` | `scripts/install.ps1` |
+| Path                           | Serves                |
+| ------------------------------ | --------------------- |
+| `/`, `/install`, `/install.sh` | `scripts/install.sh`  |
+| `/install.ps1`                 | `scripts/install.ps1` |
 
 Users pipe these scripts into a shell, so the Worker reads the scripts from one
 pinned commit of `aegntic/clawreform` and checks each script before it serves it.
@@ -25,7 +25,7 @@ script that did not pass the check.
 
 1. Merge the change to the install scripts.
 2. Copy the full commit hash of the commit that holds the new scripts.
-3. Set `INSTALL_COMMIT` in `cloudflare.config.ts` to that hash.
+3. Set `INSTALL_COMMIT` in `src/pin.ts` to that hash.
 4. Run `npm test` in this directory.
 5. Run `cf deploy` in this directory.
 

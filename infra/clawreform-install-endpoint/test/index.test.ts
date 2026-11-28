@@ -7,10 +7,11 @@ import {
 	type EndpointHandler,
 	type ScriptStore,
 } from "../src/endpoint.ts";
+import { INSTALL_COMMIT } from "../src/pin.ts";
 
 const HOST = "https://get.clawreform.com";
 const RAW = "https://raw.githubusercontent.com";
-const COMMIT = "19ab4da752b351b626b61630066fb54397ec4f96";
+const COMMIT = INSTALL_COMMIT;
 const START = 1_700_000_000_000;
 const ENV: EndpointEnv = { INSTALL_REF: COMMIT };
 const SH_URL = `${RAW}/aegntic/clawreform/${COMMIT}/scripts/install.sh`;
