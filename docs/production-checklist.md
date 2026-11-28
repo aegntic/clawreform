@@ -260,11 +260,11 @@ docker run --rm ghcr.io/aegntic/clawreform:latest --version
 ### Install Scripts
 ```bash
 # Linux/macOS
-curl -sSf https://clawreform.sh | sh
+curl -fsSL https://get.clawreform.com | sh
 clawreform --version  # Should print v0.1.0
 
 # Windows PowerShell
-irm https://clawreform.sh/install.ps1 | iex
+irm https://get.clawreform.com/install.ps1 | iex
 clawreform --version
 ```
 
