@@ -78,7 +78,9 @@ jobs:
           key: desktop-${{ matrix.platform.rust_target }}
 
       - name: Import macOS signing certificate
-        if: runner.os == 'macOS'
+        # When the certificate secret is not set, the build continues without
+        # code signing. macOS then shows its "unidentified developer" warning.
+        if: runner.os == 'macOS' && env.MAC_CERT_BASE64 != ''
         env:
           MAC_CERT_BASE64: ${{ secrets.MAC_CERT_BASE64 }}
           MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
@@ -123,7 +125,7 @@ jobs:
 
             **CLI (Linux/macOS)**:
             ```bash
-            curl -sSf https://clawreform.sh | sh
+            curl -fsSL https://get.clawreform.com | sh
             ```
 
             **Docker**:

@@ -130,23 +130,42 @@ jobs:
             --only-verified \
             --exclude-paths=<(echo -e "target/\n.git/\nCargo.lock")
 
-  # ── Installer smoke test (verify install scripts from Vercel) ──────────────
+  # ── Installer smoke test ───────────────────────────────────────────────────
+  # Two checks. The install scripts in this repository must be the clawREFORM
+  # installers. The install endpoint must serve them. The earlier version of
+  # this test ran only a syntax check, and did not detect an installer of a
+  # different product.
   install-smoke:
     name: Install Script Smoke Test
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch and syntax-check shell installer
+      - uses: actions/checkout@v4
+      - name: The install scripts in this repository are the clawREFORM installers
         run: |
-          if ! curl -fsSL https://clawreform.sh/install -o /tmp/install.sh; then
-            curl -fsSL https://raw.githubusercontent.com/aegntic/clawreform/main/scripts/install.sh -o /tmp/install.sh
-          fi
+          for script in scripts/install.sh scripts/install.ps1; do
+            if grep -q -E 'RightNow-AI/openfang|openfang\.sh|openfang-\$PLATFORM' "$script"; then
+              echo "::error file=$script::$script is the installer of a different product."
+              exit 1
+            fi
+            if ! grep -q 'aegntic/clawreform' "$script"; then
+              echo "::error file=$script::$script does not install from aegntic/clawreform."
+              exit 1
+            fi
+          done
+          bash -n scripts/install.sh
+      - name: The install endpoint serves the clawREFORM installers
+        run: |
+          curl -fsSL https://get.clawreform.com -o /tmp/install.sh
+          curl -fsSL https://get.clawreform.com/install.ps1 -o /tmp/install.ps1
+          for script in /tmp/install.sh /tmp/install.ps1; do
+            if grep -q -E 'RightNow-AI/openfang|openfang\.sh' "$script"; then
+              echo "::error file=$script::get.clawreform.com served the installer of a different product."
+              exit 1
+            fi
+            grep -q 'aegntic/clawreform' "$script"
+          done
           bash -n /tmp/install.sh
-      - name: Fetch and syntax-check PowerShell installer
-        run: |
-          if ! curl -fsSL https://clawreform.sh/install.ps1 -o /tmp/install.ps1; then
-            curl -fsSL https://raw.githubusercontent.com/aegntic/clawreform/main/scripts/install.ps1 -o /tmp/install.ps1
-          fi
-          pwsh -NoProfile -Command "Get-Content /tmp/install.ps1 | Out-Null" 2>&1 || true
+          pwsh -NoProfile -Command '$errors = $null; [void][System.Management.Automation.Language.Parser]::ParseFile("/tmp/install.ps1", [ref]$null, [ref]$errors); if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Host $_ }; exit 1 }'
 
   dashboard-proof:
     name: Dashboard Proof
