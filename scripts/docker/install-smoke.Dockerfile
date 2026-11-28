@@ -6,7 +6,7 @@
 #
 # Usage (full E2E — requires a published release):
 #   docker build -f scripts/docker/install-smoke.Dockerfile \
-#     --build-arg OPENFANG_SMOKE_FULL=1 .
+#     --build-arg CLAWREFORM_SMOKE_FULL=1 .
 
 FROM debian:bookworm-slim
 
@@ -24,8 +24,8 @@ WORKDIR /home/testuser
 # Copy the install script from the build context
 COPY scripts/install.sh /tmp/install.sh
 
-ARG OPENFANG_SMOKE_FULL=0
-RUN if [ "$OPENFANG_SMOKE_FULL" = "1" ]; then \
+ARG CLAWREFORM_SMOKE_FULL=0
+RUN if [ "$CLAWREFORM_SMOKE_FULL" = "1" ]; then \
         bash /tmp/install.sh; \
     else \
         # 1. Syntax check
@@ -47,9 +47,9 @@ RUN if [ "$OPENFANG_SMOKE_FULL" = "1" ]; then \
     fi
 
 # If full install succeeded, verify the binary works
-RUN if [ "$OPENFANG_SMOKE_FULL" = "1" ] && [ -f "$HOME/.openfang/bin/openfang" ]; then \
-        $HOME/.openfang/bin/openfang --version && \
-        echo "PASS: openfang binary works"; \
+RUN if [ "$CLAWREFORM_SMOKE_FULL" = "1" ] && [ -f "$HOME/.clawreform/bin/clawreform" ]; then \
+        "$HOME/.clawreform/bin/clawreform" --version && \
+        echo "PASS: clawreform binary works"; \
     else \
         echo "SKIP: binary verification (no full install)"; \
     fi

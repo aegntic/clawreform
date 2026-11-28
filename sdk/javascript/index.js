@@ -3,7 +3,7 @@
  *
  * Usage:
  *   const { ClawReform } = require("@clawreform/sdk");
- *   const client = new ClawReform("http://localhost:3000");
+ *   const client = new ClawReform("http://127.0.0.1:4332");
  *
  *   const agent = await client.agents.create({ template: "assistant" });
  *   const reply = await client.agents.message(agent.id, "Hello!");
@@ -28,12 +28,12 @@ class ClawReformError extends Error {
 
 class ClawReform {
   /**
-   * @param {string} baseUrl - clawREFORM by aegntic.ai server URL (e.g. "http://localhost:3000")
+   * @param {string} [baseUrl="http://127.0.0.1:4332"] - clawREFORM by aegntic.ai server URL (e.g. "http://127.0.0.1:4332")
    * @param {object} [opts]
    * @param {Record<string, string>} [opts.headers] - Extra headers for every request
    */
   constructor(baseUrl, opts) {
-    this.baseUrl = baseUrl.replace(/\/+$/, "");
+    this.baseUrl = (baseUrl || "http://127.0.0.1:4332").replace(/\/+$/, "");
     this._headers = Object.assign({ "Content-Type": "application/json" }, (opts && opts.headers) || {});
     this.agents = new AgentResource(this);
     this.sessions = new SessionResource(this);

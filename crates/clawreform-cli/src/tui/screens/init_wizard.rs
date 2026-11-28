@@ -998,7 +998,7 @@ complex_threshold = 500
     let config_path = clawreform_dir.join("config.toml");
     let config = format!(
         r#"# clawREFORM by aegntic.ai configuration
-# See https://github.com/RightNow-AI/clawreform for documentation
+# See https://github.com/aegntic/clawreform for documentation
 
 api_listen = "127.0.0.1:4332"
 

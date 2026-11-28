@@ -2229,6 +2229,22 @@ The `Retry-After` header indicates the window duration in seconds.
 | GET | `/api/migrate/detect` | Detect migration sources |
 | POST | `/api/migrate/scan` | Scan for importable data |
 | POST | `/api/migrate` | Run migration |
+| **Browser Extensions** | | |
+| POST | `/api/extension/sync` | Bidirectional ClawPrompt extension sync & heartbeat (loopback allowed without Bearer token) |
+| GET | `/api/extension/prompts` | Fetch CLI-managed prompts for ClawPrompt extension |
+| **OpenClaw Ecosystem Proxy** | | |
+| GET | `/api/openclaw/status` | Concurrent health status of registry, dispatcher, scheduler, evaluator, and repair services (`OPENCLAW_*_URL` env overrides supported) |
+| GET/POST | `/api/openclaw/agents` | List or register OpenClaw agents (`OPENCLAW_REGISTRY_URL`, default `http://localhost:8001`) |
+| GET | `/api/openclaw/agents/{id}` | Get a registered OpenClaw agent by ID |
+| POST | `/api/openclaw/dispatch` | Dispatch task (`OPENCLAW_DISPATCHER_URL`, default `http://localhost:8002`) |
+| GET | `/api/openclaw/routes` | List active dispatcher routing rules |
+| GET/POST | `/api/openclaw/schedules` | List or create schedules (`OPENCLAW_SCHEDULER_URL`, default `http://localhost:8003`) |
+| POST | `/api/openclaw/schedules/{id}/trigger` | Trigger a scheduled job immediately |
+| POST | `/api/openclaw/evaluate` | Evaluate artifact (`OPENCLAW_EVALUATOR_URL`, default `http://localhost:8004`) |
+| POST | `/api/openclaw/repair` | Request artifact repair (`OPENCLAW_REPAIR_URL`, default `http://localhost:8005`) |
+| GET | `/api/openclaw/repair/{id}` | Get artifact repair request status |
+| POST | `/api/openclaw/repair/{id}/execute` | Execute a pending artifact repair |
+| GET | `/api/openclaw/strategies` | List available artifact repair strategies |
 | **OpenAI Compatible** | | |
 | POST | `/v1/chat/completions` | OpenAI-compatible chat |
 | GET | `/v1/models` | OpenAI-compatible model list |

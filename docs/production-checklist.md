@@ -113,23 +113,17 @@ convert icon.svg -resize 256x256 -define icon:auto-resize=256,128,64,48,32,16 ic
 
 ---
 
-## 5. Set Up the `clawreform.sh` Domain
+## 5. Serve the Install Scripts
 
-**Status:** BLOCKING for install scripts — users run `curl -sSf https://clawreform.sh | sh`.
+**Status:** DONE. `get.clawreform.com` serves the install scripts.
 
-Options:
-- **GitHub Pages**: Point `clawreform.sh` to a GitHub Pages site that redirects `/` to `scripts/install.sh` and `/install.ps1` to `scripts/install.ps1` from the repo's latest release.
-- **Cloudflare Workers / Vercel**: Serve the install scripts with proper `Content-Type: text/plain` headers.
-- **Raw GitHub redirect**: Use `clawreform.sh` as a CNAME to `raw.githubusercontent.com/RightNow-AI/clawreform/main/scripts/install.sh` (less reliable).
+A Cloudflare Worker serves the scripts. Its source is in `infra/clawreform-install-endpoint`. The Worker reads the scripts from one pinned commit. It serves a script only when that script is the clawREFORM installer.
 
-The install scripts reference:
-- `https://clawreform.sh` → serves `scripts/install.sh`
-- `https://clawreform.sh/install.ps1` → serves `scripts/install.ps1`
+The install scripts are at:
+- `https://get.clawreform.com` → serves `scripts/install.sh`
+- `https://get.clawreform.com/install.ps1` → serves `scripts/install.ps1`
 
-Until the domain is set up, users can install via:
-```bash
-curl -sSf https://raw.githubusercontent.com/RightNow-AI/clawreform/main/scripts/install.sh | sh
-```
+When you change an install script, set `INSTALL_COMMIT` in `infra/clawreform-install-endpoint/cloudflare.config.ts` to the new commit. Then run `cf deploy` in that directory.
 
 ---
 
@@ -237,7 +231,7 @@ After the release workflow completes (~15-30 min):
 - [ ] SHA256 checksum files present for each CLI archive
 
 ### Auto-Updater Manifest
-Visit: `https://github.com/RightNow-AI/clawreform/releases/latest/download/latest.json`
+Visit: `https://github.com/aegntic/clawreform/releases/latest/download/latest.json`
 
 - [ ] JSON is valid
 - [ ] Contains `signature` fields (not empty strings)
@@ -246,11 +240,11 @@ Visit: `https://github.com/RightNow-AI/clawreform/releases/latest/download/lates
 
 ### Docker Image
 ```bash
-docker pull ghcr.io/RightNow-AI/clawreform:latest
-docker pull ghcr.io/RightNow-AI/clawreform:0.1.0
+docker pull ghcr.io/aegntic/clawreform:latest
+docker pull ghcr.io/aegntic/clawreform:0.1.0
 
 # Verify both architectures
-docker run --rm ghcr.io/RightNow-AI/clawreform:latest --version
+docker run --rm ghcr.io/aegntic/clawreform:latest --version
 ```
 
 ### Desktop App Auto-Update (test with v0.1.1)
@@ -266,11 +260,11 @@ docker run --rm ghcr.io/RightNow-AI/clawreform:latest --version
 ### Install Scripts
 ```bash
 # Linux/macOS
-curl -sSf https://clawreform.sh | sh
+curl -fsSL https://get.clawreform.com | sh
 clawreform --version  # Should print v0.1.0
 
 # Windows PowerShell
-irm https://clawreform.sh/install.ps1 | iex
+irm https://get.clawreform.com/install.ps1 | iex
 clawreform --version
 ```
 

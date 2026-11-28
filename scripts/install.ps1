@@ -1,21 +1,21 @@
-# OpenFang installer for Windows
-# Usage: iwr -useb https://openfang.sh/install.ps1 | iex
-#   or:  powershell -c "irm https://openfang.sh/install.ps1 | iex"
+# clawREFORM installer for Windows
+# Usage: iwr -useb https://clawreform.sh/install.ps1 | iex
+#   or:  powershell -c "irm https://clawreform.sh/install.ps1 | iex"
 #
 # Flags (via environment variables):
-#   $env:OPENFANG_INSTALL_DIR = custom install directory
-#   $env:OPENFANG_VERSION     = specific version tag (e.g. "v0.1.0")
+#   $env:CLAWREFORM_INSTALL_DIR = custom install directory
+#   $env:CLAWREFORM_VERSION     = specific version tag (e.g. "v0.35.1")
 
 $ErrorActionPreference = 'Stop'
 
-$Repo = "RightNow-AI/openfang"
-$DefaultInstallDir = Join-Path $env:USERPROFILE ".openfang\bin"
-$InstallDir = if ($env:OPENFANG_INSTALL_DIR) { $env:OPENFANG_INSTALL_DIR } else { $DefaultInstallDir }
+$Repo = if ($env:CLAWREFORM_REPO) { $env:CLAWREFORM_REPO } else { "aegntic/clawreform" }
+$DefaultInstallDir = Join-Path $env:USERPROFILE ".clawreform\bin"
+$InstallDir = if ($env:CLAWREFORM_INSTALL_DIR) { $env:CLAWREFORM_INSTALL_DIR } else { $DefaultInstallDir }
 
 function Write-Banner {
     Write-Host ""
-    Write-Host "  OpenFang Installer" -ForegroundColor Cyan
-    Write-Host "  ==================" -ForegroundColor Cyan
+    Write-Host "  clawREFORM Installer" -ForegroundColor Cyan
+    Write-Host "  ====================" -ForegroundColor Cyan
     Write-Host ""
 }
 
@@ -53,15 +53,15 @@ function Get-Architecture {
         { $_ -in "ARM64", "AARCH64", "ARM" }     { return "aarch64" }
         default {
             Write-Host "  Unsupported architecture: $arch (detection may have failed)" -ForegroundColor Red
-            Write-Host "  Try: cargo install --git https://github.com/RightNow-AI/openfang openfang-cli" -ForegroundColor Yellow
+            Write-Host "  Try: cargo install --git https://github.com/$Repo clawreform-cli" -ForegroundColor Yellow
             exit 1
         }
     }
 }
 
 function Get-LatestVersion {
-    if ($env:OPENFANG_VERSION) {
-        return $env:OPENFANG_VERSION
+    if ($env:CLAWREFORM_VERSION) {
+        return $env:CLAWREFORM_VERSION
     }
 
     Write-Host "  Fetching latest release..."
@@ -72,22 +72,22 @@ function Get-LatestVersion {
     catch {
         Write-Host "  Could not determine latest version." -ForegroundColor Red
         Write-Host "  Install from source instead:" -ForegroundColor Yellow
-        Write-Host "    cargo install --git https://github.com/$Repo openfang-cli"
+        Write-Host "    cargo install --git https://github.com/$Repo clawreform-cli"
         exit 1
     }
 }
 
-function Install-OpenFang {
+function Install-ClawReform {
     Write-Banner
 
     $arch = Get-Architecture
     $version = Get-LatestVersion
     $target = "${arch}-pc-windows-msvc"
-    $archive = "openfang-${target}.zip"
+    $archive = "clawreform-${target}.zip"
     $url = "https://github.com/$Repo/releases/download/$version/$archive"
     $checksumUrl = "$url.sha256"
 
-    Write-Host "  Installing OpenFang $version for $target..."
+    Write-Host "  Installing clawREFORM $version for $target..."
 
     # Create install directory
     if (-not (Test-Path $InstallDir)) {
@@ -95,7 +95,7 @@ function Install-OpenFang {
     }
 
     # Download to temp
-    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "openfang-install"
+    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "clawreform-install"
     if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir }
     New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
@@ -108,7 +108,7 @@ function Install-OpenFang {
     catch {
         Write-Host "  Download failed. The release may not exist for your platform." -ForegroundColor Red
         Write-Host "  Install from source instead:" -ForegroundColor Yellow
-        Write-Host "    cargo install --git https://github.com/$Repo openfang-cli"
+        Write-Host "    cargo install --git https://github.com/$Repo clawreform-cli"
         Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
         exit 1
     }
@@ -137,22 +137,22 @@ function Install-OpenFang {
 
     # Extract
     Expand-Archive -Path $archivePath -DestinationPath $tempDir -Force
-    $exePath = Join-Path $tempDir "openfang.exe"
+    $exePath = Join-Path $tempDir "clawreform.exe"
     if (-not (Test-Path $exePath)) {
         # May be nested in a directory
-        $found = Get-ChildItem -Path $tempDir -Filter "openfang.exe" -Recurse | Select-Object -First 1
+        $found = Get-ChildItem -Path $tempDir -Filter "clawreform.exe" -Recurse | Select-Object -First 1
         if ($found) {
             $exePath = $found.FullName
         }
         else {
-            Write-Host "  Could not find openfang.exe in archive." -ForegroundColor Red
+            Write-Host "  Could not find clawreform.exe in archive." -ForegroundColor Red
             Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
             exit 1
         }
     }
 
     # Install
-    Copy-Item -Path $exePath -Destination (Join-Path $InstallDir "openfang.exe") -Force
+    Copy-Item -Path $exePath -Destination (Join-Path $InstallDir "clawreform.exe") -Force
 
     # Clean up temp
     Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
@@ -166,26 +166,26 @@ function Install-OpenFang {
     }
 
     # Verify
-    $installedExe = Join-Path $InstallDir "openfang.exe"
+    $installedExe = Join-Path $InstallDir "clawreform.exe"
     if (Test-Path $installedExe) {
         try {
             $versionOutput = & $installedExe --version 2>&1
             Write-Host ""
-            Write-Host "  OpenFang installed successfully! ($versionOutput)" -ForegroundColor Green
+            Write-Host "  clawREFORM installed successfully! ($versionOutput)" -ForegroundColor Green
         }
         catch {
             Write-Host ""
-            Write-Host "  OpenFang binary installed to $installedExe" -ForegroundColor Green
+            Write-Host "  clawREFORM binary installed to $installedExe" -ForegroundColor Green
         }
     }
 
     Write-Host ""
     Write-Host "  Get started:" -ForegroundColor Cyan
-    Write-Host "    openfang init"
+    Write-Host "    clawreform init"
     Write-Host ""
     Write-Host "  The setup wizard will guide you through provider selection"
     Write-Host "  and configuration."
     Write-Host ""
 }
 
-Install-OpenFang
+Install-ClawReform

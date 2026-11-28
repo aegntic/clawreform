@@ -1,8 +1,8 @@
 [skill]
 name = "self-modify"
 version = "0.1.0"
-description = "Enables OpenFang to modify itself safely through natural language"
-author = "OpenFang Team"
+description = "Enables clawREFORM to modify itself safely through natural language"
+author = "aegntic.ai"
 tags = ["meta", "self-modification", "development", "code-generation"]
 
 [skill.capabilities]

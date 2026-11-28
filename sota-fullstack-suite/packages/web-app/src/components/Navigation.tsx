@@ -49,23 +49,23 @@ export function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-8">
             {navLinks.map((link) => (
-              <Link
+              <a
                 key={link.label}
                 href={link.href}
                 {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 className="text-surface-300 hover:text-surface-50 transition-colors text-sm font-medium"
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
           </div>
 
           {/* CTA Button */}
           <div className="hidden md:flex md:items-center">
             <Button variant="accent" size="sm" asChild>
-              <Link href="https://github.com/aegntic/clawreform" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/aegntic/clawreform" target="_blank" rel="noopener noreferrer">
                 Get Started
-              </Link>
+              </a>
             </Button>
           </div>
 
@@ -105,7 +105,7 @@ export function Navigation() {
           <div className="md:hidden py-4 border-t border-surface-800">
             <div className="flex flex-col space-y-4">
               {navLinks.map((link) => (
-                <Link
+                <a
                   key={link.label}
                   href={link.href}
                   {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
@@ -113,7 +113,7 @@ export function Navigation() {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
-                </Link>
+                </a>
               ))}
               <div className="flex flex-col space-y-2 pt-4 border-t border-surface-800">
                 <Button variant="accent" size="sm" className="w-full" asChild>

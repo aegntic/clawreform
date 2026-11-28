@@ -20,7 +20,8 @@ const API_KEY_VARS = [
   "FIREWORKS_API_KEY",
   "COHERE_API_KEY",
   "PERPLEXITY_API_KEY",
-  "XAI_API_KEY"
+  "XAI_API_KEY",
+  "ZHIPU_API_KEY"
 ];
 
 function sleep(ms) {

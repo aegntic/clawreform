@@ -1254,7 +1254,7 @@ fn write_config_if_missing(
     } else {
         let default_config = format!(
             r#"# clawREFORM by aegntic.ai configuration
-# See https://github.com/RightNow-AI/clawreform for documentation
+# See https://github.com/aegntic/clawreform for documentation
 
 api_listen = "{default_api_listen}"
 
@@ -1927,7 +1927,7 @@ fn cmd_doctor(json: bool, repair: bool) {
             if answer.is_empty() || answer.starts_with('y') || answer.starts_with('Y') {
                 let default_config = format!(
                     r#"# clawREFORM by aegntic.ai configuration
-# See https://github.com/RightNow-AI/clawreform for documentation
+# See https://github.com/aegntic/clawreform for documentation
 
 api_listen = "{default_api_listen}"
 

@@ -8,8 +8,8 @@ clawREFORM ships with two browser extensions that extend its capabilities:
 
 | Extension | Purpose | Where it runs |
 |-----------|---------|---------------|
-| **ClawPrompt** | AI prompt template manager — create, organize, and insert templates into any text field | All websites |
-| **DevScribe** | Development companion — notes, screenshots, console/network capture, Alpine.js inspection, GitHub issues | clawREFORM dashboard only (`http://127.0.0.1:4332`) |
+| **ClawPrompt** | AI prompt template manager — create, organize, and insert templates into any text field (plus optional CLI daemon sync in `extensions/clawprompt-extension` via `/api/extension/sync`) | All websites |
+| **DevScribe** | Development companion — notes, screenshots, console/network capture, Alpine.js inspection, GitHub issues | clawREFORM dashboard (`http://127.0.0.1:4332` or `http://localhost:4332`) |
 
 Together they form a workflow: use DevScribe to capture observations from the dashboard, then use ClawPrompt to quickly insert structured prompts when working with AI assistants.
 
@@ -18,7 +18,7 @@ Together they form a workflow: use DevScribe to capture observations from the da
 ### Prerequisites
 
 - Chrome or a Chromium-based browser (Edge, Brave, Arc)
-- clawREFORM dashboard running at `http://127.0.0.1:4332` (required for DevScribe)
+- clawREFORM dashboard running at `http://127.0.0.1:4332` or `http://localhost:4332` (required for DevScribe and ClawPrompt CLI sync)
 
 ### Installation
 
@@ -27,10 +27,10 @@ Both extensions are installed as unpacked extensions:
 1. Open `chrome://extensions/`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked**
-4. Select `extensions/clawprompt` for ClawPrompt
+4. Select `extensions/clawprompt` (or `extensions/clawprompt-extension` for Swarm Command Prompts with local CLI sync) for ClawPrompt
 5. Click **Load unpacked** again
 6. Select `extensions/devscribe` for DevScribe
-7. Navigate to `http://127.0.0.1:4332` to verify DevScribe's gold FAB appears
+7. Navigate to `http://127.0.0.1:4332` (or `http://localhost:4332`) to verify DevScribe's gold FAB appears
 
 ---
 
@@ -157,7 +157,7 @@ The picker works with `<input>`, `<textarea>`, and `contenteditable` elements. I
 
 ### Dashboard Integration
 
-DevScribe is a content script that only activates on `http://127.0.0.1:4332`. It injects a Shadow DOM panel that is isolated from the dashboard's own styles and Alpine.js scope.
+DevScribe is a content script that only activates on `http://127.0.0.1:4332` and `http://localhost:4332`. It injects a Shadow DOM panel that is isolated from the dashboard's own styles and Alpine.js scope.
 
 The panel uses a gold/gunmetal/silver metallic design language that visually distinguishes it from the dashboard UI.
 
@@ -370,7 +370,7 @@ This is useful for debugging state-related issues without opening the browser's 
 
 | Problem | Solution |
 |---------|----------|
-| FAB not visible | Ensure you're on `http://127.0.0.1:4332`; check that the extension is enabled |
+| FAB not visible | Ensure you're on `http://127.0.0.1:4332` or `http://localhost:4332`; check that the extension is enabled |
 | Panel content is blank | Reload the dashboard; check the browser console for errors |
 | Console/Network tabs show nothing | Enable capture in Settings; reload the page after changing settings |
 | GitHub issue fails | Verify token has `repo` scope; confirm repo format is `owner/repo`; check the browser console for the API error |

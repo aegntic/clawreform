@@ -100,7 +100,7 @@ export default function Hero() {
           transition={{ duration: dur }}
         >
           <a
-            href="https://github.com/nicobailon/clawreform"
+            href="https://github.com/aegntic/clawreform"
             target="_blank"
             rel="noopener noreferrer"
             className="tactile-btn tactile-btn-primary"

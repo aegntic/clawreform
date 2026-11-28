@@ -8,27 +8,24 @@ import {
   serializerCompiler,
   validatorCompiler,
   jsonSchemaTransform,
+  type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import pino from 'pino';
-
-// Initialize logger
-const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'HH:MM:ss',
-      ignore: 'pid,hostname',
-    },
-  },
-});
 
 // Create Fastify instance
 const fastify = Fastify({
-  logger,
+  logger: {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true,
+        translateTime: 'HH:MM:ss',
+        ignore: 'pid,hostname',
+      },
+    },
+  },
   trustProxy: true,
-});
+}).withTypeProvider<ZodTypeProvider>();
 
 // Set validators
 fastify.setValidatorCompiler(validatorCompiler);
@@ -156,7 +153,7 @@ fastify.post('/api/analytics/performance', {
       }),
     },
   },
-}, async (request, reply) => {
+}, async (request) => {
   const { name, value, rating } = request.body;
 
   // Log the metric (in production, send to analytics service)
@@ -185,7 +182,7 @@ fastify.get('/api/users/me', {
   id: 'user_123',
   email: 'demo@sota-suite.dev',
   name: 'Demo User',
-  plan: 'pro',
+  plan: 'pro' as const,
   createdAt: '2024-01-01T00:00:00Z',
 }));
 
@@ -210,14 +207,14 @@ fastify.get('/api/projects', {
   {
     id: 'proj_001',
     name: 'Marketing Landing Page',
-    status: 'active',
+    status: 'active' as const,
     performance: { lcp: 1800, cls: 0.05, fid: 12 },
     createdAt: '2024-01-15T00:00:00Z',
   },
   {
     id: 'proj_002',
     name: 'E-commerce Store',
-    status: 'active',
+    status: 'active' as const,
     performance: { lcp: 2100, cls: 0.08, fid: 18 },
     createdAt: '2024-02-01T00:00:00Z',
   },

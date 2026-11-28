@@ -23,11 +23,5 @@
     },
     "baseUrl": "."
   },
-  "include": ["packages/*/src"],
-  "references": [
-    { "path": "./packages/shared-ui" },
-    { "path": "./packages/shared-utils" },
-    { "path": "./packages/web-app" },
-    { "path": "./packages/api-gateway" }
-  ]
+  "include": ["packages/shared-ui/src", "packages/shared-utils/src", "packages/api-gateway/src"]
 }

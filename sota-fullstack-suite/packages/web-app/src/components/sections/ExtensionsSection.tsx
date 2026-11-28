@@ -122,7 +122,7 @@ const extensions = [
     ],
     href: '/devscribe',
   },
-];
+] as const;
 
 export function ExtensionsSection() {
   const { ref, animationStyles } = useScrollAnimation({ delay: 200 });

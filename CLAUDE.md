@@ -1,7 +1,7 @@
 # clawREFORM by aegntic.ai — Agent Instructions
 
 ## Project Overview
-clawREFORM by aegntic.ai is an open-source Agent Operating System written in Rust (14 crates).
+clawREFORM by aegntic.ai is an open-source Agent Operating System written in Rust (15 crates including `clawreform-teams` and `xtask`).
 - Config: `~/.clawreform/config.toml`
 - Default API: `http://127.0.0.1:4332`
 - CLI binary: `target/release/clawreform` (or `target/debug/clawreform`)
@@ -10,7 +10,7 @@ clawREFORM by aegntic.ai is an open-source Agent Operating System written in Rus
 After every feature implementation, run ALL THREE checks:
 ```bash
 cargo build --workspace --lib          # Must compile (use --lib if exe is locked)
-cargo test --workspace                 # All tests must pass (currently 1744+)
+cargo test --workspace                 # All tests must pass (currently 1850+)
 cargo clippy --workspace --all-targets -- -D warnings  # Zero warnings
 ```
 

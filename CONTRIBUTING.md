@@ -28,7 +28,7 @@ Thank you for your interest in contributing to clawREFORM by aegntic.ai. This gu
 ### Clone and Build
 
 ```bash
-git clone https://github.com/RightNow-AI/clawreform.git
+git clone https://github.com/aegntic/clawreform.git
 cd clawreform
 cargo build
 ```
@@ -356,6 +356,6 @@ Please report unacceptable behavior to the maintainers.
 
 ## Questions?
 
-- Open a [GitHub Discussion](https://github.com/RightNow-AI/clawreform/discussions) for questions.
-- Open a [GitHub Issue](https://github.com/RightNow-AI/clawreform/issues) for bugs or feature requests.
+- Open a [GitHub Issue](https://github.com/aegntic/clawreform/issues) to ask a question.
+- Open a [GitHub Issue](https://github.com/aegntic/clawreform/issues) for bugs or feature requests.
 - Check the [docs/](docs/) directory for detailed guides on specific topics.

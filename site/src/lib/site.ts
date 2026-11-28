@@ -314,7 +314,7 @@ export const docsGettingStartedSteps = [
   },
   {
     title: "Verify",
-    code: `$ curl http://127.0.0.1:4332/api/health\n{"status":"ok","version":"0.3.0"}`,
+    code: `$ curl http://127.0.0.1:4332/api/health\n{"status":"ok","version":"0.35.1"}`,
     note: "",
   },
   {

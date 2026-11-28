@@ -373,6 +373,13 @@ async function injectPrompt(text, title) {
 
     if (result?.injected) {
       showToast(title.substring(0, 25) + ' injected');
+      // Log injection to local clawREFORM daemon (non-blocking)
+      chrome.runtime.sendMessage({
+        action: 'logPrompt',
+        text,
+        title,
+        tabUrl: tab.url
+      }).catch(() => {});
     } else {
       showToast('Copied to clipboard');
     }
@@ -386,7 +393,7 @@ async function injectPrompt(text, title) {
 
     // Fallback: just copy to clipboard directly
     navigator.clipboard.writeText(text).then(() => {
-      alert('Prompt copied! Paste in Grok with Ctrl+V');
+      alert('Prompt copied! Paste with Ctrl+V');
     });
   }
 }

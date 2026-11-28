@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <title>Model providers connect to clawreform-runtime along a local lane or a hosted lane.</title>
+  <desc>A teal lane for local models that need no API key and an amber lane for hosted providers that need an API key both end at the clawreform-runtime crate.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#F0A23C"/>
+    </marker>
+    <marker id="arrowTeal" viewBox="0 0 10 8" refX="10" refY="4" markerWidth="10" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#5CC8C2"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="420" fill="#14171C"/>
+  <text x="24" y="46" font-size="22" font-weight="bold" fill="#E6E9EF">Model providers: local or hosted</text>
+
+  <!-- Lane panels -->
+  <g fill="#1C2027" fill-opacity="0.55" stroke="#2A303A">
+    <rect x="24" y="82" width="708" height="118" rx="8"/>
+    <rect x="24" y="238" width="708" height="124" rx="8"/>
+  </g>
+
+  <!-- Local lane -->
+  <text x="40" y="102" font-size="14" font-weight="bold" fill="#5CC8C2">Local (no API key)</text>
+  <rect x="40" y="118" width="412" height="70" rx="8" fill="none" stroke="#5CC8C2" stroke-dasharray="5 4"/>
+  <g>
+    <rect x="50" y="128" width="122" height="40" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="111" y="153" text-anchor="middle" font-size="14" fill="#E6E9EF">Ollama</text>
+  </g>
+  <g>
+    <rect x="184" y="128" width="122" height="40" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="245" y="153" text-anchor="middle" font-size="14" fill="#E6E9EF">vLLM</text>
+  </g>
+  <g>
+    <rect x="318" y="128" width="124" height="40" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="380" y="153" text-anchor="middle" font-size="14" fill="#E6E9EF">LM Studio</text>
+  </g>
+  <g>
+    <rect x="496" y="128" width="220" height="40" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="606" y="153" text-anchor="middle" font-size="14" fill="#E6E9EF">OpenAI-compatible driver</text>
+  </g>
+  <g fill="none" stroke="#5CC8C2" stroke-width="2" marker-end="url(#arrowTeal)">
+    <path d="M452,148 H496"/>
+    <path d="M716,148 H760"/>
+  </g>
+  <text x="40" y="218" font-size="12" fill="#9AA4B2">The model runs on your machine.</text>
+
+  <!-- Hosted lane -->
+  <text x="40" y="258" font-size="14" font-weight="bold" fill="#F0A23C">Hosted (API key)</text>
+  <rect x="40" y="274" width="676" height="76" rx="8" fill="none" stroke="#F0A23C" stroke-dasharray="5 4"/>
+  <g>
+    <rect x="50" y="284" width="180" height="52" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="140" y="305" text-anchor="middle" font-size="14" fill="#E6E9EF">Anthropic</text>
+    <text x="140" y="324" text-anchor="middle" font-size="12" fill="#9AA4B2">native driver</text>
+  </g>
+  <g>
+    <rect x="244" y="284" width="180" height="52" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="334" y="305" text-anchor="middle" font-size="14" fill="#E6E9EF">Gemini</text>
+    <text x="334" y="324" text-anchor="middle" font-size="12" fill="#9AA4B2">native driver</text>
+  </g>
+  <g>
+    <rect x="438" y="284" width="268" height="52" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="572" y="305" text-anchor="middle" font-size="14" fill="#E6E9EF">23 more providers</text>
+    <text x="572" y="324" text-anchor="middle" font-size="12" fill="#9AA4B2">OpenAI-compatible driver</text>
+  </g>
+  <path d="M716,310 H760" fill="none" stroke="#F0A23C" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Shared runtime -->
+  <g>
+    <rect x="760" y="128" width="176" height="208" rx="8" fill="#1C2027" stroke="#2A303A"/>
+    <text x="848" y="237" text-anchor="middle" font-size="14" fill="#E6E9EF">clawreform-runtime</text>
+  </g>
+
+  <text x="24" y="390" font-size="12" fill="#9AA4B2">The catalog lists 28 providers: 25 need a key and 3 run locally.</text>
+</svg>
