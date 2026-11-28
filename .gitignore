@@ -6,7 +6,18 @@
 # Environment & secrets
 .env
 .env.*
+*.env
 !.env.example
+secrets.env
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Local daemon & dev logs
+.daemon-restart.log
+.pages-dev.log
+.wrangler/
 
 # Database
 *.db
