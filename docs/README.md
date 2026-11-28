@@ -56,6 +56,18 @@ Welcome to the clawREFORM by aegntic.ai documentation. clawREFORM by aegntic.ai 
 |-------|-------------|
 | [Production Checklist](production-checklist.md) | Every step before tagging a release -- signing keys, secrets, verification |
 
+## Internal Material
+
+These documents are for the maintainers. They are not user documentation.
+
+| Location | Content |
+|----------|---------|
+| [`session-restore/`](session-restore/) | Archived working sessions |
+| [`launch-tasks/`](launch-tasks/) | Plans and task lists for the launch |
+| [`design/`](design/) | Design references and reference images |
+| [Launch Roadmap](launch-roadmap.md) | Internal launch roadmap |
+| [DevScribe Plan Review](devscribe-plan-review.md) | Internal review of a plan |
+
 ## Additional Resources
 
 | Resource | Description |
