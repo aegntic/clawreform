@@ -1,9 +1,9 @@
-const DASHBOARD_URL = "http://127.0.0.1:4332";
+const DASHBOARD_URLS = ["http://127.0.0.1:4332/*", "http://localhost:4332/*"];
 
 const $ = (id) => document.getElementById(id);
 
 async function getDashboardTab() {
-  const tabs = await chrome.tabs.query({ url: `${DASHBOARD_URL}/*` });
+  const tabs = await chrome.tabs.query({ url: DASHBOARD_URLS });
   return tabs[0] || null;
 }
 

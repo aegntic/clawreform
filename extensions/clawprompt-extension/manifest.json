@@ -33,7 +33,8 @@
     "https://*.clawreform.com/*",
     "https://open-claw.org/*",
     "https://*.open-claw.org/*",
-    "http://localhost:*/*"
+    "http://localhost:4332/*",
+    "http://127.0.0.1:4332/*"
   ],
   "externally_connectable": {
     "matches": [
@@ -41,7 +42,8 @@
       "https://*.clawreform.com/*",
       "https://open-claw.org/*",
       "https://*.open-claw.org/*",
-      "http://localhost:*/*"
+      "http://localhost:4332/*",
+      "http://127.0.0.1:4332/*"
     ]
   },
   "background": {
