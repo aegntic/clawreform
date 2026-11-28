@@ -80,9 +80,7 @@ impl ContextBus {
     pub fn find_by_tag(&self, tag: &str) -> Vec<ContextEntry> {
         self.entries
             .iter()
-            .filter(|entry| {
-                !entry.is_expired() && entry.value().tags.iter().any(|t| t == tag)
-            })
+            .filter(|entry| !entry.is_expired() && entry.value().tags.iter().any(|t| t == tag))
             .map(|entry| entry.value().clone())
             .collect()
     }
@@ -121,12 +119,7 @@ impl ContextBus {
     }
 
     /// Set a simple key-value pair (convenience method).
-    pub fn set_value(
-        &self,
-        key: &str,
-        value: serde_json::Value,
-        author_id: AgentId,
-    ) {
+    pub fn set_value(&self, key: &str, value: serde_json::Value, author_id: AgentId) {
         let entry = ContextEntry::new(key, value, author_id);
         self.set(entry);
     }
@@ -138,10 +131,7 @@ impl ContextBus {
 
     /// Get all non-expired entries count.
     pub fn len(&self) -> usize {
-        self.entries
-            .iter()
-            .filter(|e| !e.is_expired())
-            .count()
+        self.entries.iter().filter(|e| !e.is_expired()).count()
     }
 
     /// Check if the bus is empty.

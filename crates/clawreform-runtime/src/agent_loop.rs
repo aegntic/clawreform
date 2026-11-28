@@ -1812,7 +1812,11 @@ fn recover_text_tool_calls(text: &str, available_tools: &[ToolDefinition]) -> Ve
         let Some(args_len) = args_end else {
             continue;
         };
-        let args_str = &inner[args_body_start..args_body_start + args_len];
+        let args_str = inner[args_body_start..args_body_start + args_len]
+            .trim()
+            .strip_prefix('{')
+            .and_then(|s| s.strip_suffix('}'))
+            .unwrap_or(&inner[args_body_start..args_body_start + args_len]);
 
         // Convert Qwen args format to JSON: --key "value" or --key value
         let mut json_map = serde_json::Map::new();
@@ -1821,20 +1825,23 @@ fn recover_text_tool_calls(text: &str, available_tools: &[ToolDefinition]) -> Ve
         while let Some(key_start) = args_str[pos..].find("--") {
             let abs_key = pos + key_start + 2;
             // Find end of key (space or end)
-            let key_end = args_str[abs_key..].find(|c: char| c.is_whitespace()).unwrap_or(args_str[abs_key..].len());
+            let key_end = args_str[abs_key..]
+                .find(|c: char| c.is_whitespace())
+                .unwrap_or(args_str[abs_key..].len());
             let key = &args_str[abs_key..abs_key + key_end];
             let val_start = abs_key + key_end;
             // Skip whitespace
-            let val_start = val_start + args_str[val_start..].len() - args_str[val_start..].trim_start().len();
+            let val_start =
+                val_start + args_str[val_start..].len() - args_str[val_start..].trim_start().len();
             let val_rest = &args_str[val_start..];
             // Check if value is quoted
-            let (value, consumed) = if val_rest.starts_with('"') {
+            let (value, consumed) = if let Some(after_open_quote) = val_rest.strip_prefix('"') {
                 // Quoted value
-                let Some(quote_end) = val_rest[1..].find('"') else {
-                    pos = val_start;
+                let Some(quote_end) = after_open_quote.find('"') else {
+                    pos = val_start + 1;
                     continue;
                 };
-                (val_rest[1..quote_end + 1].to_string(), quote_end + 2)
+                (after_open_quote[..quote_end].to_string(), quote_end + 2)
             } else {
                 // Unquoted value - read until next -- or end
                 let end = val_rest.find("--").unwrap_or(val_rest.len());
@@ -2564,6 +2571,38 @@ mod tests {
         assert_eq!(calls[0].name, "web_search");
         assert_eq!(calls[0].input["query"], "rust async");
         assert!(calls[0].id.starts_with("recovered_"));
+    }
+
+    #[test]
+    fn test_recover_text_tool_calls_qwen35_quoted_and_unquoted_args() {
+        let tools = vec![ToolDefinition {
+            name: "web_search".into(),
+            description: "Search the web".into(),
+            input_schema: serde_json::json!({}),
+        }];
+        let text = r#"[TOOL_CALL]
+{tool => "web_search", args => { --query "rust async" --limit 5 }}
+[/TOOL_CALL]"#;
+        let calls = recover_text_tool_calls(text, &tools);
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].name, "web_search");
+        assert_eq!(calls[0].input["query"], "rust async");
+        assert_eq!(calls[0].input["limit"], "5");
+    }
+
+    #[test]
+    fn test_recover_text_tool_calls_qwen35_unterminated_quote_does_not_hang() {
+        let tools = vec![ToolDefinition {
+            name: "web_search".into(),
+            description: "Search the web".into(),
+            input_schema: serde_json::json!({}),
+        }];
+        let text = r#"[TOOL_CALL]
+{tool => "web_search", args => { --query "unterminated --limit 10 }}
+[/TOOL_CALL]"#;
+        let calls = recover_text_tool_calls(text, &tools);
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].input["limit"], "10");
     }
 
     #[test]

@@ -51,40 +51,64 @@ impl ScopedFileSystem {
             .to_string();
 
         // Canonicalize: if the path exists, use canonicalize directly.
-        // If it doesn't exist, canonicalize the parent and append the filename.
+        // Otherwise lexically normalize `.` / `..`, walk up to the nearest existing
+        // ancestor, canonicalize it (handles macOS /var -> /private/var symlinks and
+        // Windows 8.3 short paths), and append the remaining non-existent components.
         let canonical = if requested.exists() {
             requested
                 .canonicalize()
                 .map_err(|e| TeamError::FileScope(format!("Cannot resolve path '{path}': {e}")))?
-        } else if let Some(parent) = requested.parent() {
-            let canonical_parent = if parent.exists() {
-                parent
-                    .canonicalize()
-                    .map_err(|e| TeamError::FileScope(format!("Cannot resolve path '{path}': {e}")))?
-            } else {
-                parent.to_path_buf()
-            };
-            if let Some(name) = requested.file_name() {
-                canonical_parent.join(name)
-            } else {
-                canonical_parent
-            }
         } else {
-            requested
+            let mut normalized = PathBuf::new();
+            for comp in requested.components() {
+                match comp {
+                    std::path::Component::CurDir => {}
+                    std::path::Component::ParentDir => {
+                        normalized.pop();
+                    }
+                    other => normalized.push(other.as_os_str()),
+                }
+            }
+
+            let mut tail_components = Vec::new();
+            let mut cur = normalized.as_path();
+            while !cur.exists() {
+                if let Some(name) = cur.file_name() {
+                    tail_components.push(name.to_os_string());
+                } else {
+                    break;
+                }
+                match cur.parent() {
+                    Some(parent) if !parent.as_os_str().is_empty() => cur = parent,
+                    _ => break,
+                }
+            }
+
+            let mut resolved = if cur.exists() {
+                cur.canonicalize().map_err(|e| {
+                    TeamError::FileScope(format!("Cannot resolve path '{path}': {e}"))
+                })?
+            } else {
+                cur.to_path_buf()
+            };
+
+            for comp in tail_components.into_iter().rev() {
+                resolved.push(comp);
+            }
+            resolved
         };
 
-        // Check base directory constraint
+        // Check base directory constraint using path component comparison
         if !self.scope.base_dir.as_os_str().is_empty() {
             let base = if self.scope.base_dir.exists() {
-                self.scope.base_dir.canonicalize().map_err(|e| {
-                    TeamError::FileScope(format!("Base directory error: {e}"))
-                })?
+                self.scope
+                    .base_dir
+                    .canonicalize()
+                    .map_err(|e| TeamError::FileScope(format!("Base directory error: {e}")))?
             } else {
                 self.scope.base_dir.clone()
             };
-            let canonical_str = canonical.to_string_lossy();
-            let base_str = base.to_string_lossy();
-            if !canonical_str.starts_with(&*base_str) {
+            if !canonical.starts_with(&base) {
                 return Err(TeamError::FileScope(format!(
                     "Path '{path}' escapes base directory '{:?}'",
                     self.scope.base_dir
@@ -303,5 +327,32 @@ mod tests {
         fs.write_file("public.txt", "ok").unwrap();
         let result = fs.write_file("data.secret", "forbidden");
         assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_escape_sibling_prefix_and_nested_parent_traversal() {
+        let parent = tempfile::tempdir().unwrap();
+        let base = parent.path().join("workspace");
+        let sibling = parent.path().join("workspace_evil");
+        std::fs::create_dir_all(&base).unwrap();
+        std::fs::create_dir_all(&sibling).unwrap();
+
+        let fs = ScopedFileSystem::with_base(base);
+        assert!(fs.write_file("../workspace_evil/pwn.txt", "bad").is_err());
+        assert!(fs.write_file("a/b/../../../escape.txt", "bad").is_err());
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn test_write_subdirs_through_symlinked_base_dir() {
+        let parent = tempfile::tempdir().unwrap();
+        let real_dir = parent.path().join("real");
+        let link_dir = parent.path().join("link");
+        std::fs::create_dir_all(&real_dir).unwrap();
+        std::os::unix::fs::symlink(&real_dir, &link_dir).unwrap();
+
+        let fs = ScopedFileSystem::with_base(link_dir);
+        fs.write_file("a/b/c.txt", "nested via symlink").unwrap();
+        assert_eq!(fs.read_file("a/b/c.txt").unwrap(), "nested via symlink");
     }
 }

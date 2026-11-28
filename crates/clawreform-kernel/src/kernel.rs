@@ -1755,7 +1755,7 @@ impl ClawReformKernel {
         let workspace_dir = manifest.workspace.clone().unwrap_or_else(|| {
             self.config.effective_workspaces_dir().join(format!(
                 "{}-{}",
-                &name,
+                name,
                 &agent_id.0.to_string()[..8]
             ))
         });
@@ -2085,7 +2085,7 @@ impl ClawReformKernel {
         if manifest.workspace.is_none() {
             let workspace_dir = self.config.effective_workspaces_dir().join(format!(
                 "{}-{}",
-                &manifest.name,
+                manifest.name,
                 &agent_id.0.to_string()[..8]
             ));
             if let Err(e) = ensure_workspace(&workspace_dir) {
@@ -2565,7 +2565,7 @@ impl ClawReformKernel {
         if manifest.workspace.is_none() {
             let workspace_dir = self.config.effective_workspaces_dir().join(format!(
                 "{}-{}",
-                &manifest.name,
+                manifest.name,
                 &agent_id.0.to_string()[..8]
             ));
             if let Err(e) = ensure_workspace(&workspace_dir) {
@@ -3542,7 +3542,7 @@ impl ClawReformKernel {
         let mut bindings = self.bindings.lock().unwrap_or_else(|e| e.into_inner());
         bindings.push(binding);
         // Sort by specificity descending
-        bindings.sort_by(|a, b| b.match_rule.specificity().cmp(&a.match_rule.specificity()));
+        bindings.sort_by_key(|a| std::cmp::Reverse(a.match_rule.specificity()));
     }
 
     /// Remove a binding by index, returns the removed binding if valid.

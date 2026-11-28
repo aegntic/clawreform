@@ -76,7 +76,9 @@ impl TeamAgentIdentity {
 // ============================================================================
 
 /// Task priority.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default, PartialOrd, Ord)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default, PartialOrd, Ord,
+)]
 #[serde(rename_all = "lowercase")]
 pub enum TaskPriority {
     Low,
@@ -277,11 +279,7 @@ pub struct DelegationMessage {
 
 impl DelegationMessage {
     /// Create a new delegation message.
-    pub fn new(
-        msg_type: MessageType,
-        from_id: AgentId,
-        to_id: AgentId,
-    ) -> Self {
+    pub fn new(msg_type: MessageType, from_id: AgentId, to_id: AgentId) -> Self {
         Self {
             id: Uuid::new_v4(),
             msg_type,
@@ -564,7 +562,7 @@ impl Default for TeamSettings {
 }
 
 /// Complete team configuration (loaded from YAML/JSON).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct TeamConfig {
     /// Team name.
@@ -585,21 +583,6 @@ pub struct TeamConfig {
     pub settings: TeamSettings,
 }
 
-impl Default for TeamConfig {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            description: String::new(),
-            orchestrator: OrchestratorTeamConfig::default(),
-            team_leads: Vec::new(),
-            file_scope: FileScope::default(),
-            templates: Vec::new(),
-            context: HashMap::new(),
-            settings: TeamSettings::default(),
-        }
-    }
-}
-
 impl TeamConfig {
     /// Load a team config from a YAML or JSON file.
     pub fn load_from_file(path: &PathBuf) -> TeamResult<Self> {
@@ -613,9 +596,11 @@ impl TeamConfig {
         let config: TeamConfig = match ext.as_str() {
             "json" => serde_json::from_str(&content)?,
             "yaml" | "yml" => serde_yaml::from_str(&content)?,
-            other => return Err(crate::error::TeamError::Config(format!(
-                "Unsupported config format: {other}"
-            ))),
+            other => {
+                return Err(crate::error::TeamError::Config(format!(
+                    "Unsupported config format: {other}"
+                )))
+            }
         };
 
         Ok(config)
@@ -770,10 +755,13 @@ pub struct GoalResult {
 /// Function signature for the LLM executor hook.
 /// The team framework calls this to execute prompts against an LLM.
 pub type ExecutorFn = Box<
-    dyn Fn(String, HashMap<String, serde_json::Value>) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = crate::error::TeamResult<String>> + Send>,
-    > + Send
-    + Sync,
+    dyn Fn(
+            String,
+            HashMap<String, serde_json::Value>,
+        ) -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = crate::error::TeamResult<String>> + Send>,
+        > + Send
+        + Sync,
 >;
 
 /// A clonable executor wrapper using Arc.
@@ -862,8 +850,10 @@ mod tests {
         let config = TeamConfig::default();
         assert!(config.validate().is_err());
 
-        let mut config = TeamConfig::default();
-        config.name = "Test Team".to_string();
+        let mut config = TeamConfig {
+            name: "Test Team".to_string(),
+            ..Default::default()
+        };
         assert!(config.validate().is_err()); // no leads
 
         config.team_leads.push(TeamLeadConfig {
