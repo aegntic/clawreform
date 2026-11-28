@@ -242,10 +242,8 @@ impl LogsState {
                     self.list_state.select(Some(total - 1));
                 }
             }
-            KeyCode::Home => {
-                if total > 0 {
-                    self.list_state.select(Some(0));
-                }
+            KeyCode::Home if total > 0 => {
+                self.list_state.select(Some(0));
             }
             _ => {}
         }

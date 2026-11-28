@@ -693,10 +693,8 @@ pub fn run() -> InitResult {
                                     state.api_key_input.push(c);
                                 }
                             }
-                            KeyCode::Backspace => {
-                                if state.key_test == KeyTestState::Idle {
-                                    state.api_key_input.pop();
-                                }
+                            KeyCode::Backspace if state.key_test == KeyTestState::Idle => {
+                                state.api_key_input.pop();
                             }
                             _ => {}
                         }

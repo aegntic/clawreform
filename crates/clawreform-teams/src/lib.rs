@@ -29,6 +29,6 @@ pub use message_bus::MessageBus;
 pub use orchestrator::Orchestrator;
 pub use scoped_fs::ScopedFileSystem;
 pub use team_lead::{TeamLead, TeamManager};
-pub use template::{TemplateRegistry, builtin_templates};
+pub use template::{builtin_templates, TemplateRegistry};
 pub use types::*;
 pub use worker::Worker;

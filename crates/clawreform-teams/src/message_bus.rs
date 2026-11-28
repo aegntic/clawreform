@@ -4,7 +4,7 @@
 //! Supports publish/subscribe patterns and direct addressing.
 
 use crate::error::{TeamError, TeamResult};
-use crate::{AgentId, DelegationMessage, MessageType, TaskId, MessageDirection};
+use crate::{AgentId, DelegationMessage, MessageDirection, MessageType, TaskId};
 use dashmap::DashMap;
 use std::sync::Arc;
 use tokio::sync::broadcast;
