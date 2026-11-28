@@ -9,8 +9,8 @@
 set -euo pipefail
 
 REPO="${CLAWREFORM_REPO:-aegntic/clawreform}"
-INSTALL_DIR="${CLAWREFORM_INSTALL_DIR:-${OPENFANG_INSTALL_DIR:-$HOME/.clawreform/bin}}"
-TARGET_VERSION="${CLAWREFORM_VERSION:-${OPENFANG_VERSION:-}}"
+INSTALL_DIR="${CLAWREFORM_INSTALL_DIR:-$HOME/.clawreform/bin}"
+TARGET_VERSION="${CLAWREFORM_VERSION:-}"
 
 detect_platform() {
     OS=$(uname -s | tr '[:upper:]' '[:lower:]')

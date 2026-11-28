@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OpenFang Browser Bridge — Playwright automation over JSON-line stdio protocol.
+"""clawREFORM Browser Bridge — Playwright automation over JSON-line stdio protocol.
 
 Reads JSON commands from stdin (one per line), executes browser actions via
 Playwright, and writes JSON responses to stdout (one per line).
@@ -16,7 +16,7 @@ import sys
 import traceback
 
 def main():
-    parser = argparse.ArgumentParser(description="OpenFang Browser Bridge")
+    parser = argparse.ArgumentParser(description="clawREFORM Browser Bridge")
     parser.add_argument("--headless", action="store_true", default=True)
     parser.add_argument("--no-headless", dest="headless", action="store_false")
     parser.add_argument("--width", type=int, default=1280)

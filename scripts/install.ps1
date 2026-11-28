@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 
 $Repo = if ($env:CLAWREFORM_REPO) { $env:CLAWREFORM_REPO } else { "aegntic/clawreform" }
 $DefaultInstallDir = Join-Path $env:USERPROFILE ".clawreform\bin"
-$InstallDir = if ($env:CLAWREFORM_INSTALL_DIR) { $env:CLAWREFORM_INSTALL_DIR } elseif ($env:OPENFANG_INSTALL_DIR) { $env:OPENFANG_INSTALL_DIR } else { $DefaultInstallDir }
+$InstallDir = if ($env:CLAWREFORM_INSTALL_DIR) { $env:CLAWREFORM_INSTALL_DIR } else { $DefaultInstallDir }
 
 function Write-Banner {
     Write-Host ""
@@ -62,9 +62,6 @@ function Get-Architecture {
 function Get-LatestVersion {
     if ($env:CLAWREFORM_VERSION) {
         return $env:CLAWREFORM_VERSION
-    }
-    if ($env:OPENFANG_VERSION) {
-        return $env:OPENFANG_VERSION
     }
 
     Write-Host "  Fetching latest release..."
