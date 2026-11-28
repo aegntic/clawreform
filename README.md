@@ -75,6 +75,8 @@ clawREFORM now ships with a dark-first tactile interface derived from the metall
 
 Every other agent OS stores identity as a prompt string — untestable, ungittrackable, and opaque. clawREFORM stores agent identity as **discrete, human-readable Markdown files** called the AgentDNA stack. Each file has a single responsibility. The runtime injects them in deterministic order. Change a file → the agent changes. Instantly. No recompile. No redeploy. `git blame` your agent's personality.
 
+> Lives in [`clawreform-kernel`](crates/clawreform-kernel/src/kernel.rs) — `generate_identity_files` writes the stack, `read_identity_file` injects it — with per-turn workspace loading in [`clawreform-runtime/src/workspace_context.rs`](crates/clawreform-runtime/src/workspace_context.rs). See the [Evidence Map](#-evidence-map).
+
 ```
                     A G E N T D N A   S T A C K
    ┌────────────────────────────────────────────────────────────────┐
@@ -115,6 +117,8 @@ Every other agent OS stores identity as a prompt string — untestable, ungittra
 
 Flat context windows degrade. Long-term dumps bloat. clawREFORM implements a **four-tier memory promotion system** inspired by how working memory actually functions in cognitive science.
 
+> Lives in [`clawreform-kernel`](crates/clawreform-kernel/src/kernel.rs) (tier snapshots + confidence scoring + managed-section updates) and [`clawreform-memory/src/consolidation.rs`](crates/clawreform-memory/src/consolidation.rs) (confidence decay). See the [Evidence Map](#-evidence-map).
+
 ```
   HIGH               ╔══════════════════════════════════════════════╗
   CONFIDENCE         ║  TIER 1  →  CORE.md                         ║
@@ -144,6 +148,8 @@ Flat context windows degrade. Long-term dumps bloat. clawREFORM implements a **f
 **Cross-agent knowledge that earns its way into long-term memory.**
 
 When multiple agents share a COLLECTIVE.md AgentDNA file, every observation they make is scored against a confidence model. High-confidence claims get automatically promoted up the Memory Ladder — with a full audit trail every human can review.
+
+> Lives in [`clawreform-kernel`](crates/clawreform-kernel/src/kernel.rs) — `build_collective_ledger` scores claims, `persist_collective_ledger` writes `COLLECTIVE.md` + `ledger.json`. See the [Evidence Map](#-evidence-map).
 
 ```
   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐
@@ -178,6 +184,8 @@ When multiple agents share a COLLECTIVE.md AgentDNA file, every observation they
 
 clawREFORM ships a full code-modification pipeline. Tell it to add a feature in plain English. It writes the Rust, validates it, and commits — or rolls back automatically. Zero human in the loop required (though you can gate every step).
 
+> Lives in [`clawreform-kernel/src/self_modify/`](crates/clawreform-kernel/src/self_modify/mod.rs) (analyzer · backup · modifier · validate) with HTTP controls in [`clawreform-api/src/self_modify_routes.rs`](crates/clawreform-api/src/self_modify_routes.rs). See the [Evidence Map](#-evidence-map).
+
 ```
   ┌─────────────────────────────────────────────────────────────────────┐
   │              S E L F - R E W R I T E   P I P E L I N E             │
@@ -207,6 +215,23 @@ clawREFORM ships a full code-modification pipeline. Tell it to add a feature in 
 ```
 
 **Why this matters:** Self-improvement is the final boss of agent autonomy. Every other framework offloads this to the user. clawREFORM eats its own tail.
+
+---
+
+## 🔍 Evidence Map
+
+Every architectural claim above is backed by shipped code. This map links each claim to its crate, key source files, and the tests that exercise them.
+
+| Claim | Where it lives | Tests | Deeper docs |
+|---|---|---|---|
+| **I — AgentDNA™** (file-native identity, deterministic injection) | [`kernel.rs`](crates/clawreform-kernel/src/kernel.rs) — `generate_identity_files` builds the 14-file stack, `read_identity_file` injects it in order; per-turn loading in [`workspace_context.rs`](crates/clawreform-runtime/src/workspace_context.rs); 30 pre-built stacks in [`agents/`](agents) | [`test_generate_identity_files_includes_core_organs`](crates/clawreform-kernel/src/kernel.rs#L5772) | [AgentDNA™ System](docs/agentdna-system.md) |
+| **II — Memory Ladder** (4 tiers, promotion + decay) | [`kernel.rs`](crates/clawreform-kernel/src/kernel.rs) — `build_project_auto_snapshot` / `build_overview_auto_snapshot` / `update_managed_section` maintain CORE → OVERVIEW → PROJECT; confidence scoring in `build_collective_ledger`; decay in [`consolidation.rs`](crates/clawreform-memory/src/consolidation.rs) | [`test_collective_conscience_promotes_claims_across_layers`](crates/clawreform-kernel/src/kernel.rs#L5856) · [`test_consolidation_decays_old_memories`](crates/clawreform-memory/src/consolidation.rs#L75) | [Architecture](docs/architecture.md) |
+| **III — Collective Conscience** (cross-agent evidence pool) | [`kernel.rs`](crates/clawreform-kernel/src/kernel.rs) — `CollectiveLedger` + `build_collective_ledger` + `persist_collective_ledger` write `COLLECTIVE.md` and `memory/collective/ledger.json` | [`test_collective_conscience_promotes_claims_across_layers`](crates/clawreform-kernel/src/kernel.rs#L5856) | [Architecture](docs/architecture.md) |
+| **IV — Self-Rewrite Engine** (modifies own Rust source) | [`self_modify/`](crates/clawreform-kernel/src/self_modify/mod.rs) — [`analyzer.rs`](crates/clawreform-kernel/src/self_modify/analyzer.rs) · [`backup.rs`](crates/clawreform-kernel/src/self_modify/backup.rs) (snapshot/restore) · [`modifier.rs`](crates/clawreform-kernel/src/self_modify/modifier.rs) · [`validate.rs`](crates/clawreform-kernel/src/self_modify/validate.rs) (build → test → clippy); HTTP surface in [`self_modify_routes.rs`](crates/clawreform-api/src/self_modify_routes.rs) | — (no dedicated tests yet) | [Architecture](docs/architecture.md) |
+| **13-crate workspace architecture** | [`Cargo.toml`](Cargo.toml) workspace members + [`crates/`](crates) | [`integration_test.rs`](crates/clawreform-kernel/tests/integration_test.rs) · [`multi_agent_test.rs`](crates/clawreform-kernel/tests/multi_agent_test.rs) | [Architecture](docs/architecture.md) |
+| **Ed25519 manifests + Merkle audit trail** | Signed-manifest verification in [`kernel.rs`](crates/clawreform-kernel/src/kernel.rs); tamper-evident SHA-256 hash chain in [`clawreform-runtime/src/audit.rs`](crates/clawreform-runtime/src/audit.rs) | `mod tests` in `audit.rs` | [Security](docs/security.md) |
+| **HMAC wire auth · RBAC · loop guard** | [`clawreform-wire/src/peer.rs`](crates/clawreform-wire/src/peer.rs) · [`kernel/src/auth.rs`](crates/clawreform-kernel/src/auth.rs) (Viewer/User/Admin/Owner) · [`clawreform-runtime/src/loop_guard.rs`](crates/clawreform-runtime/src/loop_guard.rs) (SHA-256 loop guard + circuit breaker) | [`test_unauthenticated_agent_message_rejected`](crates/clawreform-wire/src/peer.rs#L879); `mod tests` in `auth.rs`, `loop_guard.rs` | [Security](docs/security.md) |
+| **WASM sandbox · GCRA · SSRF · vault · path guards** | [`sandbox.rs`](crates/clawreform-runtime/src/sandbox.rs) (wasmtime) · [`rate_limiter.rs`](crates/clawreform-api/src/rate_limiter.rs) · [`web_fetch.rs`](crates/clawreform-runtime/src/web_fetch.rs) `check_ssrf` · [`vault.rs`](crates/clawreform-extensions/src/vault.rs) (AES-256-GCM + Argon2 + zeroize) · [`workspace_sandbox.rs`](crates/clawreform-runtime/src/workspace_sandbox.rs) | [`wasm_agent_integration_test.rs`](crates/clawreform-kernel/tests/wasm_agent_integration_test.rs); `mod tests` in each listed file | [Security](docs/security.md) |
 
 ---
 
