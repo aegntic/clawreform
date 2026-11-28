@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>prompt.fail — Your AI Prompts, Documented</title>
+    <meta name="description" content="Every failed prompt is a lesson. ClawPrompt + DevScribe turn prompt engineering from art into science.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #06070d;
+            --surface: #141824;
+            --surface2: #1b2030;
+            --border: #2b3348;
+            --text: #e9edf7;
+            --text-dim: #9ba7bd;
+            --text-muted: #73809a;
+            --accent: #d9a75a;
+            --accent-light: #f1ce82;
+            --accent-dim: #9b6c2e;
+            --error: #f07178;
+            --error-dim: #df5a63;
+            --success: #57d39b;
+            --purple: #a58ef0;
+            --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Grain texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Ambient glow */
+        .ambient-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .glow-1 { top: -200px; left: -100px; background: var(--accent); }
+        .glow-2 { bottom: -200px; right: -100px; background: var(--purple); }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            padding: 24px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-family: var(--font-mono);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--error);
+        }
+        .logo span { color: var(--text-dim); }
+        nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 24px;
+            transition: color 0.2s;
+        }
+        nav a:hover { color: var(--accent); }
+
+        /* Hero */
+        .hero {
+            padding: 100px 0 80px;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(240, 113, 120, 0.12);
+            border: 1px solid rgba(240, 113, 120, 0.3);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--error);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-size: clamp(48px, 10vw, 80px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .hero h1 .fail { color: var(--error); }
+        .hero h1 .dot { color: var(--accent); }
+        .hero p {
+            font-size: 20px;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        /* Terminal block */
+        .terminal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 60px 0;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+        }
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #febc2e; }
+        .terminal-dot.green { background: #28c840; }
+        .terminal-url {
+            margin-left: auto;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        .terminal-body {
+            padding: 24px;
+        }
+        .terminal-line {
+            margin-bottom: 8px;
+        }
+        .prompt { color: var(--accent); }
+        .output { color: var(--text-dim); }
+        .error-text { color: var(--error); }
+        .success-text { color: var(--success); }
+        .comment { color: var(--text-muted); font-style: italic; }
+        .highlight { background: rgba(240, 113, 120, 0.15); padding: 0 4px; border-radius: 3px; }
+
+        /* Failure gallery */
+        .gallery {
+            padding: 60px 0;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 40px;
+        }
+        .fail-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .fail-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .fail-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--error-dim);
+        }
+        .fail-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .fail-icon {
+            font-size: 24px;
+        }
+        .fail-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .fail-prompt {
+            background: rgba(240, 113, 120, 0.08);
+            border-left: 3px solid var(--error);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+        .fail-result {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .fail-result strong { color: var(--error); }
+
+        /* Solutions */
+        .solutions {
+            padding: 80px 0;
+            text-align: center;
+        }
+        .solutions h2 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .solutions > p {
+            color: var(--text-dim);
+            font-size: 18px;
+            margin-bottom: 48px;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            text-align: left;
+        }
+        .product-card {
+            background: linear-gradient(180deg, var(--surface2) 0%, var(--surface) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        .product-card.claw::before { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+        .product-card.scribe::before { background: linear-gradient(90deg, var(--purple), #c4b5fd); }
+
+        .product-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        .product-card.claw .product-icon { background: rgba(217, 167, 90, 0.15); }
+        .product-card.scribe .product-icon { background: rgba(165, 142, 240, 0.15); }
+
+        .product-card h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .product-card.claw h3 { color: var(--accent-light); }
+        .product-card.scribe h3 { color: #c4b5fd; }
+
+        .product-tagline {
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+        .product-features {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+        .product-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+        .product-features li::before {
+            content: '→';
+            color: var(--accent);
+        }
+        .product-card.scribe .product-features li::before { color: var(--purple); }
+
+        .product-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: gap 0.2s;
+        }
+        .product-card.scribe .product-link { color: var(--purple); }
+        .product-link:hover { gap: 12px; }
+
+        /* Stats */
+        .stats {
+            padding: 60px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 40px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: var(--font-mono);
+        }
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+        }
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .footer-text a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .footer-links {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+        .footer-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--accent); }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out both;
+        }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .cursor::after {
+            content: '▋';
+            animation: blink 1s infinite;
+            color: var(--accent);
+        }
+
+        @media (max-width: 640px) {
+            .hero h1 { font-size: 40px; }
+            .hero p { font-size: 16px; }
+            .terminal { font-size: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+            .stat-value { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <header>
+        <div class="container header-inner">
+            <div class="logo">prompt<span>.fail</span></div>
+            <nav>
+                <a href="#gallery">Hall of Shame</a>
+                <a href="#solutions">Solutions</a>
+                <a href="https://aegntic.ai">aegntic.ai</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-badge animate-in">Welcome to the mistake museum</div>
+                <h1 class="animate-in delay-1">Your prompt <span class="fail">failed</span><span class="dot">.</span></h1>
+                <p class="animate-in delay-2">Every hallucination, every formatting disaster, every "as an AI language model" — they all happened here first. Learn from the fails. Ship better prompts.</p>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="terminal animate-in delay-3">
+                <div class="terminal-header">
+                    <div class="terminal-dot red"></div>
+                    <div class="terminal-dot yellow"></div>
+                    <div class="terminal-dot green"></div>
+                    <span class="terminal-url">prompt.fail — bash history</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-line"><span class="prompt">$</span> <span class="output">history | grep "why did the AI"</span></div>
+                    <div class="terminal-line"><span class="comment"># 847  why did the AI say it can't browse the web when it just did</span></div>
+                    <div class="terminal-line"><span class="comment"># 848  why did the AI invent a library that doesn't exist</span></div>
+                    <div class="terminal-line"><span class="comment"># 849  why did the AI apologize 47 times in one response</span></div>
+                    <div class="terminal-line"><span class="comment"># 850  why did the AI format this as a poem about cheese</span></div>
+                    <div class="terminal-line"><span class="comment"># 851  why did the AI translate my code to hieroglyphics</span></div>
+                    <div class="terminal-line"></div>
+                    <div class="terminal-line"><span class="prompt">$</span> <span class="output">curl -s prompt.fail/stats</span></div>
+                    <div class="terminal-line"><span class="error-text">{"prompts_failed_today": 2,847,293, "apologies_generated": "∞", "hallucinations": "countless"}</span></div>
+                    <div class="terminal-line"></div>
+                    <div class="terminal-line"><span class="prompt">$</span> <span class="success-text">python -c "import clawprompt; clawprompt.fix_everything()"</span></div>
+                    <div class="terminal-line"><span class="success-text cursor">→ Installing sanity...</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery" class="gallery">
+            <div class="container">
+                <div class="section-title">Hall of Shame — Classic Fails</div>
+                <div class="fail-cards">
+                    <div class="fail-card">
+                        <div class="fail-card-header">
+                            <span class="fail-icon">🎭</span>
+                            <span class="fail-name">The Roleplay Overflow</span>
+                        </div>
+                        <div class="fail-prompt">"You are a senior engineer at Google, Microsoft, Apple, and NASA simultaneously..."</div>
+                        <div class="fail-result">AI: <strong>"As a senior engineer at GoogleMicrosoftAppleNASA, I believe..."</strong> (identity crisis: activated)</div>
+                    </div>
+
+                    <div class="fail-card">
+                        <div class="fail-card-header">
+                            <span class="fail-icon">📚</span>
+                            <span class="fail-name">The Phantom Library</span>
+                        </div>
+                        <div class="fail-prompt">"Use the react-quantum-flux-suspense package"</div>
+                        <div class="fail-result">AI invented a package, complete with <strong>fake npm install instructions</strong> and documentation. It never existed.</div>
+                    </div>
+
+                    <div class="fail-card">
+                        <div class="fail-card-header">
+                            <span class="fail-icon">🧀</span>
+                            <span class="fail-name">The Format Rebellion</span>
+                        </div>
+                        <div class="fail-prompt">"Return the data as JSON"</div>
+                        <div class="fail-result">AI: <strong>"Here's the data as JSON! 🧀
+In the style of a Shakespearean sonnet about cheese..."</strong></div>
+                    </div>
+
+                    <div class="fail-card">
+                        <div class="fail-card-header">
+                            <span class="fail-icon">🙏</span>
+                            <span class="fail-name">The Apology Loop</span>
+                        </div>
+                        <div class="fail-prompt">"Fix the bug in my code"</div>
+                        <div class="fail-result">AI: "I apologize. I apologize for apologizing. <strong>Let me apologize more sincerely.</strong> I'm sorry that my apologies..."</div>
+                    </div>
+
+                    <div class="fail-card">
+                        <div class="fail-card-header">
+                            <span class="fail-icon">🪞</span>
+                            <span class="fail-name">The Mirror Hallucination</span>
+                        </div>
+                        <div class="fail-prompt">"Quote the exact error message"</div>
+                        <div class="fail-result">AI quoted an error that <strong>never appeared in the conversation</strong>, complete with fake line numbers.</div>
+                    </div>
+
+                    <div class="fail-card">
+                        <div class="fail-card-header">
+                            <span class="fail-icon">🔄</span>
+                            <span class="fail-name">The Context Amnesia</span>
+                        </div>
+                        <div class="fail-prompt">"Using the variable we defined 3 messages ago..."</div>
+                        <div class="fail-result">AI: <strong>"What variable? I don't recall any variable. Who are you? What is code?"</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solutions" class="solutions">
+            <div class="container">
+                <h2>Stop the fail. Start the flow.</h2>
+                <p>Two products. One mission: make prompts that actually work.</p>
+
+                <div class="product-grid">
+                    <div class="product-card claw">
+                        <div class="product-icon">🦀</div>
+                        <h3>ClawPrompt</h3>
+                        <p class="product-tagline">The prompt engineering framework that prevents failures before they happen.</p>
+                        <ul class="product-features">
+                            <li>Schema-validated prompt templates</li>
+                            <li>Automatic context window optimization</li>
+                            <li>Built-in failure pattern detection</li>
+                            <li>Real-time prompt scoring & linting</li>
+                            <li>Version control for your prompts</li>
+                            <li>Integration with clawREFORM agents</li>
+                        </ul>
+                        <a href="https://clawreform.com/clawprompt" class="product-link">
+                            Learn more <span>→</span>
+                        </a>
+                    </div>
+
+                    <div class="product-card scribe">
+                        <div class="product-icon">✍️</div>
+                        <h3>DevScribe</h3>
+                        <p class="product-tagline">AI-powered documentation that actually stays in sync with your code.</p>
+                        <ul class="product-features">
+                            <li>Auto-generates docs from code context</li>
+                            <li>Detects doc/code drift in real-time</li>
+                            <li>Multi-format output (Markdown, MDX, Notion)</li>
+                            <li>API reference generation from types</li>
+                            <li>Changelog generation from commits</li>
+                            <li>Integration with CI/CD pipelines</li>
+                        </ul>
+                        <a href="https://clawreform.com/devscribe" class="product-link">
+                            Learn more <span>→</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats">
+            <div class="container">
+                <div class="stats-grid">
+                    <div>
+                        <div class="stat-value">∞</div>
+                        <div class="stat-label">Failed Prompts</div>
+                    </div>
+                    <div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Shame</div>
+                    </div>
+                    <div>
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Learning</div>
+                    </div>
+                    <div>
+                        <div class="stat-value">1</div>
+                        <div class="stat-label">Mission</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p class="footer-text">
+                Made with 🦀 by <a href="https://aegntic.ai">aegntic.ai</a> — because your prompts deserve better.
+            </p>
+            <div class="footer-links">
+                <a href="https://clawreform.com">clawREFORM</a>
+                <a href="https://aegntic.ai">aegntic.ai</a>
+                <a href="https://github.com/aegntic/clawreform">GitHub</a>
+                <a href="mailto:hello@prompt.fail">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple scroll reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fail-card, .product-card').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
