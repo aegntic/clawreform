@@ -113,23 +113,17 @@ convert icon.svg -resize 256x256 -define icon:auto-resize=256,128,64,48,32,16 ic
 
 ---
 
-## 5. Set Up the `clawreform.sh` Domain
+## 5. Serve the Install Scripts
 
-**Status:** BLOCKING for install scripts — users run `curl -sSf https://clawreform.sh | sh`.
+**Status:** DONE. `get.clawreform.com` serves the install scripts.
 
-Options:
-- **GitHub Pages**: Point `clawreform.sh` to a GitHub Pages site that redirects `/` to `scripts/install.sh` and `/install.ps1` to `scripts/install.ps1` from the repo's latest release.
-- **Cloudflare Workers / Vercel**: Serve the install scripts with proper `Content-Type: text/plain` headers.
-- **Raw GitHub redirect**: Use `clawreform.sh` as a CNAME to `raw.githubusercontent.com/aegntic/clawreform/main/scripts/install.sh` (less reliable).
+A Cloudflare Worker serves the scripts. Its source is in `infra/clawreform-install-endpoint`. The Worker reads the scripts from one pinned commit. It serves a script only when that script is the clawREFORM installer.
 
-The install scripts reference:
-- `https://clawreform.sh` → serves `scripts/install.sh`
-- `https://clawreform.sh/install.ps1` → serves `scripts/install.ps1`
+The install scripts are at:
+- `https://get.clawreform.com` → serves `scripts/install.sh`
+- `https://get.clawreform.com/install.ps1` → serves `scripts/install.ps1`
 
-Until the domain is set up, users can install via:
-```bash
-curl -sSf https://raw.githubusercontent.com/aegntic/clawreform/main/scripts/install.sh | sh
-```
+When you change an install script, set `INSTALL_COMMIT` in `infra/clawreform-install-endpoint/cloudflare.config.ts` to the new commit. Then run `cf deploy` in that directory.
 
 ---
 
@@ -266,11 +260,11 @@ docker run --rm ghcr.io/aegntic/clawreform:latest --version
 ### Install Scripts
 ```bash
 # Linux/macOS
-curl -sSf https://clawreform.sh | sh
+curl -fsSL https://get.clawreform.com | sh
 clawreform --version  # Should print v0.1.0
 
 # Windows PowerShell
-irm https://clawreform.sh/install.ps1 | iex
+irm https://get.clawreform.com/install.ps1 | iex
 clawreform --version
 ```
 

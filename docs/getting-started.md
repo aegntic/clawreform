@@ -32,15 +32,15 @@ The desktop app includes the full clawREFORM by aegntic.ai system with a native 
 ### Option 2: Shell Installer (Linux / macOS)
 
 ```bash
-curl -sSf https://clawreform.sh | sh
+curl -fsSL https://get.clawreform.com | sh
 ```
 
-This downloads the latest CLI binary and installs it to `~/.clawreform/bin/`.
+This downloads the latest CLI binary, verifies its SHA-256 checksum, and installs it to `~/.clawreform/bin/`.
 
 ### Option 3: PowerShell Installer (Windows)
 
 ```powershell
-irm https://clawreform.sh/install.ps1 | iex
+irm https://get.clawreform.com/install.ps1 | iex
 ```
 
 Downloads the latest CLI binary, verifies its SHA256 checksum, and adds it to your user PATH.
