@@ -8,6 +8,7 @@ use crate::{
 use clawreform_types::agent::AgentId;
 use dashmap::DashMap;
 use serde::Serialize;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use tracing::{info, warn};
 use uuid::Uuid;
@@ -254,6 +255,17 @@ fn check_requirement(req: &HandRequirement) -> bool {
         RequirementType::Binary => {
             // Check if binary exists on PATH
             which_binary(&req.check_value)
+                && req
+                    .min_version
+                    .as_deref()
+                    .map(|min_version| {
+                        binary_meets_min_version(
+                            &req.check_value,
+                            &req.version_args,
+                            min_version,
+                        )
+                    })
+                    .unwrap_or(true)
         }
         RequirementType::EnvVar | RequirementType::ApiKey => {
             // Check if env var is set and non-empty
@@ -283,6 +295,82 @@ fn which_binary(name: &str) -> bool {
         }
     }
     false
+}
+
+fn binary_meets_min_version(name: &str, version_args: &[String], min_version: &str) -> bool {
+    let detected = query_binary_version(name, version_args).and_then(|output| extract_version(&output));
+    let minimum = extract_version(min_version);
+
+    match (detected, minimum) {
+        (Some(detected), Some(minimum)) => compare_versions(&detected, &minimum) != Ordering::Less,
+        _ => false,
+    }
+}
+
+fn query_binary_version(name: &str, version_args: &[String]) -> Option<String> {
+    let args: Vec<&str> = if version_args.is_empty() {
+        vec!["--version"]
+    } else {
+        version_args.iter().map(String::as_str).collect()
+    };
+
+    let output = std::process::Command::new(name).args(&args).output().ok()?;
+    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+
+    if stdout.is_empty() && stderr.is_empty() {
+        return None;
+    }
+
+    Some(match (stdout.is_empty(), stderr.is_empty()) {
+        (false, true) => stdout,
+        (true, false) => stderr,
+        (false, false) => format!("{stdout}\n{stderr}"),
+        (true, true) => return None,
+    })
+}
+
+fn extract_version(text: &str) -> Option<Vec<u64>> {
+    let bytes = text.as_bytes();
+
+    for start in 0..bytes.len() {
+        if !bytes[start].is_ascii_digit() {
+            continue;
+        }
+
+        let mut end = start;
+        while end < bytes.len() && (bytes[end].is_ascii_digit() || bytes[end] == b'.') {
+            end += 1;
+        }
+
+        let candidate = &text[start..end];
+        let parsed = candidate
+            .split('.')
+            .map(str::trim)
+            .map(str::parse::<u64>)
+            .collect::<Result<Vec<_>, _>>();
+
+        if let Ok(parts) = parsed {
+            if !parts.is_empty() {
+                return Some(parts);
+            }
+        }
+    }
+
+    None
+}
+
+fn compare_versions(left: &[u64], right: &[u64]) -> Ordering {
+    let len = left.len().max(right.len());
+    for idx in 0..len {
+        let a = left.get(idx).copied().unwrap_or(0);
+        let b = right.get(idx).copied().unwrap_or(0);
+        match a.cmp(&b) {
+            Ordering::Equal => continue,
+            other => return other,
+        }
+    }
+    Ordering::Equal
 }
 
 /// Check if a setting option is available based on its provider_env and binary.
@@ -470,6 +558,8 @@ mod tests {
             label: "test".to_string(),
             requirement_type: RequirementType::EnvVar,
             check_value: "CLAWREFORM_TEST_HAND_REQ".to_string(),
+            min_version: None,
+            version_args: Vec::new(),
             description: None,
             install: None,
         };
@@ -480,10 +570,47 @@ mod tests {
             label: "test".to_string(),
             requirement_type: RequirementType::EnvVar,
             check_value: "CLAWREFORM_NONEXISTENT_VAR_12345".to_string(),
+            min_version: None,
+            version_args: Vec::new(),
             description: None,
             install: None,
         };
         assert!(!check_requirement(&req_missing));
         std::env::remove_var("CLAWREFORM_TEST_HAND_REQ");
+    }
+
+    #[test]
+    fn version_requirement_accepts_newer_binary_versions() {
+        let req = HandRequirement {
+            key: "rustc".to_string(),
+            label: "Rust 1.0.0+".to_string(),
+            requirement_type: RequirementType::Binary,
+            check_value: "rustc".to_string(),
+            min_version: Some("1.0.0".to_string()),
+            version_args: vec!["--version".to_string()],
+            description: None,
+            install: None,
+        };
+        assert!(check_requirement(&req));
+    }
+
+    #[test]
+    fn version_requirement_rejects_older_binary_versions() {
+        let req = HandRequirement {
+            key: "rustc".to_string(),
+            label: "Rust 999.0.0+".to_string(),
+            requirement_type: RequirementType::Binary,
+            check_value: "rustc".to_string(),
+            min_version: Some("999.0.0".to_string()),
+            version_args: vec!["--version".to_string()],
+            description: None,
+            install: None,
+        };
+        assert!(!check_requirement(&req));
+    }
+
+    #[test]
+    fn extract_version_prefers_first_semver_like_value() {
+        assert_eq!(extract_version("rustc 1.88.0 (abc 2025-06-23)"), Some(vec![1, 88, 0]));
     }
 }
