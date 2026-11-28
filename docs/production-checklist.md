@@ -120,7 +120,7 @@ convert icon.svg -resize 256x256 -define icon:auto-resize=256,128,64,48,32,16 ic
 Options:
 - **GitHub Pages**: Point `clawreform.sh` to a GitHub Pages site that redirects `/` to `scripts/install.sh` and `/install.ps1` to `scripts/install.ps1` from the repo's latest release.
 - **Cloudflare Workers / Vercel**: Serve the install scripts with proper `Content-Type: text/plain` headers.
-- **Raw GitHub redirect**: Use `clawreform.sh` as a CNAME to `raw.githubusercontent.com/RightNow-AI/clawreform/main/scripts/install.sh` (less reliable).
+- **Raw GitHub redirect**: Use `clawreform.sh` as a CNAME to `raw.githubusercontent.com/aegntic/clawreform/main/scripts/install.sh` (less reliable).
 
 The install scripts reference:
 - `https://clawreform.sh` → serves `scripts/install.sh`
@@ -128,7 +128,7 @@ The install scripts reference:
 
 Until the domain is set up, users can install via:
 ```bash
-curl -sSf https://raw.githubusercontent.com/RightNow-AI/clawreform/main/scripts/install.sh | sh
+curl -sSf https://raw.githubusercontent.com/aegntic/clawreform/main/scripts/install.sh | sh
 ```
 
 ---
@@ -237,7 +237,7 @@ After the release workflow completes (~15-30 min):
 - [ ] SHA256 checksum files present for each CLI archive
 
 ### Auto-Updater Manifest
-Visit: `https://github.com/RightNow-AI/clawreform/releases/latest/download/latest.json`
+Visit: `https://github.com/aegntic/clawreform/releases/latest/download/latest.json`
 
 - [ ] JSON is valid
 - [ ] Contains `signature` fields (not empty strings)
@@ -246,11 +246,11 @@ Visit: `https://github.com/RightNow-AI/clawreform/releases/latest/download/lates
 
 ### Docker Image
 ```bash
-docker pull ghcr.io/RightNow-AI/clawreform:latest
-docker pull ghcr.io/RightNow-AI/clawreform:0.1.0
+docker pull ghcr.io/aegntic/clawreform:latest
+docker pull ghcr.io/aegntic/clawreform:0.1.0
 
 # Verify both architectures
-docker run --rm ghcr.io/RightNow-AI/clawreform:latest --version
+docker run --rm ghcr.io/aegntic/clawreform:latest --version
 ```
 
 ### Desktop App Auto-Update (test with v0.1.1)

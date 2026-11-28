@@ -16,15 +16,16 @@ This guide walks you through installing clawREFORM by aegntic.ai, configuring yo
 
 ## Installation
 
-### Option 1: Desktop App (Windows / macOS / Linux)
+### Option 1: Desktop App (Windows / Linux)
 
-Download the installer for your platform from the [latest release](https://github.com/RightNow-AI/clawreform/releases/latest):
+Download the installer for your platform from the [latest release](https://github.com/aegntic/clawreform/releases/latest):
 
 | Platform | File |
 |---|---|
-| Windows | `.msi` installer |
-| macOS | `.dmg` disk image |
-| Linux | `.AppImage` or `.deb` |
+| Windows | `.msi` installer or `-setup.exe` (x64 and ARM64) |
+| Linux | `.AppImage`, `.deb`, or `.rpm` |
+
+No macOS desktop build is published yet. On macOS, use the shell installer in Option 2.
 
 The desktop app includes the full clawREFORM by aegntic.ai system with a native window, system tray, auto-updates, and OS notifications. Updates are installed automatically in the background.
 
@@ -57,13 +58,13 @@ This installs a small npm launcher and downloads the platform-native `clawreform
 Requires Rust 1.75+:
 
 ```bash
-cargo install --git https://github.com/RightNow-AI/clawreform clawreform-cli
+cargo install --git https://github.com/aegntic/clawreform clawreform-cli
 ```
 
 Or build from source:
 
 ```bash
-git clone https://github.com/RightNow-AI/clawreform.git
+git clone https://github.com/aegntic/clawreform.git
 cd clawreform
 cargo install --path crates/clawreform-cli
 ```
@@ -71,20 +72,20 @@ cargo install --path crates/clawreform-cli
 ### Option 6: Docker
 
 ```bash
-docker pull ghcr.io/RightNow-AI/clawreform:latest
+docker pull ghcr.io/aegntic/clawreform:latest
 
 docker run -d \
   --name clawreform \
   -p 4332:4332 \
   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
   -v clawreform-data:/data \
-  ghcr.io/RightNow-AI/clawreform:latest
+  ghcr.io/aegntic/clawreform:latest
 ```
 
 Or use Docker Compose:
 
 ```bash
-git clone https://github.com/RightNow-AI/clawreform.git
+git clone https://github.com/aegntic/clawreform.git
 cd clawreform
 # Set your API keys in environment or .env file
 docker compose up -d
@@ -117,9 +118,19 @@ This creates:
   agents/        # Agent manifests (optional)
 ```
 
-### Set Up an API Key
+### Set Up a Provider
 
-clawREFORM by aegntic.ai needs at least one LLM provider API key. Set it as an environment variable:
+clawREFORM by aegntic.ai needs at least one LLM provider. Pick one of two paths.
+
+**Local (no API key).** Ollama, vLLM and LM Studio run on your own machine and need no key:
+
+```bash
+# Ollama: install it from https://ollama.com, then
+ollama pull llama3.2
+ollama serve
+```
+
+**Hosted.** Set the provider's API key as an environment variable:
 
 ```bash
 # Anthropic (Claude)
@@ -151,6 +162,15 @@ decay_rate = 0.05                      # Memory confidence decay rate
 
 [network]
 listen_addr = "127.0.0.1:4200"        # OFP listen address
+```
+
+For a local provider, point `[default_model]` at it instead. No key is needed:
+
+```toml
+[default_model]
+provider = "ollama"
+model = "llama3.2"
+api_key_env = "OLLAMA_API_KEY"
 ```
 
 ### Verify Your Setup
